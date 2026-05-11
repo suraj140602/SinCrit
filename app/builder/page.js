@@ -467,26 +467,6 @@ export default function Home() {
     }
   }];
 
-  useEffect(() => {
-    // 1. Activate the mobile touch polyfill
-    polyfill({
-      dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride,
-      // Require a 250ms "hold" before dragging starts. 
-      // This prevents the screen from dragging when the user is just trying to scroll the menu!
-      holdToDrag: 250, 
-    });
-
-    // 2. Prevent the phone screen from scrolling while a drag is actively happening
-    const preventScrollWhileDragging = (e) => {
-      if (document.body.classList.contains('dnd-poly-active')) {
-        e.preventDefault();
-      }
-    };
-    
-    window.addEventListener('touchmove', preventScrollWhileDragging, { passive: false });
-    return () => window.removeEventListener('touchmove', preventScrollWhileDragging);
-  }, []);
-
   const [schema, setSchema] = useState({ 
     ...dummySchema, 
     pages: initialPages, // Overwrite with strict structure
@@ -635,6 +615,27 @@ export default function Home() {
     return connections;
   };
 
+  // --- MOBILE TOUCH DRAG & DROP ACTIVATION ---
+  useEffect(() => {
+    // 1. Activate the mobile touch polyfill
+    polyfill({
+      dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride,
+      // Require a 250ms "hold" before dragging starts. 
+      // This prevents the screen from dragging when the user is just trying to scroll the menu!
+      holdToDrag: 250, 
+    });
+
+    // 2. Prevent the phone screen from scrolling while a drag is actively happening
+    const preventScrollWhileDragging = (e) => {
+      if (document.body.classList.contains('dnd-poly-active')) {
+        e.preventDefault();
+      }
+    };
+    
+    // Use passive: false to allow e.preventDefault() to work
+    window.addEventListener('touchmove', preventScrollWhileDragging, { passive: false });
+    return () => window.removeEventListener('touchmove', preventScrollWhileDragging);
+  }, []);
 
   const commitHistory = (newSchema) => {
     const newHistory = history.slice(0, historyIndex + 1);
