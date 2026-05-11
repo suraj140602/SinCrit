@@ -1646,43 +1646,63 @@ const handleMove = (direction) => {
         globalTheme: schema.theme
       };
 
+      // --- STRICT INSTRUCTIONS: Force AI to act as a Canvas Engine Controller ---
+      const systemInstruction = `You are the AppForge AI Builder. You MUST return ONLY a raw JSON object. Do NOT wrap it in markdown formatting like \`\`\`json.
+      Your JSON MUST match this exact schema:
+      {
+        "chat_reply": "Your conversational response explaining what you did.",
+        "action": "none" | "update" | "add_template",
+        "target_id": "The ID of the selected element if updating",
+        "updated_props": { "key": "value" },
+        "template_key": "login" | "hero" | "productCard" | "storyList" | "sectionTitle" | "userProfile" | "statCard" | "settingsList" | "aiPromptBar" | "cryptoWallet" | "smartHomeHub" | "biometricAuth" | "arNavigation" | "mediaPlayer" | "healthMetrics" | "aiChatBubble" | "proPaywall" | "taskOverview"
+      }
+      RULES:
+      1. If the user asks to generate a full screen (e.g. "login page", "hero", "dashboard"), set action to "add_template" and pick the closest template_key.
+      2. If the user asks to change the color/text of the currently selected element, set action to "update" and provide updated_props.
+      3. If they just ask a general question, set action to "none".`;
+
       const response = await fetch('/api/audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: newHistory,
-          currentSchema: contextData, // The AI now sees EXACTLY what you see
-          provider: aiProvider,        // <--- ADDED THIS
-          apiKey: customApiKey         // <--- ADDED THIS
-
+          // Send the strict instructions + context + user message
+          prompt: `${systemInstruction}\n\nContext:\n${JSON.stringify(contextData)}\n\nUser Message: ${userMessage}`,
+          provider: aiProvider,
+          apiKey: customApiKey
         })
       });
 
       const data = await response.json();
 
-      // 1. SAFETY NET: If the backend sends an error, stop here and throw it to the catch block!
-      if (data.error) {
-         throw new Error(data.error);
-      }
+      if (data.error) throw new Error(data.error);
 
-      // 2. CLEANUP: Strip out any stray markdown backticks (```json) the AI might have accidentally added
       let cleanJson = data.reply.replace(/```json/g, '').replace(/```/g, '').trim();
-      
-      // 3. PARSE safely
       const aiResponse = JSON.parse(cleanJson);
 
-      // 1. Add AI's conversational reply to the chat window
+      // 1. Add AI's text response to the chat window
       setAiChatHistory(prev => [...prev, { role: 'ai', text: aiResponse.chat_reply }]);
 
-      // 2. If the AI generated a UI patch, apply it directly to the canvas!
-      if (aiResponse.ui_patch && aiResponse.ui_patch.target_id) {
-         const newSchema = JSON.parse(JSON.stringify(schema));
-         const targetNode = findNode(newSchema.pages[pIndex].root, aiResponse.ui_patch.target_id);
-         
-         if (targetNode) {
-            targetNode.props = { ...targetNode.props, ...aiResponse.ui_patch.updated_props };
+      const newSchema = JSON.parse(JSON.stringify(schema));
+      const targetRoot = newSchema.pages[pIndex].root;
+
+      // 2. AI ACTION: Add a Full Template to Canvas
+      if (aiResponse.action === 'add_template' && aiResponse.template_key) {
+         const sourceObj = TEMPLATES[aiResponse.template_key];
+         if (sourceObj) {
+            const clonedNode = regenerateIds(JSON.parse(JSON.stringify(sourceObj)));
+            if (!targetRoot.children) targetRoot.children = [];
+            targetRoot.children.push(clonedNode);
             commitHistory(newSchema);
-            console.log("Canvas updated by AI patch!");
+            setSelectedId(clonedNode.id);
+         }
+      }
+      
+      // 3. AI ACTION: Update Properties of selected element
+      else if (aiResponse.action === 'update' && aiResponse.target_id) {
+         const targetNode = findNode(targetRoot, aiResponse.target_id);
+         if (targetNode && aiResponse.updated_props) {
+            targetNode.props = { ...targetNode.props, ...aiResponse.updated_props };
+            commitHistory(newSchema);
          }
       }
 
