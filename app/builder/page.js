@@ -17,246 +17,52 @@ import { polyfill } from "mobile-drag-drop";
 import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
 import "mobile-drag-drop/default.css"; // Gives visual feedback on mobile
 
+// --- PREMIUM AI TEMPLATE LIBRARY ---
 const TEMPLATES = {
-  hero: {
-    type: 'Column', props: { padding: '24px', gap: '16px', backgroundColor: 'transparent', mainAxisAlignment: 'start', crossAxisAlignment: 'stretch' },
-    children: [
-      { type: 'Image', props: { width: '100%', height: '250px', radiusTopLeft: '16px', radiusTopRight: '16px', radiusBottomLeft: '16px', radiusBottomRight: '16px', url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80', shadowColor: '#0a0a0a', shadowBlur: '12', shadowOffsetY: '6' } },
-      { type: 'Text', props: { content: 'Welcome to AppForge', fontSize: '28px', color: '#1f2937', fontFamily: 'Inter', textAlign: 'center' } },
-      { type: 'Text', props: { content: 'Build native apps without coding. Just drag, drop, and launch.', fontSize: '14px', color: '#6b7280', fontFamily: 'Inter', textAlign: 'center', margin: '0px 0px 10px 0px' } },
-      { type: 'Button', props: { label: 'Get Started', backgroundColor: 'theme.primary', color: '#ffffff', width: '100%', height: '54px', radiusTopLeft: '12px', radiusTopRight: '12px', radiusBottomLeft: '12px', radiusBottomRight: '12px', animationType: 'slideUp', animationDuration: '0.6' } }
-    ]
-  },
-  storyList: {
-    type: 'ListView', props: { padding: '8px 16px', gap: '12px', width: '100%', height: '110px', scrollDirection: 'horizontal' },
-    children: [
-      { type: 'Column', props: { gap: '6px', crossAxisAlignment: 'center', width: '70px' }, children: [
-        { type: 'Image', props: { width: '64px', height: '64px', radiusTopLeft: '32px', radiusTopRight: '32px', radiusBottomLeft: '32px', radiusBottomRight: '32px', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80' } },
-        { type: 'Text', props: { content: 'Your Story', fontSize: '10px', color: '#9ca3af', textAlign: 'center' } }
-      ]}
-    ]
-  },
-  sectionTitle: {
-    type: 'Row', props: { padding: '16px 20px 8px 20px', mainAxisAlignment: 'spaceBetween', crossAxisAlignment: 'center', width: '100%' },
-    children: [
-      { type: 'Text', props: { content: 'Trending Now', fontSize: '18px', color: '#ffffff', fontFamily: 'Inter' } },
-      { type: 'Text', props: { content: 'See All', fontSize: '12px', color: 'theme.primary', fontFamily: 'Inter' } }
-    ]
-  },
-
   login: {
-    type: 'Column', props: { padding: '30px', gap: '16px', backgroundColor: '#ffffff', radiusTopLeft: '24px', radiusTopRight: '24px', radiusBottomLeft: '24px', radiusBottomRight: '24px', shadowColor: '#111111', shadowBlur: '15', shadowOffsetY: '5', margin: '20px' },
+    id: "login_root",
+    type: "Column",
+    props: { width: "100%", height: "100%", padding: "30px", mainAxisAlignment: "center", crossAxisAlignment: "center", backgroundColor: "#0E0F11" },
     children: [
-      { type: 'Center', props: { width: '100%', height: '50px', backgroundColor: 'transparent' }, children: [
-          { type: 'Icon', props: { iconName: 'Lock', color: 'theme.primary', size: '36px' } }
-      ]},
-      { type: 'Text', props: { content: 'Welcome Back', fontSize: '24px', color: '#1f2937', textAlign: 'center', fontFamily: 'Inter', margin: '0px 0px 10px 0px' } },
-      { type: 'TextInput', props: { placeholder: 'Email Address', width: '100%', height: '50px', radiusTopLeft: '8px', radiusTopRight: '8px', radiusBottomLeft: '8px', radiusBottomRight: '8px' } },
-      { type: 'TextInput', props: { placeholder: 'Password', width: '100%', height: '50px', radiusTopLeft: '8px', radiusTopRight: '8px', radiusBottomLeft: '8px', radiusBottomRight: '8px' } },
-      { type: 'Button', props: { label: 'Log In', backgroundColor: 'theme.primary', color: '#ffffff', width: '100%', height: '50px', radiusTopLeft: '8px', radiusTopRight: '8px', radiusBottomLeft: '8px', radiusBottomRight: '8px', margin: '10px 0px 0px 0px' } }
+      { id: "log_icon", type: "Icon", props: { iconName: "Hexagon", size: "64", color: "#6366f1", margin: "0 0 20px 0" } },
+      { id: "log_t1", type: "Text", props: { content: "Welcome Back", fontSize: "28", fontFamily: "Inter", color: "#ffffff", textAlign: "center", margin: "0 0 10px 0" } },
+      { id: "log_t2", type: "Text", props: { content: "Sign in to continue to AppForge", fontSize: "14", color: "#888888", textAlign: "center", margin: "0 0 40px 0" } },
+      { id: "log_in1", type: "TextInput", props: { placeholder: "Email Address", width: "100%", padding: "16px", backgroundColor: "#1A1B1E", color: "#ffffff", radiusTopLeft: "12", radiusTopRight: "12", radiusBottomLeft: "12", radiusBottomRight: "12", margin: "0 0 16px 0" } },
+      { id: "log_in2", type: "TextInput", props: { placeholder: "Password", width: "100%", padding: "16px", backgroundColor: "#1A1B1E", color: "#ffffff", radiusTopLeft: "12", radiusTopRight: "12", radiusBottomLeft: "12", radiusBottomRight: "12", margin: "0 0 30px 0" } },
+      { id: "log_btn", type: "Button", props: { label: "Sign In", width: "100%", padding: "18px", backgroundColor: "#6366f1", color: "#ffffff", radiusTopLeft: "12", radiusTopRight: "12", radiusBottomLeft: "12", radiusBottomRight: "12", shadowColor: "#6366f1", shadowBlur: "20", shadowOffsetY: "8" } }
     ]
   },
-  productCard: {
-    type: 'Column', props: { padding: '16px', gap: '12px', backgroundColor: '#ffffff', radiusTopLeft: '16px', radiusTopRight: '16px', radiusBottomLeft: '16px', radiusBottomRight: '16px', shadowColor: '#222222', shadowBlur: '10', shadowOffsetY: '4' },
+  
+  cryptoWallet: {
+    id: "crypto_root",
+    type: "Container",
+    props: { width: "100%", padding: "24px", radiusTopLeft: "24", radiusTopRight: "24", radiusBottomLeft: "24", radiusBottomRight: "24", backgroundType: "gradient", gradientStart: "#6366f1", gradientEnd: "#a855f7", shadowColor: "#a855f7", shadowBlur: "30", shadowOffsetY: "10", margin: "20px 0" },
     children: [
-      { type: 'Image', props: { width: '100%', height: '180px', radiusTopLeft: '12px', radiusTopRight: '12px', radiusBottomLeft: '12px', radiusBottomRight: '12px', url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80' } },
-      { type: 'Row', props: { mainAxisAlignment: 'spaceBetween', crossAxisAlignment: 'center', width: '100%' }, children: [
-          { type: 'Text', props: { content: 'Nike Air Max', fontSize: '18px', color: '#1f2937', fontFamily: 'Inter' } },
-          { type: 'Text', props: { content: '$120.00', fontSize: '16px', color: 'theme.primary', fontFamily: 'Inter' } }
+      { id: "cw_row1", type: "Row", props: { width: "100%", mainAxisAlignment: "spaceBetween", margin: "0 0 20px 0" }, children: [
+          { id: "cw_t1", type: "Text", props: { content: "Total Balance", fontSize: "14", color: "#ffffff" } },
+          { id: "cw_icon", type: "Icon", props: { iconName: "Wallet", size: "20", color: "#ffffff" } }
       ]},
-      { type: 'Button', props: { label: 'Add to Cart', backgroundColor: '#1f2937', color: '#ffffff', width: '100%', height: '45px', radiusTopLeft: '8px', radiusTopRight: '8px', radiusBottomLeft: '8px', radiusBottomRight: '8px' } }
+      { id: "cw_t2", type: "Text", props: { content: "$24,532.89", fontSize: "36", fontFamily: "Inter", color: "#ffffff", margin: "0 0 30px 0" } },
+      { id: "cw_btn", type: "Button", props: { label: "Send Crypto", width: "100%", padding: "16px", backgroundColor: "#000000", color: "#ffffff", radiusTopLeft: "16", radiusTopRight: "16", radiusBottomLeft: "16", radiusBottomRight: "16" } }
     ]
   },
 
   userProfile: {
-    type: 'Column', props: { padding: '32px 16px', gap: '12px', mainAxisAlignment: 'center', crossAxisAlignment: 'center', backgroundColor: '#0E0F11', width: '100%' },
+    id: "profile_root",
+    type: "Column",
+    props: { width: "100%", padding: "20px", crossAxisAlignment: "center" },
     children: [
-      { type: 'Image', props: { width: '100px', height: '100px', radiusTopLeft: '50px', radiusTopRight: '50px', radiusBottomLeft: '50px', radiusBottomRight: '50px', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80', shadowColor: '#000000', shadowBlur: '15', shadowOffsetY: '5' } },
-      { type: 'Text', props: { content: 'Alex Carter', fontSize: '22px', color: '#ffffff', fontFamily: 'Inter', textAlign: 'center', margin: '8px 0px 0px 0px' } },
-      { type: 'Text', props: { content: 'alex.carter@example.com', fontSize: '14px', color: '#9ca3af', fontFamily: 'Inter', textAlign: 'center', margin: '0px 0px 16px 0px' } },
-      { type: 'Button', props: { label: 'Edit Profile', backgroundColor: '#1A1B1E', color: '#ffffff', width: '160px', height: '44px', radiusTopLeft: '22px', radiusTopRight: '22px', radiusBottomLeft: '22px', radiusBottomRight: '22px' } }
-    ]
-  },
-
-  statCard: {
-    type: 'Column', props: { padding: '20px', gap: '8px', backgroundColor: '#161b22', radiusTopLeft: '20px', radiusTopRight: '20px', radiusBottomLeft: '20px', radiusBottomRight: '20px', shadowColor: '#000000', shadowBlur: '20', shadowOffsetY: '10', width: '100%' },
-    children: [
-      { type: 'Row', props: { mainAxisAlignment: 'spaceBetween', crossAxisAlignment: 'center', width: '100%' }, children: [
-        { type: 'Text', props: { content: 'Total Revenue', fontSize: '14px', color: '#9ca3af', fontFamily: 'Inter' } },
-        { type: 'Icon', props: { iconName: 'trending_up', color: 'theme.primary', size: '20px' } }
+      { id: "prof_img", type: "Image", props: { url: "https://i.pravatar.cc/150?img=11", width: "100px", height: "100px", radiusTopLeft: "50", radiusTopRight: "50", radiusBottomLeft: "50", radiusBottomRight: "50", margin: "0 0 16px 0", shadowColor: "#000000", shadowBlur: "20" } },
+      { id: "prof_t1", type: "Text", props: { content: "Sarah Jenkins", fontSize: "24", fontFamily: "Inter", color: "#ffffff", textAlign: "center", margin: "0 0 4px 0" } },
+      { id: "prof_t2", type: "Text", props: { content: "Lead Designer @ AppForge", fontSize: "12", color: "#888888", textAlign: "center", margin: "0 0 24px 0" } },
+      { id: "prof_stats", type: "Row", props: { width: "100%", mainAxisAlignment: "spaceBetween", padding: "20px", backgroundColor: "#161b22", radiusTopLeft: "16", radiusTopRight: "16", radiusBottomLeft: "16", radiusBottomRight: "16", margin: "0 0 24px 0" }, children: [
+          { id: "stat1", type: "Column", props: { crossAxisAlignment: "center" }, children: [ { id: "s1_v", type: "Text", props: { content: "1.2k", fontSize: "18", color: "#ffffff" } }, { id: "s1_l", type: "Text", props: { content: "Followers", fontSize: "10", color: "#888888" } } ] },
+          { id: "stat2", type: "Column", props: { crossAxisAlignment: "center" }, children: [ { id: "s2_v", type: "Text", props: { content: "48", fontSize: "18", color: "#ffffff" } }, { id: "s2_l", type: "Text", props: { content: "Projects", fontSize: "10", color: "#888888" } } ] },
+          { id: "stat3", type: "Column", props: { crossAxisAlignment: "center" }, children: [ { id: "s3_v", type: "Text", props: { content: "4.9", fontSize: "18", color: "#ffffff" } }, { id: "s3_l", type: "Text", props: { content: "Rating", fontSize: "10", color: "#888888" } } ] }
       ]},
-      { type: 'Text', props: { content: '$45,231.89', fontSize: '28px', color: '#ffffff', fontFamily: 'Inter', margin: '8px 0px 4px 0px' } },
-      { type: 'Row', props: { mainAxisAlignment: 'start', crossAxisAlignment: 'center', gap: '6px', width: '100%' }, children: [
-        { type: 'Icon', props: { iconName: 'arrow_upward', color: '#10b981', size: '14px' } },
-        { type: 'Text', props: { content: '20.1% from last month', fontSize: '12px', color: '#10b981', fontFamily: 'Inter' } }
-      ]}
-    ]
-  },
-
-  settingsList: {
-    type: 'Column', props: { padding: '0px', gap: '0px', backgroundColor: '#161b22', radiusTopLeft: '16px', radiusTopRight: '16px', radiusBottomLeft: '16px', radiusBottomRight: '16px', width: '100%', shadowColor: '#000000', shadowBlur: '15', shadowOffsetY: '5' },
-    children: [
-      { type: 'Row', props: { padding: '16px', mainAxisAlignment: 'spaceBetween', crossAxisAlignment: 'center', width: '100%' }, children: [
-        { type: 'Row', props: { gap: '16px', crossAxisAlignment: 'center' }, children: [
-          { type: 'Icon', props: { iconName: 'notifications', color: '#9ca3af', size: '22px' } },
-          { type: 'Text', props: { content: 'Push Notifications', fontSize: '15px', color: '#f3f4f6', fontFamily: 'Inter' } }
-        ]},
-        { type: 'Icon', props: { iconName: 'chevron_right', color: '#4b5563', size: '20px' } }
-      ]},
-      { type: 'Divider', props: { backgroundColor: '#374151', height: '1px', margin: '0px 16px' } },
-      { type: 'Row', props: { padding: '16px', mainAxisAlignment: 'spaceBetween', crossAxisAlignment: 'center', width: '100%' }, children: [
-        { type: 'Row', props: { gap: '16px', crossAxisAlignment: 'center' }, children: [
-          { type: 'Icon', props: { iconName: 'lock', color: '#9ca3af', size: '22px' } },
-          { type: 'Text', props: { content: 'Privacy & Security', fontSize: '15px', color: '#f3f4f6', fontFamily: 'Inter' } }
-        ]},
-        { type: 'Icon', props: { iconName: 'chevron_right', color: '#4b5563', size: '20px' } }
-      ]}
-    ]
-  },
-
-  // 1. AI Prompt Input Bar
-  aiPromptBar: {
-    type: 'Row', props: { padding: '12px', gap: '12px', backgroundColor: '#161b22', radiusTopLeft: '24px', radiusTopRight: '24px', radiusBottomLeft: '24px', radiusBottomRight: '24px', width: '100%', shadowColor: '#000000', shadowBlur: '15', shadowOffsetY: '5', crossAxisAlignment: 'center' },
-    children: [
-      { type: 'Icon', props: { iconName: 'smart_toy', color: '#8b5cf6', size: '24px' } },
-      { type: 'TextInput', props: { placeholder: 'Ask AI to generate...', width: '220px', height: '40px', radiusTopLeft: '12px', radiusTopRight: '12px', radiusBottomLeft: '12px', radiusBottomRight: '12px' } },
-      { type: 'Button', props: { label: 'Send', backgroundColor: '#8b5cf6', color: '#ffffff', width: '80px', height: '40px', radiusTopLeft: '12px', radiusTopRight: '12px', radiusBottomLeft: '12px', radiusBottomRight: '12px' } }
-    ]
-  },
-
-  // 2. Crypto / DeFi Wallet Balance
-  cryptoWallet: {
-    type: 'Column', props: { padding: '24px', gap: '16px', backgroundColor: '#0E0F11', radiusTopLeft: '24px', radiusTopRight: '24px', radiusBottomLeft: '24px', radiusBottomRight: '24px', width: '100%' },
-    children: [
-      { type: 'Text', props: { content: 'Total Portfolio', fontSize: '14px', color: '#9ca3af', fontFamily: 'Inter', textAlign: 'center' } },
-      { type: 'Text', props: { content: '₿ 2.4501', fontSize: '36px', color: '#f59e0b', fontFamily: 'Inter', textAlign: 'center' } },
-      { type: 'Row', props: { mainAxisAlignment: 'center', gap: '16px', width: '100%' }, children: [
-        { type: 'Button', props: { label: 'Buy', backgroundColor: '#10b981', color: '#ffffff', width: '100px', height: '45px', radiusTopLeft: '12px', radiusTopRight: '12px', radiusBottomLeft: '12px', radiusBottomRight: '12px' } },
-        { type: 'Button', props: { label: 'Swap', backgroundColor: '#374151', color: '#ffffff', width: '100px', height: '45px', radiusTopLeft: '12px', radiusTopRight: '12px', radiusBottomLeft: '12px', radiusBottomRight: '12px' } }
-      ]}
-    ]
-  },
-
-  // 3. Smart Home Control Hub
-  smartHomeHub: {
-    type: 'Column', props: { padding: '0px', gap: '12px', width: '100%' },
-    children: [
-      { type: 'Row', props: { mainAxisAlignment: 'spaceBetween', gap: '12px', width: '100%' }, children: [
-        { type: 'Card', props: { padding: '16px', backgroundColor: '#161b22', width: '160px', height: '120px', radiusTopLeft: '20px', radiusTopRight: '20px', radiusBottomLeft: '20px', radiusBottomRight: '20px' }, children: [
-          { type: 'Icon', props: { iconName: 'lightbulb', color: '#f59e0b', size: '28px' } },
-          { type: 'Text', props: { content: 'Living Room', fontSize: '14px', color: '#ffffff', fontFamily: 'Inter', margin: '12px 0px 4px 0px' } },
-          { type: 'Text', props: { content: 'On • 75%', fontSize: '12px', color: '#10b981', fontFamily: 'Inter' } }
-        ]},
-        { type: 'Card', props: { padding: '16px', backgroundColor: '#161b22', width: '160px', height: '120px', radiusTopLeft: '20px', radiusTopRight: '20px', radiusBottomLeft: '20px', radiusBottomRight: '20px' }, children: [
-          { type: 'Icon', props: { iconName: 'thermostat', color: '#ef4444', size: '28px' } },
-          { type: 'Text', props: { content: 'Climate', fontSize: '14px', color: '#ffffff', fontFamily: 'Inter', margin: '12px 0px 4px 0px' } },
-          { type: 'Text', props: { content: '72°F • Auto', fontSize: '12px', color: '#9ca3af', fontFamily: 'Inter' } }
-        ]}
-      ]}
-    ]
-  },
-
-  // 4. Biometric Auth / FaceID Simulator
-  biometricAuth: {
-    type: 'Center', props: { width: '100%', height: '300px', backgroundColor: 'transparent' },
-    children: [
-      { type: 'Column', props: { crossAxisAlignment: 'center', gap: '16px' }, children: [
-        { type: 'Icon', props: { iconName: 'fingerprint', color: '#3b82f6', size: '80px' } },
-        { type: 'Text', props: { content: 'Authenticate to continue', fontSize: '16px', color: '#9ca3af', fontFamily: 'Inter', textAlign: 'center' } }
-      ]}
-    ]
-  },
-
-  // 5. AR Navigation / Spatial Map Card
-  arNavigation: {
-    type: 'Column', props: { padding: '20px', gap: '16px', backgroundColor: '#161b22', radiusTopLeft: '24px', radiusTopRight: '24px', radiusBottomLeft: '24px', radiusBottomRight: '24px', width: '100%', shadowColor: '#000000', shadowBlur: '20', shadowOffsetY: '8' },
-    children: [
-      { type: 'Row', props: { mainAxisAlignment: 'start', crossAxisAlignment: 'center', gap: '12px', width: '100%' }, children: [
-        { type: 'Icon', props: { iconName: 'view_in_ar', color: '#ec4899', size: '32px' } },
-        { type: 'Column', props: { gap: '2px' }, children: [
-          { type: 'Text', props: { content: 'Central Station', fontSize: '16px', color: '#ffffff', fontFamily: 'Inter' } },
-          { type: 'Text', props: { content: '0.8 miles • 15 min walk', fontSize: '12px', color: '#9ca3af', fontFamily: 'Inter' } }
-        ]}
-      ]},
-      { type: 'Button', props: { label: 'Start AR Route', backgroundColor: '#ec4899', color: '#ffffff', width: '100%', height: '48px', radiusTopLeft: '12px', radiusTopRight: '12px', radiusBottomLeft: '12px', radiusBottomRight: '12px' } }
-    ]
-  },
-
-  // 6. Holographic Media Player
-  mediaPlayer: {
-    type: 'Column', props: { padding: '20px', gap: '16px', backgroundColor: '#0E0F11', radiusTopLeft: '32px', radiusTopRight: '32px', radiusBottomLeft: '32px', radiusBottomRight: '32px', width: '100%', shadowColor: '#111111', shadowBlur: '30' },
-    children: [
-      { type: 'Image', props: { width: '100%', height: '200px', radiusTopLeft: '20px', radiusTopRight: '20px', radiusBottomLeft: '20px', radiusBottomRight: '20px', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80' } },
-      { type: 'Column', props: { crossAxisAlignment: 'center', gap: '4px' }, children: [
-        { type: 'Text', props: { content: 'Cyberpunk Synth', fontSize: '20px', color: '#ffffff', fontFamily: 'Inter', textAlign: 'center' } },
-        { type: 'Text', props: { content: 'Night City Radio', fontSize: '14px', color: '#8b5cf6', fontFamily: 'Inter', textAlign: 'center' } }
-      ]},
-      { type: 'Row', props: { mainAxisAlignment: 'center', gap: '24px', crossAxisAlignment: 'center', width: '100%' }, children: [
-        { type: 'Icon', props: { iconName: 'skip_previous', color: '#ffffff', size: '36px' } },
-        { type: 'Icon', props: { iconName: 'play_circle_filled', color: '#8b5cf6', size: '64px' } },
-        { type: 'Icon', props: { iconName: 'skip_next', color: '#ffffff', size: '36px' } }
-      ]}
-    ]
-  },
-
-  // 7. Health / Biosensor Metrics
-  healthMetrics: {
-    type: 'Row', props: { mainAxisAlignment: 'spaceBetween', gap: '12px', width: '100%' },
-    children: [
-      { type: 'Column', props: { padding: '16px', backgroundColor: '#1A1B1E', radiusTopLeft: '16px', radiusTopRight: '16px', radiusBottomLeft: '16px', radiusBottomRight: '16px', width: '110px', crossAxisAlignment: 'center' }, children: [
-        { type: 'Icon', props: { iconName: 'favorite', color: '#ef4444', size: '28px' } },
-        { type: 'Text', props: { content: '84 BPM', fontSize: '18px', color: '#ffffff', fontFamily: 'Inter', margin: '8px 0px 0px 0px' } }
-      ]},
-      { type: 'Column', props: { padding: '16px', backgroundColor: '#1A1B1E', radiusTopLeft: '16px', radiusTopRight: '16px', radiusBottomLeft: '16px', radiusBottomRight: '16px', width: '110px', crossAxisAlignment: 'center' }, children: [
-        { type: 'Icon', props: { iconName: 'directions_run', color: '#3b82f6', size: '28px' } },
-        { type: 'Text', props: { content: '12.4k', fontSize: '18px', color: '#ffffff', fontFamily: 'Inter', margin: '8px 0px 0px 0px' } }
-      ]},
-      { type: 'Column', props: { padding: '16px', backgroundColor: '#1A1B1E', radiusTopLeft: '16px', radiusTopRight: '16px', radiusBottomLeft: '16px', radiusBottomRight: '16px', width: '110px', crossAxisAlignment: 'center' }, children: [
-        { type: 'Icon', props: { iconName: 'bedtime', color: '#8b5cf6', size: '28px' } },
-        { type: 'Text', props: { content: '7h 12m', fontSize: '18px', color: '#ffffff', fontFamily: 'Inter', margin: '8px 0px 0px 0px' } }
-      ]}
-    ]
-  },
-
-  // 8. AI Chat Bubble (Assistant response)
-  aiChatBubble: {
-    type: 'Row', props: { mainAxisAlignment: 'start', crossAxisAlignment: 'start', gap: '12px', width: '100%' },
-    children: [
-      { type: 'Image', props: { width: '36px', height: '36px', radiusTopLeft: '18px', radiusTopRight: '18px', radiusBottomLeft: '18px', radiusBottomRight: '18px', url: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=100&q=80' } },
-      { type: 'Card', props: { padding: '16px', backgroundColor: '#1e293b', radiusTopLeft: '4px', radiusTopRight: '16px', radiusBottomLeft: '16px', radiusBottomRight: '16px', width: '280px' }, children: [
-        { type: 'Text', props: { content: 'I have analyzed the data. The optimal route for deployment is ready. Shall I execute?', fontSize: '14px', color: '#e2e8f0', fontFamily: 'Inter' } }
-      ]}
-    ]
-  },
-
-  // 9. Premium Pro Subscription Paywall
-  proPaywall: {
-    type: 'Column', props: { padding: '32px', gap: '20px', backgroundColor: '#111827', radiusTopLeft: '24px', radiusTopRight: '24px', radiusBottomLeft: '24px', radiusBottomRight: '24px', width: '100%', shadowColor: '#000000', shadowBlur: '20' },
-    children: [
-      { type: 'Icon', props: { iconName: 'diamond', color: '#f472b6', size: '48px', selfAlign: 'center' } },
-      { type: 'Text', props: { content: 'AppForge Vision Pro', fontSize: '24px', color: '#ffffff', fontFamily: 'Inter', textAlign: 'center' } },
-      { type: 'Text', props: { content: 'Unlock infinite AI generations, unlimited cloud builds, and priority spatial computing models.', fontSize: '14px', color: '#9ca3af', fontFamily: 'Inter', textAlign: 'center' } },
-      { type: 'Divider', props: { backgroundColor: '#374151', height: '1px' } },
-      { type: 'Button', props: { label: 'Upgrade for $19.99/mo', backgroundColor: '#ec4899', color: '#ffffff', width: '100%', height: '50px', radiusTopLeft: '12px', radiusTopRight: '12px', radiusBottomLeft: '12px', radiusBottomRight: '12px' } }
-    ]
-  },
-
-  // 10. Automated Task Overview Widget
-  taskOverview: {
-    type: 'Column', props: { padding: '20px', gap: '16px', backgroundColor: '#0E0F11', radiusTopLeft: '20px', radiusTopRight: '20px', radiusBottomLeft: '20px', radiusBottomRight: '20px', width: '100%', shadowColor: '#000000', shadowBlur: '10' },
-    children: [
-      { type: 'Text', props: { content: 'Automated Workflows', fontSize: '18px', color: '#ffffff', fontFamily: 'Inter' } },
-      { type: 'Row', props: { gap: '12px', crossAxisAlignment: 'center' }, children: [
-        { type: 'Icon', props: { iconName: 'check_circle', color: '#10b981', size: '20px' } },
-        { type: 'Text', props: { content: 'Generate Native APK', fontSize: '14px', color: '#d1d5db', fontFamily: 'Inter' } }
-      ]},
-      { type: 'Row', props: { gap: '12px', crossAxisAlignment: 'center' }, children: [
-        { type: 'Icon', props: { iconName: 'schedule', color: '#f59e0b', size: '20px' } },
-        { type: 'Text', props: { content: 'Sync Supabase Schema', fontSize: '14px', color: '#d1d5db', fontFamily: 'Inter' } }
-      ]}
+      { id: "prof_btn", type: "Button", props: { label: "Edit Profile", width: "100%", padding: "16px", backgroundColor: "#3b82f6", color: "#ffffff", radiusTopLeft: "12", radiusTopRight: "12", radiusBottomLeft: "12", radiusBottomRight: "12" } }
     ]
   }
-
 };
 
 const WIDGET_CATEGORIES = [
