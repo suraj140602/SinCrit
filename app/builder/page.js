@@ -426,6 +426,31 @@ const SyntaxHighlightedCode = ({ codeStr, selectedType }) => {
   );
 };
 
+// --- NEW: STABLE INPUT COMPONENT ---
+const PropInput = ({ label, propKey, type = "text", options = [], placeholder = "", value, onChange }) => {
+  const getValidHex = (colorString) => {
+    return (colorString && colorString.startsWith('#') && colorString.length >= 7) ? colorString.substring(0,7) : '#ffffff';
+  };
+
+  return (
+    <div className="flex flex-col mb-4 group">
+      <label className="text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-widest group-focus-within:text-blue-400 transition-colors">{label}</label>
+      {type === "select" ? (
+        <select value={value || ''} onChange={(e) => onChange(propKey, e.target.value)} className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#0E0F11] text-gray-200 outline-none focus:border-blue-500 transition-colors cursor-pointer">
+          {options.map(opt => <option key={opt.value} value={opt.value} className="bg-[#1A1B1E] text-gray-200">{opt.label}</option>)}
+        </select>
+      ) : type === "color" ? (
+        <div className="flex items-center gap-3 border border-white/10 rounded-lg p-2 bg-[#0E0F11] focus-within:border-blue-500 transition-colors">
+           <input type="color" value={getValidHex(value)} onChange={(e) => onChange(propKey, e.target.value)} className="w-6 h-6 rounded border-0 p-0 shrink-0 bg-transparent cursor-pointer" />
+           <input type="text" value={value || ''} onChange={(e) => onChange(propKey, e.target.value)} placeholder="e.g. #FFFFFF" className="flex-1 text-xs text-gray-200 outline-none bg-transparent uppercase font-mono" />
+        </div>
+      ) : (
+        <input type={type} value={value || ''} onChange={(e) => onChange(propKey, e.target.value)} placeholder={placeholder} className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#0E0F11] text-gray-200 outline-none focus:border-blue-500 transition-colors shadow-inner" />
+      )}
+    </div>
+  );
+};
+
 export default function Home() {
   // 1. STRICT INITIALIZATION: Force the root to be a Flexbox Column
   const initialPages = dummySchema?.pages?.length > 0 ? dummySchema.pages : [{
@@ -1671,12 +1696,12 @@ const handleMove = (direction) => {
   // and caused a syntax error that prevented the app from compiling.
 
 
-  const renderPropertyGroups = () => {
+ const renderPropertyGroups = () => {
    if (!selectedNode) {
       return (
         <div className="space-y-6 flex-1 overflow-y-auto p-5 custom-scrollbar pb-20">
           
-          {/* --- NEW: AI MAGIC THEME GENERATOR --- */}
+          {/* --- AI MAGIC THEME GENERATOR --- */}
           <div className="bg-gradient-to-br from-purple-900/20 to-indigo-900/10 border border-purple-500/30 p-4 rounded-2xl shadow-[0_0_15px_rgba(168,85,247,0.1)] mb-2">
             <div className="flex items-center gap-2 mb-3">
               <LucideIcons.Sparkles size={16} className="text-purple-400" />
@@ -1706,7 +1731,6 @@ const handleMove = (direction) => {
               </button>
             </div>
           </div>
-          {/* --- END AI MAGIC THEME --- */}
 
           <div className="bg-[#161b22] border border-white/5 p-4 rounded-xl mb-6 shadow-sm">
             <p className="text-xs text-gray-400 font-medium leading-relaxed">Click an element on the canvas to edit it, or change manual theme settings below.</p>
@@ -1778,28 +1802,6 @@ const handleMove = (direction) => {
 
     const props = selectedNode.props;
 
-    const getValidHex = (colorString) => {
-      return (colorString && colorString.startsWith('#') && colorString.length >= 7) ? colorString.substring(0,7) : '#ffffff';
-    };
-
-    const InputRow = ({ label, propKey, type = "text", options = [], placeholder = "" }) => (
-      <div className="flex flex-col mb-4 group">
-        <label className="text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-widest group-focus-within:text-blue-400 transition-colors">{label}</label>
-        {type === "select" ? (
-          <select value={props[propKey] || ''} onChange={(e) => handlePropChange(propKey, e.target.value)} className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#0E0F11] text-gray-200 outline-none focus:border-blue-500 transition-colors cursor-pointer">
-            {options.map(opt => <option key={opt.value} value={opt.value} className="bg-[#1A1B1E] text-gray-200">{opt.label}</option>)}
-          </select>
-        ) : type === "color" ? (
-          <div className="flex items-center gap-3 border border-white/10 rounded-lg p-2 bg-[#0E0F11] focus-within:border-blue-500 transition-colors">
-             <input type="color" value={getValidHex(props[propKey])} onChange={(e) => handlePropChange(propKey, e.target.value)} className="w-6 h-6 rounded border-0 p-0 shrink-0 bg-transparent cursor-pointer" />
-             <input type="text" value={props[propKey] || ''} onChange={(e) => handlePropChange(propKey, e.target.value)} placeholder="e.g. #FFFFFF" className="flex-1 text-xs text-gray-200 outline-none bg-transparent uppercase font-mono" />
-          </div>
-        ) : (
-          <input type={type} value={props[propKey] || ''} onChange={(e) => handlePropChange(propKey, e.target.value)} placeholder={placeholder} className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#0E0F11] text-gray-200 outline-none focus:border-blue-500 transition-colors shadow-inner" />
-        )}
-      </div>
-    );
-
     return (
       <div className="flex flex-col h-full overflow-hidden bg-[#0a0a0a]">
         
@@ -1833,16 +1835,15 @@ const handleMove = (direction) => {
           {inspectorTab === 'properties' && (
             <div className="space-y-6 animate-in fade-in duration-200">
               
-              
               <div className="border-b border-white/5 pb-6">
                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><Monitor size={14}/> Positioning</h4>
-                <InputRow label="Layout Flow" propKey="position" type="select" options={[{label:'Relative (Normal)', value:'relative'},{label:'Absolute (Free Float)', value:'absolute'}]} />
+                <PropInput label="Layout Flow" propKey="position" type="select" options={[{label:'Relative (Normal)', value:'relative'},{label:'Absolute (Free Float)', value:'absolute'}]} value={props.position} onChange={handlePropChange} />
                 {props.position === 'absolute' && (
                   <div className="grid grid-cols-2 gap-3 mt-3 p-3 bg-[#161b22] rounded-xl border border-white/5">
-                    <InputRow label="Top" propKey="top" />
-                    <InputRow label="Bottom" propKey="bottom" />
-                    <InputRow label="Left" propKey="left" />
-                    <InputRow label="Right" propKey="right" />
+                    <PropInput label="Top" propKey="top" value={props.top} onChange={handlePropChange} />
+                    <PropInput label="Bottom" propKey="bottom" value={props.bottom} onChange={handlePropChange} />
+                    <PropInput label="Left" propKey="left" value={props.left} onChange={handlePropChange} />
+                    <PropInput label="Right" propKey="right" value={props.right} onChange={handlePropChange} />
                   </div>
                 )}
               </div>
@@ -1850,23 +1851,23 @@ const handleMove = (direction) => {
               <div className="border-b border-white/5 pb-6">
                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><Grid size={14}/> Size & Spacing</h4>
                 <div className="grid grid-cols-2 gap-3">
-                  <InputRow label="Width" propKey="width" />
-                  <InputRow label="Height" propKey="height" />
+                  <PropInput label="Width" propKey="width" value={props.width} onChange={handlePropChange} />
+                  <PropInput label="Height" propKey="height" value={props.height} onChange={handlePropChange} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <InputRow label="Margin (Outer)" propKey="margin" />
-                  <InputRow label="Padding (Inner)" propKey="padding" />
+                  <PropInput label="Margin (Outer)" propKey="margin" value={props.margin} onChange={handlePropChange} />
+                  <PropInput label="Padding (Inner)" propKey="padding" value={props.padding} onChange={handlePropChange} />
                 </div>
                 {(selectedNode.type === 'Row' || selectedNode.type === 'Column' || selectedNode.type === 'Stack') && (
                   <div className="grid grid-cols-2 gap-3">
-                     <InputRow label="Main Align" propKey="mainAxisAlignment" type="select" options={[{label:'Start', value:'start'},{label:'Center', value:'center'},{label:'End', value:'end'},{label:'Space Between', value:'spaceBetween'}]} />
-                     <InputRow label="Cross Align" propKey="crossAxisAlignment" type="select" options={[{label:'Start', value:'start'},{label:'Center', value:'center'},{label:'Stretch', value:'stretch'}]} />
+                     <PropInput label="Main Align" propKey="mainAxisAlignment" type="select" options={[{label:'Start', value:'start'},{label:'Center', value:'center'},{label:'End', value:'end'},{label:'Space Between', value:'spaceBetween'}]} value={props.mainAxisAlignment} onChange={handlePropChange} />
+                     <PropInput label="Cross Align" propKey="crossAxisAlignment" type="select" options={[{label:'Start', value:'start'},{label:'Center', value:'center'},{label:'Stretch', value:'stretch'}]} value={props.crossAxisAlignment} onChange={handlePropChange} />
                   </div>
                 )}
                 {selectedNode.type === 'ListView' && (
                   <div className="grid grid-cols-2 gap-3">
-                     <InputRow label="Scroll Direction" propKey="scrollDirection" type="select" options={[{label:'Vertical', value:'vertical'},{label:'Horizontal', value:'horizontal'}]} />
-                     <InputRow label="Gap Between Items" propKey="gap" />
+                     <PropInput label="Scroll Direction" propKey="scrollDirection" type="select" options={[{label:'Vertical', value:'vertical'},{label:'Horizontal', value:'horizontal'}]} value={props.scrollDirection} onChange={handlePropChange} />
+                     <PropInput label="Gap Between Items" propKey="gap" value={props.gap} onChange={handlePropChange} />
                   </div>
                 )}
               </div>
@@ -1874,25 +1875,31 @@ const handleMove = (direction) => {
               {(selectedNode.type === 'Text' || selectedNode.type === 'Button' || selectedNode.type === 'TextInput') && (
                 <div className="border-b border-white/5 pb-6">
                   <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><Type size={14}/> Typography</h4>
-                  <InputRow label="Static Text Content" propKey={selectedNode.type==='Text' ? 'content' : selectedNode.type==='Button' ? 'label' : 'placeholder'} />
-                  <div className="grid grid-cols-2 gap-3">
-                     <InputRow label="Font Family" propKey="fontFamily" type="select" options={[{label:'Inter', value:'Inter'},{label:'Roboto', value:'Roboto'},{label:'Poppins', value:'Poppins'},{label:'Montserrat', value:'Montserrat'},{label:'Playfair', value:'Playfair Display'}]} />
-                     <InputRow label="Font Size" propKey="fontSize" />
+                  <PropInput label="Static Text Content" propKey={selectedNode.type === 'Text' ? 'content' : selectedNode.type === 'Button' ? 'label' : 'placeholder'} value={props[selectedNode.type === 'Text' ? 'content' : selectedNode.type === 'Button' ? 'label' : 'placeholder']} onChange={handlePropChange} />
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                     <PropInput label="Font Family" propKey="fontFamily" type="select" options={[{label:'Inter', value:'Inter'},{label:'Roboto', value:'Roboto'},{label:'Poppins', value:'Poppins'},{label:'Montserrat', value:'Montserrat'},{label:'Playfair', value:'Playfair Display'}]} value={props.fontFamily} onChange={handlePropChange} />
+                     <PropInput label="Font Size" propKey="fontSize" value={props.fontSize} onChange={handlePropChange} />
                   </div>
-                  <InputRow label="Text Color" propKey="color" type="color" />
+                  {/* --- NEW: ADDED ALIGNMENT DROPDOWN NEXT TO COLOR --- */}
+                  <div className="grid grid-cols-2 gap-3">
+                     <PropInput label="Text Color" propKey="color" type="color" value={props.color} onChange={handlePropChange} />
+                     {selectedNode.type === 'Text' && (
+                       <PropInput label="Alignment" propKey="textAlign" type="select" options={[{label:'Left', value:'left'},{label:'Center', value:'center'},{label:'Right', value:'right'}]} value={props.textAlign} onChange={handlePropChange} />
+                     )}
+                  </div>
                 </div>
               )}
 
               <div className="border-b border-white/5 pb-6">
                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><Layers size={14}/> Appearance</h4>
-                <InputRow label="Background Style" propKey="backgroundType" type="select" options={[{label:'Solid Color', value:'solid'},{label:'Linear Gradient', value:'gradient'}, {label: 'Theme Primary', value: 'theme.primary'}, {label: 'Theme Secondary', value: 'theme.secondary'}]} />
+                <PropInput label="Background Style" propKey="backgroundType" type="select" options={[{label:'Solid Color', value:'solid'},{label:'Linear Gradient', value:'gradient'}, {label: 'Theme Primary', value: 'theme.primary'}, {label: 'Theme Secondary', value: 'theme.secondary'}]} value={props.backgroundType} onChange={handlePropChange} />
                 {props.backgroundType === 'gradient' ? (
                   <div className="grid grid-cols-2 gap-3 p-3 bg-[#161b22] rounded-xl border border-white/5 mt-3">
-                    <InputRow label="Start Color" propKey="gradientStart" type="color" />
-                    <InputRow label="End Color" propKey="gradientEnd" type="color" />
+                    <PropInput label="Start Color" propKey="gradientStart" type="color" value={props.gradientStart} onChange={handlePropChange} />
+                    <PropInput label="End Color" propKey="gradientEnd" type="color" value={props.gradientEnd} onChange={handlePropChange} />
                   </div>
                 ) : (
-                   <InputRow label="Background Color" propKey="backgroundColor" type="color" />
+                   <PropInput label="Background Color" propKey="backgroundColor" type="color" value={props.backgroundColor} onChange={handlePropChange} />
                 )}
                 <div className="mt-4">
                    <label className="text-[9px] font-bold text-gray-500 mb-2 uppercase tracking-widest block">Border Radius (TL, TR, BL, BR)</label>
@@ -1907,7 +1914,7 @@ const handleMove = (direction) => {
 
               <div className="border-b border-transparent pb-6">
                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><BoxSelect size={14}/> Shadows</h4>
-                <InputRow label="Shadow Color" propKey="shadowColor" type="color" />
+                <PropInput label="Shadow Color" propKey="shadowColor" type="color" value={props.shadowColor} onChange={handlePropChange} />
                 <div className="grid grid-cols-4 gap-2 mt-3">
                    <div><label className="text-[8px] text-gray-500 block text-center mb-1.5 tracking-widest uppercase">Off X</label><input type="number" value={props.shadowOffsetX||'0'} onChange={e=>handlePropChange('shadowOffsetX', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg text-center focus:border-blue-500 transition-colors" /></div>
                    <div><label className="text-[8px] text-gray-500 block text-center mb-1.5 tracking-widest uppercase">Off Y</label><input type="number" value={props.shadowOffsetY||'0'} onChange={e=>handlePropChange('shadowOffsetY', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg text-center focus:border-blue-500 transition-colors" /></div>
@@ -1919,7 +1926,7 @@ const handleMove = (direction) => {
               {selectedNode.type === 'Image' && (
                 <div className="border-t border-white/5 pt-6">
                   <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><ImageIcon size={14}/> Image Source</h4>
-                  <InputRow label="Image URL" propKey="url" />
+                  <PropInput label="Image URL" propKey="url" value={props.url} onChange={handlePropChange} />
                   <button onClick={() => { setShowAssetModal(true); fetchAssets(); }} className="w-full mt-2 py-3 bg-[#161b22] border border-white/10 text-gray-300 rounded-xl text-xs font-bold hover:bg-white/10 transition-colors shadow-sm active:scale-95">
                     Browse Asset Library
                   </button>
@@ -1929,10 +1936,10 @@ const handleMove = (direction) => {
               {selectedNode.type === 'Icon' && (
                 <div className="border-t border-white/5 pt-6">
                   <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest">⭐ Icon Settings</h4>
-                  <InputRow label="Icon Name (Lucide)" propKey="iconName" />
+                  <PropInput label="Icon Name (Lucide)" propKey="iconName" value={props.iconName} onChange={handlePropChange} />
                   <div className="grid grid-cols-2 gap-3">
-                     <InputRow label="Icon Size" propKey="size" />
-                     <InputRow label="Icon Color" propKey="color" type="color" />
+                     <PropInput label="Icon Size" propKey="size" value={props.size} onChange={handlePropChange} />
+                     <PropInput label="Icon Color" propKey="color" type="color" value={props.color} onChange={handlePropChange} />
                   </div>
                 </div>
               )}
@@ -1972,7 +1979,7 @@ const handleMove = (direction) => {
               {selectedNode.type === 'ListView' ? (
                 <div className="bg-gradient-to-b from-emerald-500/10 to-transparent p-5 rounded-2xl border border-emerald-500/20 shadow-inner">
                   <h4 className="text-[10px] font-bold text-emerald-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><Database size={14}/> Live API Query</h4>
-                  <InputRow label="REST API Endpoint (GET)" propKey="apiEndpoint" placeholder="https://api.example.com/data" />
+                  <PropInput label="REST API Endpoint (GET)" propKey="apiEndpoint" placeholder="https://api.example.com/data" value={props.apiEndpoint} onChange={handlePropChange} />
                   <p className="text-[9px] text-gray-500 mb-4 leading-relaxed mt-[-8px]">If provided, this ListView will automatically fetch and loop through the JSON array response.</p>
                 </div>
               ) : (selectedNode.type === 'Text' || selectedNode.type === 'Button' || selectedNode.type === 'TextInput') ? (
@@ -2012,12 +2019,12 @@ const handleMove = (direction) => {
               <div className="border border-white/5 pb-6 bg-[#161b22] p-5 rounded-2xl shadow-sm">
                 <h4 className="text-[10px] font-bold text-gray-400 mb-4 flex items-center gap-2 uppercase tracking-widest">✨ Entry Animations</h4>
                 <p className="text-[9px] text-gray-500 mb-4 leading-relaxed">Triggered when the screen first loads.</p>
-                <InputRow label="Animation Effect" propKey="animationType" type="select" options={[{label:'None', value:'none'},{label:'Fade In', value:'fade'},{label:'Slide Up', value:'slideUp'},{label:'Scale Pop', value:'scale'}]} />
+                <PropInput label="Animation Effect" propKey="animationType" type="select" options={[{label:'None', value:'none'},{label:'Fade In', value:'fade'},{label:'Slide Up', value:'slideUp'},{label:'Scale Pop', value:'scale'}]} value={props.animationType} onChange={handlePropChange} />
                 
                 {props.animationType && props.animationType !== 'none' && (
                   <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-white/5">
-                    <InputRow label="Duration (s)" propKey="animationDuration" />
-                    <InputRow label="Delay (s)" propKey="animationDelay" />
+                    <PropInput label="Duration (s)" propKey="animationDuration" value={props.animationDuration} onChange={handlePropChange} />
+                    <PropInput label="Delay (s)" propKey="animationDelay" value={props.animationDelay} onChange={handlePropChange} />
                   </div>
                 )}
               </div>
