@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+export const dynamic = 'force-dynamic';
+
 // ---------------------------------------------------------------------------
 // Supabase admin client — service role key is server-only, never sent to
 // the browser. Bypasses Row Level Security so we can read all rows.
