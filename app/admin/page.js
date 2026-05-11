@@ -1,8 +1,9 @@
 "use client";
 import React, { useState } from 'react';
 import * as LucideIcons from 'lucide-react';
-
+export const dynamic = 'force-dynamic';
 export default function AdminDashboard() {
+  
   // --- Auth State ---
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passphrase, setPassphrase] = useState('');
