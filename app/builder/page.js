@@ -2209,13 +2209,13 @@ const handleMove = (direction) => {
 
 
         {isLogicModalOpen && editingLogicId && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[120] bg-black/90 backdrop-blur-xl flex items-center justify-center p-10">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[120] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-10">
             
             {/* Main Editor Canvas */}
-            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-4xl h-[85vh] bg-[#0E0F11] border border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-hidden relative shadow-purple-500/10">
+            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-4xl h-[85vh] bg-[#0E0F11] border border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-x-auto overflow-y-hidden custom-scrollbar relative shadow-purple-500/10">
               
               {/* Header */}
-              <div className="h-16 bg-[#161b22] border-b border-white/5 flex items-center justify-between px-6 shrink-0">
+              <div className="h-16 min-w-[600px] bg-[#161b22] border-b border-white/5 flex items-center justify-between px-4 md:px-6 shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.4)]">
                     <LucideIcons.Zap size={16} className="text-white" />
@@ -2229,7 +2229,7 @@ const handleMove = (direction) => {
               </div>
 
               {/* Node Area */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-10 flex flex-col items-center relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed" style={{ backgroundBlendMode: 'overlay', backgroundColor: '#050505' }}>
+              <div className="flex-1 min-w-[600px] overflow-y-auto custom-scrollbar p-4 md:p-10 flex flex-col items-center relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed" style={{ backgroundBlendMode: 'overlay', backgroundColor: '#050505' }}>
                  
                  {/* Trigger Node (Static) */}
                  <div className="w-80 bg-[#161b22] border border-white/10 rounded-2xl p-4 shadow-lg flex items-center gap-4 relative z-10">
@@ -2412,8 +2412,8 @@ const handleMove = (direction) => {
         )}
 
         {showDashboard && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[150] bg-black/80 backdrop-blur-md flex items-center justify-center p-10">
-            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="w-full max-w-5xl bg-[#0E0F11] border border-white/10 rounded-3xl shadow-2xl flex overflow-hidden shadow-blue-500/10 h-[80vh]">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[150] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 md:p-10">
+            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="w-full max-w-5xl bg-[#0E0F11] border border-white/10 rounded-3xl shadow-2xl flex overflow-x-auto overflow-y-hidden custom-scrollbar shadow-blue-500/10 h-[85vh] md:h-[80vh]">
               
               {/* DASHBOARD SIDEBAR */}
               <div className="w-64 bg-[#161b22] border-r border-white/5 flex flex-col p-6 shrink-0">
@@ -2445,8 +2445,8 @@ const handleMove = (direction) => {
                  </button>
               </div>
 
-              {/* DASHBOARD CONTENT AREA */}
-              <div className="flex-1 overflow-y-auto bg-[#050505] p-8 custom-scrollbar bg-[url('[https://www.transparenttextures.com/patterns/cubes.png](https://www.transparenttextures.com/patterns/cubes.png)')] bg-fixed" style={{ backgroundBlendMode: 'overlay' }}>
+             {/* DASHBOARD CONTENT AREA */}
+              <div className="flex-1 min-w-[700px] overflow-y-auto bg-[#050505] p-4 md:p-8 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed" style={{ backgroundBlendMode: 'overlay' }}>
                  
                  {/* TAB 1: CI/CD DEPLOYMENTS (Your existing code) */}
                  {dashboardTab === 'deployments' && (
@@ -2625,7 +2625,7 @@ const handleMove = (direction) => {
                  
                  <div>
                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 block">Starting Template</label>
-                   <div className="grid grid-cols-3 gap-4 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
+                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[50vh] md:max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
                      {[
                        { id: 'blank', icon: 'File', name: 'Blank Canvas', desc: 'Start from scratch' },
                        { id: 'appbar', icon: 'PanelTop', name: 'With App Bar', desc: 'Standard header navigation' },
