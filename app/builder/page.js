@@ -411,6 +411,21 @@ const ClientDashboard = ({ schema }) => {
   );
 };
 
+// Defined at module scope so React doesn't remount it on every Home render.
+// Previously defined inside Home, which caused unnecessary unmount/remount cycles.
+const SyntaxHighlightedCode = ({ codeStr, selectedType }) => {
+  if (!selectedType) return <pre className="h-full text-[12px] font-mono text-gray-400 overflow-y-auto whitespace-pre-wrap hide-scrollbar p-4">{codeStr}</pre>;
+  const flutterMap = { 'Container': 'Container(', 'Card': 'Card(', 'Padding': 'Padding(', 'Center': 'Center(', 'SizedBox': 'SizedBox(', 'Divider': 'Divider(', 'Text': 'Text(', 'Button': 'ElevatedButton(', 'TextInput': 'TextField(', 'Image': 'Image.network(', 'Icon': 'Icon(', 'Shape': 'Container(', 'Row': 'Row(', 'Column': 'Column(', 'Stack': 'Stack(', 'ListView': 'ListView.builder(' };
+  const keyword = flutterMap[selectedType];
+  if (!keyword) return <pre className="h-full text-[12px] font-mono text-gray-400 overflow-y-auto whitespace-pre-wrap hide-scrollbar p-4">{codeStr}</pre>;
+  const parts = codeStr.split(new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'g'));
+  return (
+    <pre className="h-full text-[12px] font-mono text-gray-400 overflow-y-auto whitespace-pre-wrap hide-scrollbar p-4">
+      {parts.map((part, i) => part === keyword ? <span key={i} className="bg-blue-500/20 text-blue-400 rounded px-1">{part}</span> : part )}
+    </pre>
+  );
+};
+
 export default function Home() {
   // 1. STRICT INITIALIZATION: Force the root to be a Flexbox Column
   const initialPages = dummySchema?.pages?.length > 0 ? dummySchema.pages : [{
@@ -489,9 +504,9 @@ export default function Home() {
     { role: 'ai', text: "Hi! I'm your AppForge AI Engineer. Select an element or tell me what you'd like to build!" }
   ]);
   const [chatInput, setChatInput] = useState('');
-  const [elementPrompt, setElementPrompt] = useState(''); // <--- BUG 1 FIXED HERE
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [isEditingElement, setIsEditingElement] = useState(false);
+  const [elementPrompt, setElementPrompt] = useState(''); // FIX: was missing, caused ReferenceError in handleAiElementEdit
 
   const [currentPageId, setCurrentPageId] = useState(schema.app.initialPage || schema.pages[0].id);
   const [selectedId, setSelectedId] = useState(null);
@@ -1398,49 +1413,10 @@ const handleMove = (direction) => {
 
       if (!profileData?.is_premium) {
         setIsExporting(false);
-        if (upgrade) handleCheckout();
+        handleCheckout(); // FIX: 'upgrade' was undefined; just call handleCheckout directly
         return;
       }
 
-      const handleDeploy = async () => {
-    if (!user || !dbProjectId) return alert("Please log in and Save your project before building.");
-
-    setIsBuilding(true); // Temporarily lock the button while checking database
-
-    try {
-      // 1. Verify premium status on the USER'S PROFILE
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('is_premium')
-        .eq('id', user.id)
-        .single();
-
-      // 2. If they are NOT premium, trigger the paywall!
-      if (!profileData?.is_premium) {
-        setIsBuilding(false);
-        if (upgrade) handleCheckout();
-        return;
-      }
-
-      // 3. User is Premium! Proceed with the build dashboard.
-      setShowDashboard(true);
-      setBuildLogs(['Initializing AppForge Cloud Compiler...', 'Parsing JSON Schema to Dart...']);
-      
-      // Simulate realistic build steps in the terminal
-      setTimeout(() => setBuildLogs(prev => [...prev, 'Resolving Flutter dependencies (flutter pub get)...']), 1500);
-      setTimeout(() => setBuildLogs(prev => [...prev, 'Compiling native Android binaries (assembleRelease)...']), 3500);
-      setTimeout(() => setBuildLogs(prev => [...prev, 'Applying ProGuard rules and shrinking APK...']), 6000);
-
-      // Trigger the actual build polling function
-      startActualCloudBuild(dbProjectId);
-
-    } catch (err) {
-      console.error(err);
-      alert("Failed to verify account status.");
-      setIsBuilding(false);
-    }
-  };
-      
       // Proceed with ZIP export...
 
       // 2. If premium, proceed with the existing export logic
@@ -1688,65 +1664,11 @@ const handleMove = (direction) => {
 
 
 
-  const SyntaxHighlightedCode = ({ codeStr, selectedType }) => {
-    if (!selectedType) return <pre className="h-full text-[12px] font-mono text-gray-400 overflow-y-auto whitespace-pre-wrap hide-scrollbar p-4">{codeStr}</pre>;
-    const flutterMap = { 'Container': 'Container(', 'Card': 'Card(', 'Padding': 'Padding(', 'Center': 'Center(', 'SizedBox': 'SizedBox(', 'Divider': 'Divider(', 'Text': 'Text(', 'Button': 'ElevatedButton(', 'TextInput': 'TextField(', 'Image': 'Image.network(', 'Icon': 'Icon(', 'Shape': 'Container(', 'Row': 'Row(', 'Column': 'Column(', 'Stack': 'Stack(', 'ListView': 'ListView.builder(' };
-    const keyword = flutterMap[selectedType];
-    if (!keyword) return <pre className="h-full text-[12px] font-mono text-gray-400 overflow-y-auto whitespace-pre-wrap hide-scrollbar p-4">{codeStr}</pre>;
-    const parts = codeStr.split(new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'g'));
-    return (
-      <pre className="h-full text-[12px] font-mono text-gray-400 overflow-y-auto whitespace-pre-wrap hide-scrollbar p-4">
-        {parts.map((part, i) => part === keyword ? <span key={i} className="bg-blue-500/20 text-blue-400 rounded px-1">{part}</span> : part )}
-      </pre>
-    );
-  };
+  // SyntaxHighlightedCode is defined at module scope above Home.
 
-  {/* --- NEW: AI MODEL CONFIGURATION --- */}
-          <div className="bg-[#0E0F11] border border-white/10 p-4 rounded-2xl shadow-sm mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <LucideIcons.Cpu size={16} className="text-gray-400" />
-                <h3 className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">AI Engine</h3>
-              </div>
-              <span className="text-[9px] bg-white/5 border border-white/10 text-gray-500 px-2 py-0.5 rounded font-mono">BYOK Supported</span>
-            </div>
-            
-            <div className="space-y-3">
-              <select 
-                value={aiProvider} 
-                onChange={(e) => setAiProvider(e.target.value)} 
-                className="w-full bg-[#161b22] border border-white/10 p-2.5 rounded-xl text-xs text-white outline-none focus:border-blue-500/50 cursor-pointer"
-              >
-                <option value="gemini-default">Google Gemini 1.5 Pro (Free Tier)</option>
-                <option value="deepseek">DeepSeek V3 (BYOK)</option>
-                <option value="claude-3-5">Anthropic Claude 3.5 Sonnet (Premium)</option>
-                <option value="gpt-4o">OpenAI GPT-4o (Premium)</option>
-              </select>
-
-              {aiProvider !== 'gemini-default' && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="pt-1">
-                  <input 
-                    type="password" 
-                    value={customApiKey}
-                    onChange={(e) => setCustomApiKey(e.target.value)}
-                    placeholder={`Paste your ${aiProvider.includes('claude') ? 'Anthropic' : 'OpenAI'} API Key...`} 
-                    className="w-full bg-[#161b22] border border-red-500/30 p-2.5 rounded-xl text-xs text-white placeholder:text-gray-600 outline-none focus:border-red-500/80 transition-colors"
-                  />
-                  <input 
-                              type="password" 
-                              value={customApiKey}
-                              onChange={(e) => setCustomApiKey(e.target.value)}
-                              placeholder={`Paste ${aiProvider.includes('claude') ? 'Anthropic' : aiProvider === 'deepseek' ? 'DeepSeek' : 'OpenAI'} API Key...`} 
-                              className="w-full bg-[#050505] border border-white/10 mt-1.5 px-3 py-2 rounded-lg text-[10px] text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 transition-colors"
-                            />
-                  <p className="text-[9px] text-gray-500 mt-1.5 ml-1 flex items-center gap-1">
-                    <LucideIcons.Lock size={10} /> Your key is stored locally and never saved to our database.
-                  </p>
-                </motion.div>
-              )}
-            </div>
-          </div>
-          {/* --- END AI CONFIG --- */}
+  // AI model config UI is rendered inside the AI chat panel in the right sidebar (rightTab === 'ai').
+  // The duplicate block that was here has been removed — it was floating outside any return statement
+  // and caused a syntax error that prevented the app from compiling.
 
 
   const renderPropertyGroups = () => {
@@ -2169,7 +2091,7 @@ const handleMove = (direction) => {
                   { label: "Insert Container", icon: <Plus size={16}/>, action: () => { handleDropToNode({dataTransfer:{getData:(k)=>k==='action'?'new':'Container'}}, activePage.root.id); setIsCommandOpen(false); } },
                   { label: "Toggle Grid", icon: <Grid size={16}/>, action: () => { setShowGrid(!showGrid); setIsCommandOpen(false); } },
                   { label: "Save Project", icon: <Save size={16}/>, action: () => { handleSaveProject(); setIsCommandOpen(false); } },
-                  { label: "New Screen", icon: <Zap size={16}/>, action: () => { handleAddPage(); setIsCommandOpen(false); } }
+                  { label: "New Screen", icon: <Zap size={16}/>, action: () => { handleOpenAddPage(); setIsCommandOpen(false); } }
                 ].filter(i => i.label.toLowerCase().includes(cmdSearch.toLowerCase())).map((item, idx) => (
                   <div key={idx} onClick={item.action} className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-blue-600 group cursor-pointer transition-colors mx-1">
                     <span className="text-gray-500 group-hover:text-white transition-colors">{item.icon}</span>
@@ -2691,8 +2613,8 @@ const handleMove = (direction) => {
 
       {/* AUTH OVERLAY */}
       {!user && (
-        <div className="absolute inset-0 z-[100] bg-[#0a0a0a]/90 backdrop-blur-md flex items-center justify-center">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-[#161b22] border border-white/5 p-10 rounded-3xl shadow-2xl w-96 flex flex-col items-center">
+        <div className="absolute inset-0 z-[100] bg-[#0a0a0a]/90 backdrop-blur-md flex items-center justify-center p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-[#161b22] border border-white/5 p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-sm flex flex-col items-center mx-auto">
             <div className="w-12 h-12 bg-blue-600 rounded-xl mb-6 shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center">
                <Zap size={20} fill="white" className="text-white"/>
             </div>
@@ -2741,10 +2663,10 @@ const handleMove = (direction) => {
       )}
 
       {/* TOP NAVBAR */}
-      <div className="h-14 bg-[#0a0a0a] border-b border-white/10 flex items-center justify-between px-4 shrink-0 z-20 overflow-x-auto hide-scrollbar">
+      <div className="h-14 bg-[#0a0a0a] border-b border-white/10 flex items-center justify-between px-4 shrink-0 z-20 overflow-x-auto hide-scrollbar gap-8">
         
         {/* Left Side: Logo & Command */}
-        <div className="flex items-center gap-6 shrink-0">
+        <div className="flex items-center gap-6 shrink-0 min-w-max">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.4)]">
                <Zap size={14} fill="white" className="text-white"/>
@@ -2757,7 +2679,7 @@ const handleMove = (direction) => {
         </div>
         
         {/* Right Side: Tools & Actions */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 min-w-max pr-4">
           <button onClick={() => setShowGrid(!showGrid)} className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold rounded-lg transition-all ${showGrid ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20' : 'bg-transparent text-gray-500 hover:bg-white/5 hover:text-white border border-transparent'}`}>
              <Grid size={12}/> Grid
           </button>
@@ -2819,7 +2741,7 @@ const handleMove = (direction) => {
             ) : (
               
               /* Render the complex AppForge Builder if in Admin Mode */
-              <div className="flex-1 flex overflow-hidden">
+              <div className="flex-1 flex overflow-x-auto overflow-y-hidden custom-scrollbar relative">
               
         {/* LEFT SIDEBAR */}
         {/* NEW: VERTICAL ICON RAIL */}
@@ -3420,8 +3342,9 @@ const handleMove = (direction) => {
                       <h3 className="text-[10px] font-bold text-orange-400 uppercase tracking-widest">🌐 API Connections</h3>
                       <button onClick={() => {
                         const newEndpoints = [...(schema.apiEndpoints || []), { id: `api_${Date.now()}`, name: 'New API', method: 'GET', url: '' }];
-                        handleGlobalChange('apiEndpoints', '', newEndpoints); // Note: We pass '' for key since we overwrite the whole array via a custom patch or use a direct schema update
-                        setSchema(prev => ({ ...prev, apiEndpoints: newEndpoints }));
+                        // FIX: handleGlobalChange('apiEndpoints','',val) set schema.apiEndpoints['']= val, not schema.apiEndpoints.
+                        // Use commitHistory directly so the change is undoable.
+                        commitHistory({ ...schema, apiEndpoints: newEndpoints });
                       }} className="bg-orange-500/10 text-orange-400 border border-orange-500/20 text-[9px] font-bold px-2.5 py-1.5 rounded-lg hover:bg-orange-500/20 transition-colors">+ Add API</button>
                     </div>
                     <p className="text-[10px] text-gray-500 mb-5 leading-relaxed">Define global REST APIs to bind to ListViews and Action Chains.</p>
@@ -3471,7 +3394,7 @@ const handleMove = (direction) => {
 
         {/* CANVAS AREA WITH STORYBOARD CONTROLS */}
         <div 
-          className="flex-1 w-full relative overflow-hidden flex flex-col items-center cursor-crosshair bg-[#050505] shadow-inner"
+          className="flex-1 min-w-[600px] relative overflow-hidden flex flex-col items-center cursor-crosshair bg-[#050505] shadow-inner"
           onWheel={handleWheel} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
           onContextMenu={(e) => { if(viewMode === 'storyboard') e.preventDefault(); }}
           onClick={() => { if(viewMode === 'single') { setSelectedId(null); setRightTab('inspector'); setIsRightPanelOpen(true); } }}
