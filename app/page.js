@@ -15,7 +15,7 @@ import {
   Globe,
   Type,
   Image as ImageIcon,
-  Pointer, // Fixed Lucide Icon
+  Pointer,
   List,
   PlaySquare,
   Calendar,
@@ -82,40 +82,50 @@ export default function LandingPage() {
         transition={{ duration: 0.8, ease: appleEase }}
         className="fixed top-0 w-full z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5"
       >
-        <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <SinCritLogo />
-            <span className="font-semibold text-lg tracking-tight text-white">SinCrit</span>
+            <span className="font-semibold text-lg tracking-tight text-white hidden sm:block">SinCrit</span>
           </div>
+          
           <div className="hidden md:flex items-center gap-8 text-xs font-medium text-[#86868b]">
             <a href="#features" className="hover:text-white transition-colors duration-300">Architecture</a>
             <a href="#engine" className="hover:text-white transition-colors duration-300">Flutter Engine</a>
             <a href="#pricing" className="hover:text-white transition-colors duration-300">Enterprise</a>
           </div>
-          <Link href="/builder">
-            <button className="bg-[#f5f5f7] text-black px-4 py-1.5 rounded-full text-xs font-semibold hover:bg-white hover:scale-105 transition-all duration-300">
-              Start for Free
-            </button>
-          </Link>
+          
+          {/* NEW: LOGIN AND SIGNUP BUTTONS */}
+          <div className="flex items-center gap-4">
+            <Link href="/builder">
+              <span className="text-xs font-semibold text-[#86868b] hover:text-white transition-colors duration-300 cursor-pointer">
+                Log In
+              </span>
+            </Link>
+            <Link href="/builder">
+              <button className="bg-[#f5f5f7] text-black px-4 py-1.5 rounded-full text-xs font-semibold hover:bg-white hover:scale-105 transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                Sign Up Free
+              </button>
+            </Link>
+          </div>
         </div>
       </motion.nav>
 
       {/* HERO SECTION */}
-      <div className="relative pt-40 pb-16 lg:pt-48 lg:pb-24 flex flex-col items-center text-center">
+      <div className="relative pt-40 pb-16 lg:pt-48 lg:pb-24 flex flex-col items-center text-center px-4">
         {/* Ambient Pulsing Background Glow */}
         <motion.div 
           animate={{ scale: [1, 1.1, 1], opacity: [0.12, 0.18, 0.12] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[#02569B] blur-[150px] rounded-full pointer-events-none"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] sm:w-[800px] h-[400px] sm:h-[600px] bg-[#02569B] blur-[150px] rounded-full pointer-events-none"
         />
 
         <motion.div 
           variants={staggerContainer}
           initial="hidden"
           animate="show"
-          className="max-w-4xl mx-auto px-6 relative z-10"
+          className="max-w-4xl mx-auto relative z-10"
         >
-          <motion.div variants={slideUp} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1c1c1e] border border-white/5 text-[11px] font-medium mb-8 tracking-wide text-[#86868b]">
+          <motion.div variants={slideUp} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1c1c1e] border border-white/5 text-[10px] sm:text-[11px] font-medium mb-8 tracking-wide text-[#86868b]">
             <motion.span 
               animate={{ opacity: [1, 0.3, 1] }} 
               transition={{ duration: 2, repeat: Infinity }} 
@@ -124,20 +134,20 @@ export default function LandingPage() {
             SinCrit Dart Engine 2.0 is Live
           </motion.div>
           
-          <motion.h1 variants={slideUp} className="text-5xl lg:text-7xl font-bold tracking-tighter mb-6 text-white leading-tight">
+          <motion.h1 variants={slideUp} className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tighter mb-6 text-white leading-tight">
             Pro UI.<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#54C5F8] to-[#02569B]">
               Native Flutter Code.
             </span>
           </motion.h1>
           
-          <motion.p variants={slideUp} className="text-lg lg:text-xl text-[#86868b] max-w-2xl mx-auto mb-10 font-medium tracking-tight">
+          <motion.p variants={slideUp} className="text-base sm:text-lg lg:text-xl text-[#86868b] max-w-2xl mx-auto mb-10 font-medium tracking-tight">
             The first visual engineering canvas that compiles pure, widget-based Dart code and deployable Android APKs directly from the browser.
           </motion.p>
           
           <motion.div variants={slideUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/builder">
-              <button className="h-12 px-6 bg-[#f5f5f7] hover:bg-white text-black hover:scale-[1.02] active:scale-[0.98] rounded-full font-semibold text-[15px] flex items-center gap-2 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+              <button className="h-12 w-full sm:w-auto px-8 bg-[#f5f5f7] hover:bg-white text-black hover:scale-[1.02] active:scale-[0.98] rounded-full font-semibold text-[15px] flex items-center justify-center gap-2 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]">
                 Start Engineering Free <ChevronRight size={16} />
               </button>
             </Link>
@@ -152,10 +162,10 @@ export default function LandingPage() {
         transition={{ duration: 1, delay: 0.6 }}
         className="w-full border-y border-white/5 bg-[#0a0a0a] py-8 mb-24 overflow-hidden relative"
       >
-        <div className="absolute left-0 top-0 w-32 h-full bg-gradient-to-r from-[#0a0a0a] to-transparent z-10 pointer-events-none"></div>
-        <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-[#0a0a0a] to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute left-0 top-0 w-16 sm:w-32 h-full bg-gradient-to-r from-[#0a0a0a] to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute right-0 top-0 w-16 sm:w-32 h-full bg-gradient-to-l from-[#0a0a0a] to-transparent z-10 pointer-events-none"></div>
         
-        <p className="text-center text-[11px] font-bold tracking-[0.2em] text-[#86868b] uppercase mb-8">
+        <p className="text-center text-[9px] sm:text-[11px] font-bold tracking-[0.2em] text-[#86868b] uppercase mb-8">
           Trusted by Developers At
         </p>
         
@@ -164,55 +174,56 @@ export default function LandingPage() {
           {[...Array(2)].map((_, i) => (
             <motion.div 
               key={i}
-              className="flex items-center gap-16 lg:gap-32 px-8 min-w-full justify-around opacity-50 grayscale hover:grayscale-0 transition-all duration-500"
+              className="flex items-center gap-12 sm:gap-16 lg:gap-32 px-8 min-w-full justify-around opacity-50 grayscale hover:grayscale-0 transition-all duration-500"
               animate={{ x: ["0%", "-100%"] }}
               transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
             >
-              <span className="font-bold text-xl tracking-tighter hover:text-white cursor-pointer">CapitalOne</span>
-              <span className="font-serif italic text-2xl font-bold hover:text-white cursor-pointer">Wendy's</span>
-              <span className="font-black text-2xl tracking-widest hover:text-white cursor-pointer">IBM</span>
-              <span className="font-bold text-2xl flex items-center gap-1 hover:text-white cursor-pointer"><LayoutTemplate size={24}/> Microsoft</span>
-              <span className="font-bold text-xl tracking-tight hover:text-white cursor-pointer">amazon</span>
+              <span className="font-bold text-lg sm:text-xl tracking-tighter hover:text-white cursor-pointer">CapitalOne</span>
+              <span className="font-serif italic text-xl sm:text-2xl font-bold hover:text-white cursor-pointer">Wendy's</span>
+              <span className="font-black text-xl sm:text-2xl tracking-widest hover:text-white cursor-pointer">IBM</span>
+              <span className="font-bold text-xl sm:text-2xl flex items-center gap-1 hover:text-white cursor-pointer"><LayoutTemplate size={20} className="sm:w-6 sm:h-6"/> Microsoft</span>
+              <span className="font-bold text-lg sm:text-xl tracking-tight hover:text-white cursor-pointer">amazon</span>
             </motion.div>
           ))}
         </div>
       </motion.div>
 
-      {/* REALISTIC IDE DASHBOARD PREVIEW - WITH ANIMATED ENTRANCE */}
+      {/* REALISTIC IDE DASHBOARD PREVIEW - MOBILE OPTIMIZED (HORIZONTAL SCROLL) */}
       <motion.div 
         variants={scaleUp}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-100px" }}
-        className="max-w-[1400px] mx-auto px-6 pb-40"
+        id="engine"
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 pb-40"
       >
-        <div className="relative rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(2,86,155,0.15)] bg-[#0f0f11] p-2 ring-1 ring-white/5 hover:shadow-[0_0_120px_rgba(2,86,155,0.25)] transition-shadow duration-700">
+        <div className="relative rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(2,86,155,0.15)] sm:shadow-[0_0_80px_rgba(2,86,155,0.15)] bg-[#0f0f11] p-1.5 sm:p-2 ring-1 ring-white/5 transition-shadow duration-700">
            
-           <div className="rounded-[1.5rem] overflow-hidden bg-[#161618] border border-white/5 flex flex-col h-[700px]">
+           <div className="rounded-[1rem] sm:rounded-[1.5rem] overflow-hidden bg-[#161618] border border-white/5 flex flex-col h-[600px] sm:h-[700px]">
              
              {/* IDE Header */}
-             <div className="h-14 bg-[#111112] border-b border-white/5 flex items-center justify-between px-4">
-               <div className="flex gap-2">
+             <div className="h-14 bg-[#111112] border-b border-white/5 flex items-center justify-between px-4 shrink-0 overflow-x-auto hide-scrollbar gap-4">
+               <div className="flex gap-2 shrink-0">
                  <div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
                  <div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
                  <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
                </div>
-               <div className="flex items-center gap-2 px-4 py-1.5 bg-[#1c1c1e] rounded-md text-[11px] text-[#86868b] font-mono tracking-tight border border-white/5">
+               <div className="flex items-center gap-2 px-4 py-1.5 bg-[#1c1c1e] rounded-md text-[11px] text-[#86868b] font-mono tracking-tight border border-white/5 shrink-0">
                  <Globe size={12} className="text-[#54C5F8]" />
                  project-alpha.sincrit.dev
                </div>
-               <div className="flex gap-2">
+               <div className="flex gap-2 shrink-0">
                  <button className="px-4 py-1.5 bg-[#02569B] hover:bg-[#0369bd] transition-colors text-white text-[11px] font-semibold rounded uppercase tracking-wider flex items-center gap-1">
                     <PlaySquare size={12} /> Run
                  </button>
                </div>
              </div>
 
-             {/* IDE Body */}
-             <div className="flex flex-1 overflow-hidden">
-                
-                {/* LEFT PANEL: Add Widgets (Animated Population) */}
-                <div className="w-72 bg-[#161618] border-r border-white/5 p-4 flex flex-col">
+             {/* IDE Body - NEW: Horizontal Scroll for Mobile */}
+             <div className="flex flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar snap-x snap-mandatory">
+               
+                {/* LEFT PANEL: Add Widgets */}
+                <div className="w-[260px] sm:w-72 bg-[#161618] border-r border-white/5 p-4 flex flex-col shrink-0 snap-start">
                   <div className="flex items-center justify-between mb-4 text-[#e0e0e0]">
                     <h3 className="text-sm font-semibold flex items-center gap-2"><Layers size={16}/> Add Widgets</h3>
                     <span className="text-gray-500 hover:text-white cursor-pointer transition-colors">✕</span>
@@ -259,26 +270,26 @@ export default function LandingPage() {
                 </div>
 
                 {/* CENTER PANEL: Canvas Workspace */}
-                <div className="flex-1 bg-[#0a0a0b] flex items-center justify-center relative overflow-hidden bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat opacity-90">
+                <div className="flex-1 min-w-[320px] sm:min-w-[400px] bg-[#0a0a0b] flex items-center justify-center relative overflow-hidden bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat opacity-90 shrink-0 snap-center">
                    
-                   {/* Phone Canvas Mockup sliding up smoothly */}
+                   {/* Phone Canvas Mockup */}
                    <motion.div 
                       initial={{ y: 100, opacity: 0 }}
                       whileInView={{ y: 0, opacity: 1 }}
                       viewport={{ once: true }}
                       transition={{ duration: 1.2, delay: 0.3, ease: appleEase }}
-                      className="w-[320px] h-[650px] bg-white rounded-[2.5rem] border-[8px] border-[#1c1c1e] shadow-2xl overflow-hidden relative flex flex-col hover:scale-[1.02] transition-transform duration-500"
+                      className="w-[280px] sm:w-[320px] h-[550px] sm:h-[650px] bg-white rounded-[2rem] sm:rounded-[2.5rem] border-[6px] sm:border-[8px] border-[#1c1c1e] shadow-2xl overflow-hidden relative flex flex-col hover:scale-[1.02] transition-transform duration-500"
                     >
-                      <div className="h-20 bg-[#54C5F8] p-6 flex flex-col justify-end">
-                        <h2 className="text-white font-bold text-xl">Profile Setup</h2>
+                      <div className="h-16 sm:h-20 bg-[#54C5F8] p-5 sm:p-6 flex flex-col justify-end">
+                        <h2 className="text-white font-bold text-lg sm:text-xl">Profile Setup</h2>
                       </div>
-                      <div className="flex-1 p-6 flex flex-col gap-4">
-                        <motion.div whileHover={{ scale: 1.05 }} className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4 border-2 border-dashed border-[#54C5F8] flex items-center justify-center text-gray-400 cursor-pointer transition-colors hover:bg-blue-50">
+                      <div className="flex-1 p-5 sm:p-6 flex flex-col gap-4">
+                        <motion.div whileHover={{ scale: 1.05 }} className="w-16 sm:w-20 h-16 sm:h-20 bg-gray-200 rounded-full mx-auto mb-4 border-2 border-dashed border-[#54C5F8] flex items-center justify-center text-gray-400 cursor-pointer transition-colors hover:bg-blue-50">
                           <ImageIcon size={24}/>
                         </motion.div>
-                        <div className="h-12 bg-gray-100 rounded-lg w-full px-4 flex items-center text-sm text-gray-400">Jasmin Moore</div>
-                        <div className="h-12 bg-gray-100 rounded-lg w-full px-4 flex items-center text-sm text-gray-400 border border-red-300">Email Address (Required)</div>
-                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="mt-auto h-12 bg-[#02569B] rounded-full w-full flex items-center justify-center text-white font-bold shadow-lg shadow-[#02569B]/30">
+                        <div className="h-10 sm:h-12 bg-gray-100 rounded-lg w-full px-4 flex items-center text-xs sm:text-sm text-gray-400">Jasmin Moore</div>
+                        <div className="h-10 sm:h-12 bg-gray-100 rounded-lg w-full px-4 flex items-center text-xs sm:text-sm text-gray-400 border border-red-300">Email Address (Required)</div>
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="mt-auto h-10 sm:h-12 bg-[#02569B] rounded-full w-full flex items-center justify-center text-white text-sm sm:text-base font-bold shadow-lg shadow-[#02569B]/30">
                           Save Profile
                         </motion.button>
                       </div>
@@ -286,7 +297,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* RIGHT PANEL: Debug Panel */}
-                <div className="w-80 bg-[#1e1e20] border-l border-white/5 p-4 flex flex-col relative overflow-hidden">
+                <div className="w-[280px] sm:w-80 bg-[#1e1e20] border-l border-white/5 p-4 flex flex-col relative overflow-hidden shrink-0 snap-end">
                   <div className="flex items-center justify-between mb-6 text-white">
                     <h3 className="text-sm font-semibold flex items-center gap-2">
                       <Settings2 size={16}/> Debug Panel <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded tracking-widest text-[#54C5F8]">LIVE</span>
@@ -314,7 +325,7 @@ export default function LandingPage() {
                     <div className="pl-4 pr-2 flex flex-col gap-2 mt-2">
                       <div className="flex justify-between items-center bg-[#111112] border border-white/10 rounded px-3 py-2.5">
                         <span className="text-[11px] text-gray-400 flex items-center gap-1.5"><Database size={12}/> reference</span>
-                        <span className="text-[11px] text-white font-mono">pPID4H8iSwSrhPkv...</span>
+                        <span className="text-[11px] text-white font-mono truncate max-w-[100px]">pPID4H8iSw...</span>
                       </div>
                       <motion.div 
                         animate={{ borderColor: ['rgba(239,68,68,0.3)', 'rgba(239,68,68,0.8)', 'rgba(239,68,68,0.3)'] }}
@@ -336,19 +347,19 @@ export default function LandingPage() {
       </motion.div>
 
       {/* APPLE-STYLE BENTO BOX FEATURES - STAGGERED SCROLL REVEAL */}
-      <div id="features" className="bg-[#050505] py-32 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6">
+      <div id="features" className="bg-[#050505] py-24 sm:py-32 border-t border-white/5 px-4">
+        <div className="max-w-7xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: appleEase }}
-            className="text-center mb-24"
+            className="text-center mb-16 sm:mb-24"
           >
-            <h2 className="text-4xl lg:text-6xl font-bold mb-6 tracking-tighter text-white">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 tracking-tighter text-white">
               A Native Ecosystem.
             </h2>
-            <p className="text-[#86868b] text-xl max-w-2xl mx-auto tracking-tight">
+            <p className="text-[#86868b] text-lg sm:text-xl max-w-2xl mx-auto tracking-tight">
               Built on the fundamentals of the Flutter architecture. Compose stateless and stateful widgets visually without sacrificing structure.
             </p>
           </motion.div>
@@ -358,7 +369,7 @@ export default function LandingPage() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-100px" }}
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"
           >
             <BentoCard icon={<Layers size={28} className="text-white" />} title="Widget-Driven Canvas" desc="Drop Columns, Rows, and Stacks. The engine builds a true Flutter Widget Tree natively in the background." colSpan="lg:col-span-2" />
             <BentoCard icon={<Code2 size={28} className="text-[#54C5F8]" />} title="Pure Dart Generation" desc="Export clean, structured, and highly readable Dart code instantly." />
@@ -370,11 +381,11 @@ export default function LandingPage() {
       </div>
 
       {/* PRICING */}
-      <div id="pricing" className="py-40 bg-[#050505] relative border-t border-white/5">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl lg:text-6xl font-bold mb-6 tracking-tighter">Scale with Confidence.</h2>
-            <p className="text-[#86868b] text-xl tracking-tight">Design freely. Only pay for the infrastructure to compile and host your builds.</p>
+      <div id="pricing" className="py-24 sm:py-40 bg-[#050505] relative border-t border-white/5 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16 sm:mb-20">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 tracking-tighter">Scale with Confidence.</h2>
+            <p className="text-[#86868b] text-lg sm:text-xl tracking-tight max-w-xl mx-auto">Design freely. Only pay for the infrastructure to compile and host your builds.</p>
           </div>
 
           <motion.div 
@@ -385,44 +396,48 @@ export default function LandingPage() {
             className="grid md:grid-cols-2 gap-6 items-center"
           >
             {/* Community Tier */}
-            <motion.div variants={slideUp} className="bg-[#111112] rounded-[32px] p-10 lg:p-12 border border-white/5 hover:border-white/10 transition-colors">
+            <motion.div variants={slideUp} className="bg-[#111112] rounded-[2rem] sm:rounded-[32px] p-8 sm:p-10 lg:p-12 border border-white/5 hover:border-white/10 transition-colors">
               <h3 className="text-2xl font-semibold text-white mb-2 tracking-tight">Community</h3>
               <p className="text-[#86868b] text-sm mb-6">For indie developers and designers.</p>
-              <div className="text-5xl font-bold tracking-tighter mb-8 text-white">$0 <span className="text-lg text-[#86868b] font-medium tracking-normal">/ forever</span></div>
+              <div className="text-4xl sm:text-5xl font-bold tracking-tighter mb-8 text-white">$0 <span className="text-base sm:text-lg text-[#86868b] font-medium tracking-normal">/ forever</span></div>
               <ul className="space-y-4 mb-10">
                 <PricingFeature text="Infinite Visual Canvas" />
                 <PricingFeature text="Export Pure Dart Code" />
                 <PricingFeature text="Standard Supabase Connect" />
                 <PricingFeature text="Community Support" />
               </ul>
-              <button className="w-full py-4 rounded-2xl bg-[#1c1c1e] hover:bg-[#2c2c2e] text-white font-semibold transition-colors text-[15px]">Start Engineering</button>
+              <Link href="/builder">
+                <button className="w-full py-4 rounded-2xl bg-[#1c1c1e] hover:bg-[#2c2c2e] text-white font-semibold transition-colors text-[15px]">Start Engineering</button>
+              </Link>
             </motion.div>
 
             {/* Pro Tier */}
-            <motion.div variants={slideUp} whileHover={{ y: -8 }} className="bg-[#0f0f11] rounded-[32px] p-10 lg:p-12 border border-[#02569B]/50 shadow-[0_0_50px_rgba(2,86,155,0.1)] relative transition-all duration-500">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#02569B] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Industry Standard</div>
+            <motion.div variants={slideUp} whileHover={{ y: -8 }} className="bg-[#0f0f11] rounded-[2rem] sm:rounded-[32px] p-8 sm:p-10 lg:p-12 border border-[#02569B]/50 shadow-[0_0_50px_rgba(2,86,155,0.1)] relative transition-all duration-500 mt-4 md:mt-0">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#02569B] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest whitespace-nowrap">Industry Standard</div>
               <h3 className="text-2xl font-semibold text-white mb-2 tracking-tight">Pro Engine</h3>
               <p className="text-[#86868b] text-sm mb-6">For startups shipping production apps.</p>
-              <div className="text-5xl font-bold tracking-tighter mb-8 text-white">$49 <span className="text-lg text-[#86868b] font-medium tracking-normal">/ mo</span></div>
+              <div className="text-4xl sm:text-5xl font-bold tracking-tighter mb-8 text-white">$49 <span className="text-base sm:text-lg text-[#86868b] font-medium tracking-normal">/ mo</span></div>
               <ul className="space-y-4 mb-10">
                 <PricingFeature text="Everything in Community" />
                 <PricingFeature text="Unlimited Cloud APK Builds" />
                 <PricingFeature text="Custom CI/CD Pipelines" />
                 <PricingFeature text="Priority Enterprise Support" />
               </ul>
-              <button className="w-full py-4 rounded-2xl bg-[#f5f5f7] hover:bg-white text-black font-semibold transition-colors text-[15px] shadow-[0_0_20px_rgba(255,255,255,0.2)]">Upgrade Engine</button>
+              <Link href="/builder">
+                <button className="w-full py-4 rounded-2xl bg-[#f5f5f7] hover:bg-white text-black font-semibold transition-colors text-[15px] shadow-[0_0_20px_rgba(255,255,255,0.2)]">Upgrade Engine</button>
+              </Link>
             </motion.div>
           </motion.div>
         </div>
       </div>
       
-      <footer className="border-t border-white/5 bg-[#0a0a0a] py-12">
-        <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
-          <div className="flex items-center gap-3 mb-4 md:mb-0 opacity-80">
+      <footer className="border-t border-white/5 bg-[#0a0a0a] py-8 sm:py-12 px-4">
+        <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 opacity-80">
             <SinCritLogo />
             <span className="font-semibold tracking-tight text-white">SinCrit</span>
           </div>
-          <p className="text-xs text-[#86868b] font-medium tracking-tight">© 2026 SinCrit Inc. Visual Engineering Without Limits.</p>
+          <p className="text-[10px] sm:text-xs text-[#86868b] font-medium tracking-tight text-center">© 2026 SinCrit Inc. Visual Engineering Without Limits.</p>
         </div>
       </footer>
     </div>
@@ -434,13 +449,13 @@ const WidgetBtn = ({ icon, label, active = false }) => (
   <motion.div 
     whileHover={!active ? { scale: 1.05, backgroundColor: "#1a1a1c" } : {}}
     whileTap={{ scale: 0.95 }}
-    className={`aspect-square rounded-xl border flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors duration-200 ${
+    className={`aspect-square rounded-xl border flex flex-col items-center justify-center gap-1 sm:gap-2 cursor-pointer transition-colors duration-200 ${
     active 
     ? 'bg-[#1e1e2e] border-[#54C5F8]/30 text-[#54C5F8] shadow-lg' 
     : 'bg-[#111112] border-white/5 text-gray-400 border-white/10'
   }`}>
-    <div className="opacity-80">{icon}</div>
-    <span className="text-[10px] font-medium">{label}</span>
+    <div className="opacity-80 scale-75 sm:scale-100">{icon}</div>
+    <span className="text-[9px] sm:text-[10px] font-medium">{label}</span>
   </motion.div>
 );
 
@@ -448,20 +463,20 @@ const BentoCard = ({ icon, title, desc, colSpan = "" }) => (
   <motion.div 
     variants={slideUp}
     whileHover={{ y: -5, scale: 1.01 }}
-    className={`bg-[#0f0f11] border border-white/5 p-8 rounded-[32px] transition-all duration-300 group hover:border-white/10 hover:shadow-2xl hover:shadow-white/5 ${colSpan}`}
+    className={`bg-[#0f0f11] border border-white/5 p-6 sm:p-8 rounded-[2rem] sm:rounded-[32px] transition-all duration-300 group hover:border-white/10 hover:shadow-2xl hover:shadow-white/5 ${colSpan}`}
   >
-    <div className="w-14 h-14 bg-[#1c1c1e] rounded-2xl flex items-center justify-center mb-6 border border-white/5 shadow-inner group-hover:scale-110 transition-transform duration-500 ease-out">
+    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#1c1c1e] rounded-xl sm:rounded-2xl flex items-center justify-center mb-6 border border-white/5 shadow-inner group-hover:scale-110 transition-transform duration-500 ease-out">
       {icon}
     </div>
-    <h3 className="text-xl font-semibold mb-3 tracking-tight text-white group-hover:text-[#54C5F8] transition-colors">{title}</h3>
-    <p className="text-[#86868b] text-[15px] leading-relaxed tracking-tight group-hover:text-gray-400 transition-colors">
+    <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 tracking-tight text-white group-hover:text-[#54C5F8] transition-colors">{title}</h3>
+    <p className="text-[#86868b] text-sm sm:text-[15px] leading-relaxed tracking-tight group-hover:text-gray-400 transition-colors">
       {desc}
     </p>
   </motion.div>
 );
 
 const PricingFeature = ({ text }) => (
-  <li className="flex items-center gap-3 text-[15px] text-gray-300 tracking-tight">
-    <CheckCircle2 size={18} className="text-[#54C5F8] shrink-0" /> {text}
+  <li className="flex items-center gap-3 text-sm sm:text-[15px] text-gray-300 tracking-tight">
+    <CheckCircle2 size={16} className="text-[#54C5F8] shrink-0 sm:w-[18px] sm:h-[18px]" /> {text}
   </li>
 );
