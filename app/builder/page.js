@@ -13,6 +13,9 @@ import {
   Monitor, Smartphone, ChevronRight, PlusCircle, Play, 
   Box, X, LogOut, Layout, Type, Image as ImageIcon, BoxSelect
 } from "lucide-react";
+import { polyfill } from "mobile-drag-drop";
+import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
+import "mobile-drag-drop/default.css"; // Gives visual feedback on mobile
 
 const TEMPLATES = {
   hero: {
@@ -463,6 +466,26 @@ export default function Home() {
       children: [] // Strictly initialized array, never null
     }
   }];
+
+  useEffect(() => {
+    // 1. Activate the mobile touch polyfill
+    polyfill({
+      dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride,
+      // Require a 250ms "hold" before dragging starts. 
+      // This prevents the screen from dragging when the user is just trying to scroll the menu!
+      holdToDrag: 250, 
+    });
+
+    // 2. Prevent the phone screen from scrolling while a drag is actively happening
+    const preventScrollWhileDragging = (e) => {
+      if (document.body.classList.contains('dnd-poly-active')) {
+        e.preventDefault();
+      }
+    };
+    
+    window.addEventListener('touchmove', preventScrollWhileDragging, { passive: false });
+    return () => window.removeEventListener('touchmove', preventScrollWhileDragging);
+  }, []);
 
   const [schema, setSchema] = useState({ 
     ...dummySchema, 
