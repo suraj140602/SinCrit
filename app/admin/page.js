@@ -18,10 +18,12 @@ export default function AdminDashboard() {
   });
 
   // --- 1. Fetch Stats (GET) ---
-  const fetchLiveStats = async () => {
+ const fetchLiveStats = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/stats', {
+      // ADDED ?t=${Date.now()} and cache: 'no-store' to completely bypass Vercel's CDN
+      const response = await fetch(`/api/stats?t=${Date.now()}`, {
+        cache: 'no-store', 
         headers: { 'Authorization': `Bearer ${passphrase}` } 
       });
       const data = await response.json();
