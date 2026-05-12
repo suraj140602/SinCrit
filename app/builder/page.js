@@ -1,5 +1,5 @@
 "use client";
-import AppForgeDashboard from './AppForgeDashboard';
+import AppForgeDashboard from '../../components/AppForgeDashboard';
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Canvas from "../../components/Canvas";
