@@ -297,6 +297,8 @@ const router = useRouter();
   const [themePrompt, setThemePrompt] = useState('');
   const [isGeneratingTheme, setIsGeneratingTheme] = useState(false);
 
+  const [isGeneratingBackend, setIsGeneratingBackend] = useState(false);
+
   // NEW: Element Level AI
  // --- INTELLIGENT AI CHAT STATE ---
   const [aiChatHistory, setAiChatHistory] = useState([
@@ -556,6 +558,7 @@ const router = useRouter();
             appState: data.schema.appState || [],
             permissions: data.schema.permissions || { internet: true, camera: false, location: false, microphone: false, notifications: false },
             supabaseConfig: data.schema.supabaseConfig || { url: '', anonKey: '' }, 
+            firebaseConfig: data.schema.firebaseConfig || { apiKey: '', projectId: '', appId: '', messagingSenderId: '' }, // <-- FIXED: Restores Firebase
             appConfig: data.schema.appConfig || { enableBottomNav: false }, 
             theme: { secondary: "#EC4899", ...data.schema.theme } 
         };
@@ -1459,6 +1462,83 @@ const handleMove = (direction) => {
     }
   };
 
+  const handleAiGenerateBackend = async () => {
+    setIsGeneratingBackend(true);
+    try {
+      const collectWidgetTypes = (node, types = new Set()) => {
+        if (!node) return [...types];
+        types.add(node.type);
+        (node.children || []).forEach(c => collectWidgetTypes(c, types));
+        return [...types];
+      };
+
+      const appSummary = {
+        pages: schema.pages.map(p => ({
+          name: p.name,
+          widgets: collectWidgetTypes(p.root)
+        })),
+        existingTables: schema.appConfig?.dbTables?.map(t => t.name) || [],
+        backendProvider: schema.backendProvider || 'supabase',
+        appName: schema.app?.name || 'My App'
+      };
+
+      const response = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: `You are a database architect for a mobile app builder. Analyze this Flutter app schema and return the MINIMUM set of database tables needed.
+          Rules:
+          - Each table needs id (uuid) and created_at (timestamp) — do NOT include these in columns.
+          - Only add tables the app actually needs based on widget types (ListView = data to list, TextInput = form to save, etc.)
+          - Column types must be one of: text, numeric, boolean, uuid, timestamp
+          - Enable RLS on all tables. Tables with user data need rlsAuthOnly: true.
+          - Return ONLY valid JSON, no markdown.
+          
+          Schema: ${JSON.stringify(appSummary)}
+          
+          Return this exact format:
+          [ { "id": "tbl_unique_id", "name": "table_name", "rlsEnabled": true, "rlsAuthOnly": true, "columns": [ { "id": "col_unique_id", "name": "col_name", "type": "text" } ] } ]`,
+          provider: aiProvider,
+          apiKey: customApiKey
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      let cleanJson = data.reply.replace(/```json/g, '').replace(/```/g, '').trim();
+      const generatedTables = JSON.parse(cleanJson);
+
+      const existingNames = new Set((schema.appConfig?.dbTables || []).map(t => t.name));
+      const newTables = generatedTables.filter(t => !existingNames.has(t.name));
+
+      const updatedTables = [...(schema.appConfig?.dbTables || []), ...newTables];
+      handleGlobalChange('appConfig', 'dbTables', updatedTables);
+
+      alert(`✓ AI created ${newTables.length} new table(s): ${newTables.map(t => t.name).join(', ')}\n\nReview them in the Data tab, then click "View SQL" to deploy.`);
+    } catch (err) {
+      console.error('AI Backend Gen Error:', err);
+      alert('AI failed to generate backend. Try again or create tables manually.');
+    } finally {
+      setIsGeneratingBackend(false);
+    }
+  };
+
+  const handleOneClickDeploy = async () => {
+    const url = schema.supabaseConfig?.url;
+    const key = schema.supabaseConfig?.anonKey;
+    if (!url || !key) return alert('Enter your Supabase URL and Anon Key in the Cloud Backend section first.');
+
+    const sql = generateSupabaseSQL(schema.appConfig?.dbTables || []);
+    if (!sql || sql === '-- No tables defined') return alert('No tables to deploy. Use AI Generate or add tables manually first.');
+
+    try {
+      const encoded = encodeURIComponent(sql);
+      window.open(`${url.replace('https://', 'https://app.supabase.com/project/').replace('.supabase.co', '')}/sql?content=${encoded}`, '_blank');
+    } catch (err) {
+      alert('Could not open Supabase. Copy the SQL manually from "View SQL".');
+    }
+  };
 
   const handleRunAiAudit = async () => {
     setIsAiAuditing(true);
@@ -1934,11 +2014,26 @@ const handleMove = (direction) => {
            {inspectorTab === 'backend' && (
              <div className="space-y-6 animate-in fade-in duration-200">
                {selectedNode.type === 'ListView' ? (
-                 <div className="bg-gradient-to-b from-emerald-500/10 to-transparent p-5 rounded-2xl border border-emerald-500/20 shadow-inner">
-                   <h4 className="text-[10px] font-bold text-emerald-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Database size={14}/> Live API Query</h4>
-                   <PropInput label="REST API Endpoint (GET)" propKey="apiEndpoint" placeholder="https://api.example.com/data" value={props.apiEndpoint} onChange={handlePropChange} />
-                   <p className="text-[9px] text-gray-500 mb-4 leading-relaxed mt-[-8px]">If provided, this ListView will automatically fetch and loop through the JSON array response.</p>
-                 </div>
+                <div className="bg-gradient-to-b from-emerald-500/10 to-transparent p-5 rounded-2xl border border-emerald-500/20 shadow-inner">
+                  <h4 className="text-[10px] font-bold text-emerald-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Database size={14}/> Live API Query</h4>
+                  <div className="flex flex-col gap-2 mb-4">
+                     <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Live API Source</label>
+                     <select
+                       value={props.apiEndpointId || ''}
+                       onChange={(e) => handlePropChange('apiEndpointId', e.target.value)}
+                       className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#0E0F11] text-gray-200 outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                     >
+                       <option value="">None (static content)</option>
+                       {(schema.apiEndpoints || []).map(ep => (
+                         <option key={ep.id} value={ep.id}>{ep.name} — {ep.method} {ep.url.slice(0, 40)}</option>
+                       ))}
+                     </select>
+                     {(schema.apiEndpoints || []).length === 0 && (
+                        <div className="text-[9px] text-emerald-500/70 italic mt-1">No API endpoints saved yet. Go to the API tab in the left sidebar to add one.</div>
+                     )}
+                  </div>
+                  <p className="text-[9px] text-gray-500 mb-4 leading-relaxed mt-[-8px]">If provided, this ListView will automatically fetch and loop through the JSON array response.</p>
+                </div>
                ) : (selectedNode.type === 'Text' || selectedNode.type === 'Button' || selectedNode.type === 'TextInput' || selectedNode.type === 'Image') ? (
                  <div className="bg-gradient-to-b from-indigo-500/10 to-transparent p-5 rounded-2xl border border-indigo-500/20 shadow-inner">
                    <h4 className="text-[10px] font-bold text-indigo-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Variable size={14}/> State Binding</h4>
@@ -2136,13 +2231,12 @@ const handleMove = (direction) => {
         )}
 
 
+
+          {/* ACTION FLOW EDITOR MODAL (RESTORED) */}
         {isLogicModalOpen && editingLogicId && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[120] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-10">
-            
-            {/* Main Editor Canvas */}
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-4xl h-[85vh] bg-[#0E0F11] border border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-x-auto overflow-y-hidden custom-scrollbar relative shadow-purple-500/10">
               
-              {/* Header */}
               <div className="h-16 min-w-[600px] bg-[#161b22] border-b border-white/5 flex items-center justify-between px-4 md:px-6 shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.4)]">
@@ -2150,16 +2244,13 @@ const handleMove = (direction) => {
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-white tracking-wide">Action Flow Editor</h2>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">Editing Button Logic</p>
                   </div>
                 </div>
                 <button onClick={() => { setIsLogicModalOpen(false); setEditingLogicId(null); }} className="px-4 py-2 bg-white/5 text-gray-300 rounded-lg text-xs font-bold hover:bg-white/10 transition-colors">Done</button>
               </div>
 
-              {/* Node Area */}
               <div className="flex-1 min-w-[600px] overflow-y-auto custom-scrollbar p-4 md:p-10 flex flex-col items-center relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed" style={{ backgroundBlendMode: 'overlay', backgroundColor: '#050505' }}>
                  
-                 {/* Trigger Node (Static) */}
                  <div className="w-80 bg-[#161b22] border border-white/10 rounded-2xl p-4 shadow-lg flex items-center gap-4 relative z-10">
                     <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
                        <LucideIcons.MousePointerClick size={18} className="text-blue-400" />
@@ -2170,17 +2261,13 @@ const handleMove = (direction) => {
                     </div>
                  </div>
 
-                 {/* The Chain */}
                  {(() => {
                     const activeNode = findNode(activePage?.root, editingLogicId);
                     const chain = activeNode?.props?.actionChain || [];
                     
                     return chain.map((action, idx) => (
                       <div key={action.id} className="flex flex-col items-center w-full">
-                         {/* Connecting Line */}
                          <div className="w-0.5 h-10 bg-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
-                         
-                         {/* Action Node */}
                          <div className="w-[450px] bg-[#1A1B1E] border border-purple-500/30 rounded-2xl p-5 shadow-xl relative group hover:border-purple-500/80 transition-colors">
                             <button onClick={() => {
                                const newChain = [...chain];
@@ -2207,7 +2294,6 @@ const handleMove = (direction) => {
                               </select>
                             </div>
 
-                            {/* Dynamic Parameter Inputs based on selected Action Type */}
                             <div className="bg-[#0E0F11] rounded-xl p-4 border border-white/5 space-y-3">
                               
                               {action.type === 'navigate' && (
@@ -2215,11 +2301,6 @@ const handleMove = (direction) => {
                                   <div className="flex flex-col gap-1.5"><label className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Target Page</label>
                                     <select value={action.target} onChange={(e) => { const n=[...chain]; n[idx].target=e.target.value; handlePropChange('actionChain', n); }} className="w-full bg-[#161b22] border border-white/10 p-2 rounded text-xs text-white outline-none">
                                       <option value="">Select...</option>{schema.pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                    </select>
-                                  </div>
-                                  <div className="flex flex-col gap-1.5"><label className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Transition</label>
-                                    <select value={action.transition} onChange={(e) => { const n=[...chain]; n[idx].transition=e.target.value; handlePropChange('actionChain', n); }} className="w-full bg-[#161b22] border border-white/10 p-2 rounded text-xs text-white outline-none">
-                                      <option value="default">Native Default</option><option value="slide">Slide Left (iOS)</option><option value="fade">Fade</option>
                                     </select>
                                   </div>
                                 </>
@@ -2236,15 +2317,35 @@ const handleMove = (direction) => {
                                   <div className="flex flex-col gap-1.5"><label className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Endpoint URL</label>
                                     <input type="text" value={action.url || ''} placeholder="https://api.com/v1/trigger" onChange={(e) => { const n=[...chain]; n[idx].url=e.target.value; handlePropChange('actionChain', n); }} className="w-full bg-[#161b22] border border-white/10 p-2 rounded text-xs text-white outline-none font-mono" />
                                   </div>
-                                  <div className="flex gap-2">
-                                     <div className="flex-1 flex flex-col gap-1.5"><label className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Method</label><select value={action.method} onChange={(e) => { const n=[...chain]; n[idx].method=e.target.value; handlePropChange('actionChain', n); }} className="w-full bg-[#161b22] border border-white/10 p-2 rounded text-xs text-white outline-none"><option value="GET">GET</option><option value="POST">POST</option></select></div>
-                                  </div>
+                                  <div className="flex-1 flex flex-col gap-1.5"><label className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Method</label><select value={action.method} onChange={(e) => { const n=[...chain]; n[idx].method=e.target.value; handlePropChange('actionChain', n); }} className="w-full bg-[#161b22] border border-white/10 p-2 rounded text-xs text-white outline-none"><option value="GET">GET</option><option value="POST">POST</option></select></div>
                                 </>
                               )}
                               
-                              {/* Add 'state' and 'supabase' UI here similarly as needed */}
-                              {(action.type === 'state' || action.type === 'supabase') && (
-                                 <div className="text-[10px] text-gray-500 italic px-2">Configure binding parameters...</div>
+                              {/* FIXED SUPABASE AND STATE UI */}
+                              {action.type === 'supabase' && (
+                                <>
+                                  <div className="flex flex-col gap-1.5"><label className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Target Table</label>
+                                    <select value={action.table || action.dbTable || ''} onChange={(e) => { const n=[...chain]; n[idx].table=e.target.value; handlePropChange('actionChain', n); }} className="w-full bg-[#161b22] border border-white/10 p-2 rounded text-xs text-white outline-none">
+                                      <option value="">Select table...</option>{(schema.appConfig?.dbTables || []).map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                                    </select>
+                                  </div>
+                                  <div className="flex flex-col gap-1.5"><label className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Payload (JSON or AppState)</label>
+                                    <textarea rows={3} value={action.payload || action.dbPayload || ''} placeholder={'{"title": AppState.instance.title, "user_id": userId}'} onChange={(e) => { const n=[...chain]; n[idx].payload=e.target.value; handlePropChange('actionChain', n); }} className="w-full bg-[#161b22] border border-white/10 p-2 rounded text-[10px] text-emerald-300 outline-none font-mono resize-none" />
+                                  </div>
+                                </>
+                              )}
+
+                              {action.type === 'state' && (
+                                <>
+                                  <div className="flex flex-col gap-1.5"><label className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Variable</label>
+                                    <select value={action.variable || ''} onChange={(e) => { const n=[...chain]; n[idx].variable=e.target.value; handlePropChange('actionChain', n); }} className="w-full bg-[#161b22] border border-white/10 p-2 rounded text-xs text-white outline-none">
+                                      <option value="">Select variable...</option>{(schema.appState || []).map(s => <option key={s.key} value={s.key}>{s.key} ({s.type})</option>)}
+                                    </select>
+                                  </div>
+                                  <div className="flex flex-col gap-1.5"><label className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">New Value</label>
+                                    <input type="text" value={action.value || ''} placeholder="Enter value..." onChange={(e) => { const n=[...chain]; n[idx].value=e.target.value; handlePropChange('actionChain', n); }} className="w-full bg-[#161b22] border border-white/10 p-2 rounded text-xs text-white outline-none" />
+                                  </div>
+                                </>
                               )}
 
                             </div>
@@ -2253,7 +2354,6 @@ const handleMove = (direction) => {
                     ));
                  })()}
 
-                 {/* Add Step Button */}
                  <div className="flex flex-col items-center w-full mt-2">
                     <div className="w-0.5 h-8 bg-white/10 border-l border-dashed border-gray-600"></div>
                     <button onClick={() => {
@@ -2264,8 +2364,6 @@ const handleMove = (direction) => {
                        <LucideIcons.Plus size={14} /> Add Action Step
                     </button>
                  </div>
-
-                 {/* Bottom spacing */}
                  <div className="h-20 w-full shrink-0"></div>
               </div>
             </motion.div>
@@ -2643,13 +2741,6 @@ const handleMove = (direction) => {
             <LucideIcons.LayoutDashboard size={12} /> Dashboard
           </button>
 
-          {/* --- NEW TEMPLATE STORE BUTTON --- */}
-          <button 
-            onClick={() => window.open('/store', '_blank')} 
-            className="px-3 py-1.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 text-[10px] font-bold rounded-xl hover:bg-pink-500 hover:text-white transition-all flex items-center gap-1.5 shadow-[0_0_10px_rgba(236,72,153,0.1)]"
-          >
-            <LucideIcons.Store size={12} /> Template Store
-          </button>
 
           <button onClick={() => setShowDashboard(true)} className="px-3 py-1.5 bg-[#161b22] text-gray-300 border border-white/5 text-[10px] font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-1.5">
             <LucideIcons.LayoutDashboard size={12} /> Dashboard
@@ -2755,7 +2846,14 @@ const handleMove = (direction) => {
                               <img src={url} alt="Cloud Asset" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-sm">
                                  <button onClick={() => { navigator.clipboard.writeText(url); alert('URL Copied!'); }} className="p-2 bg-white/10 hover:bg-blue-500 rounded-lg text-white transition-colors" title="Copy URL"><LucideIcons.Copy size={14}/></button>
-                                 <button onClick={() => { /* In production, add Supabase delete logic here */ alert('Delete API bound here'); }} className="p-2 bg-white/10 hover:bg-red-500 rounded-lg text-white transition-colors" title="Delete"><LucideIcons.Trash size={14}/></button>
+                                 <button onClick={async () => { 
+                                    const urlParts = url.split('/apk-builds/');
+                                    if (urlParts.length < 2) return;
+                                    const filePath = urlParts[1];
+                                    const { error } = await supabase.storage.from('apk-builds').remove([filePath]);
+                                    if (!error) setAssets(prev => prev.filter(a => a !== url));
+                                    else alert('Delete failed: ' + error.message);
+                                 }} className="p-2 bg-white/10 hover:bg-red-500 rounded-lg text-white transition-colors" title="Delete"><LucideIcons.Trash size={14}/></button>
                               </div>
                             </div>
                           ))}
@@ -3135,6 +3233,14 @@ const handleMove = (direction) => {
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => setShowSqlModal(true)} className="bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 text-[9px] font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Code2 size={12}/> View SQL</button>
+                        
+                        {/* --- NEW BUTTONS FOR 6 & 7 --- */}
+                        <button onClick={handleOneClickDeploy} className="bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white border border-green-500/30 text-[9px] font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Rocket size={12}/> Deploy to Supabase</button>
+                        
+                        <button onClick={handleAiGenerateBackend} disabled={isGeneratingBackend} className="bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white border border-purple-500/30 text-[9px] font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 disabled:opacity-50">
+                           <LucideIcons.Bot size={12}/> {isGeneratingBackend ? 'Generating...' : 'AI Generate'}
+                        </button>
+                        
                         <button onClick={() => {
                            const tables = schema.appConfig.dbTables || [];
                            handleGlobalChange('appConfig', 'dbTables', [...tables, { id: `tbl_${Date.now()}`, name: 'new_table', columns: [], rlsEnabled: true, rlsAuthOnly: true }]);
