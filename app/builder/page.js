@@ -22,33 +22,6 @@ export const dynamic = 'force-dynamic';
 
 const searchParams = useSearchParams();
 
-  // --- THEME STORE INTERCEPTOR ---
-  // Listens for a template coming from the new Store page
-  useEffect(() => {
-    const injectKey = searchParams.get('inject');
-    
-    // If a template key exists in the URL, inject it!
-    if (injectKey && TEMPLATES[injectKey]) {
-      const sourceObj = TEMPLATES[injectKey];
-      const clonedNode = regenerateIds(JSON.parse(JSON.stringify(sourceObj)));
-      
-      const newSchema = JSON.parse(JSON.stringify(schema));
-      const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
-      
-      if (pIndex !== -1) {
-         if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
-         newSchema.pages[pIndex].root.children.push(clonedNode);
-         
-         // Save the update
-         commitHistory(newSchema);
-         setSelectedId(clonedNode.id);
-         
-         // Silently clean the URL so it doesn't duplicate if they refresh the page!
-         router.replace('/builder', undefined, { shallow: true }); 
-      }
-    }
-  }, [searchParams]);
-
 
 // --- PREMIUM AI TEMPLATE LIBRARY ---
 const TEMPLATES = {
@@ -305,6 +278,31 @@ function Home() {
       children: [] // Strictly initialized array, never null
     }
   }];
+
+useEffect(() => {
+    const injectKey = searchParams.get('inject');
+    
+    // If a template key exists in the URL, inject it!
+    if (injectKey && TEMPLATES[injectKey]) {
+      const sourceObj = TEMPLATES[injectKey];
+      const clonedNode = regenerateIds(JSON.parse(JSON.stringify(sourceObj)));
+      
+      const newSchema = JSON.parse(JSON.stringify(schema));
+      const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
+      
+      if (pIndex !== -1) {
+         if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
+         newSchema.pages[pIndex].root.children.push(clonedNode);
+         
+         // Save the update
+         commitHistory(newSchema);
+         setSelectedId(clonedNode.id);
+         
+         // Silently clean the URL so it doesn't duplicate if they refresh the page!
+         router.replace('/builder', undefined, { shallow: true }); 
+      }
+    }
+  }, [searchParams]);
 
   const [schema, setSchema] = useState({ 
     ...dummySchema, 
