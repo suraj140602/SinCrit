@@ -232,6 +232,10 @@ const router = useRouter();
     
   }];
 
+  // --- TEMPLATE INJECTION STATE ---
+  const [pendingInjection, setPendingInjection] = useState(null); // Holds the template ID
+  const [injectionTarget, setInjectionTarget] = useState('current'); // 'current', 'new', or specific pageId
+  const [injectionNewPageName, setInjectionNewPageName] = useState('');
  
   const [schema, setSchema] = useState({ 
     ...dummySchema, 
@@ -431,66 +435,72 @@ const router = useRouter();
     return () => window.removeEventListener('touchmove', preventScrollWhileDragging);
   }, []);
 
-// --- THE BULLETPROOF INTERCEPTOR ---
+// --- THE DEPLOYMENT INTERCEPTOR ---
   useEffect(() => {
-    // 1. Wait until Supabase finishes loading
     if (isAuthLoading) return;
     
-    // 2. Read the URL safely
     const urlParams = new URLSearchParams(window.location.search);
     const injectKey = urlParams.get('inject');
     
-    // 3. Reset lock if URL is clean
-    if (!injectKey) {
-       hasInjected.current = false;
-       return;
+    if (!injectKey) return;
+    
+    // Instantly wipe the URL so it doesn't trigger again on refresh
+    window.history.replaceState(null, '', window.location.pathname);
+    
+    if (TEMPLATES[injectKey]) {
+      setPendingInjection(injectKey); // Open the Deployment Modal!
+      setInjectionTarget('current'); // Reset default choice
+      setInjectionNewPageName('');
+    }
+  }, [isAuthLoading]); 
+
+  // --- THE EXECUTION FUNCTION ---
+  const handleExecuteInjection = () => {
+    if (!pendingInjection) return;
+
+    let targetPageId = currentPageId;
+    let newSchema = JSON.parse(JSON.stringify(schema));
+
+    // Handle "New Page" creation on the fly
+    if (injectionTarget === 'new') {
+      if (!injectionNewPageName.trim()) return alert("Please enter a name for the new page.");
+      targetPageId = `page_${Date.now()}`;
+      newSchema.pages.push({
+        id: targetPageId,
+        name: injectionNewPageName,
+        root: { id: `root_column_${Date.now()}`, type: "Column", props: { padding: "0px", margin: "0px", backgroundColor: "transparent", backgroundType: "solid", mainAxisAlignment: "start", crossAxisAlignment: "stretch" }, children: [] }
+      });
+    } else if (injectionTarget !== 'current') {
+      targetPageId = injectionTarget; // They selected a specific existing page
     }
 
-    // 4. Stop if already injected or template doesn't exist
-    if (hasInjected.current || !TEMPLATES[injectKey]) return;
-    
-    // 5. Lock it!
-    hasInjected.current = true; 
-
-    // --- THE CANVAS CRASH FIX: Recursively apply missing default props ---
+    // Apply defaults to prevent Canvas crashes
     const applyDefaults = (node) => {
       node.props = { ...getProDefaults(), ...node.props };
-      
-      // Ensure layout elements have a children array so the Canvas map function doesn't crash
       if (['Container', 'Card', 'Padding', 'Center', 'Stack', 'Row', 'Column', 'ListView'].includes(node.type)) {
         if (!node.children) node.children = [];
       }
-      
-      if (node.children) {
-        node.children.forEach(applyDefaults);
-      }
+      if (node.children) node.children.forEach(applyDefaults);
       return node;
     };
-    // ---------------------------------------------------------------------
 
-    // 6. Prepare the node and apply the defaults
-    let clonedNode = regenerateIds(JSON.parse(JSON.stringify(TEMPLATES[injectKey])));
+    let clonedNode = regenerateIds(JSON.parse(JSON.stringify(TEMPLATES[pendingInjection])));
     clonedNode = applyDefaults(clonedNode); 
 
-    // 7. Inject it into the current schema
-    const newSchema = JSON.parse(JSON.stringify(schema));
-    const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
+    const pIndex = newSchema.pages.findIndex(p => p.id === targetPageId);
     
     if (pIndex !== -1) {
       if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
       newSchema.pages[pIndex].root.children.push(clonedNode);
       
-      // 8. Safely push to history and update selected ID
       commitHistory(newSchema);
-      setSelectedId(clonedNode.id);
-      
-      // 9. Instantly wipe URL without triggering a Next.js re-render loop
-      window.history.replaceState(null, '', window.location.pathname);
+      setCurrentPageId(targetPageId); // Snap them to the target page!
+      setTimeout(() => setSelectedId(clonedNode.id), 50); // Select the new item
     }
-    
-  // We disable exhaustive deps here so we don't trigger infinite loops with `schema`
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthLoading, searchParams, currentPageId]);
+
+    // Close the modal
+    setPendingInjection(null);
+  };
 
   
 
@@ -2471,6 +2481,86 @@ const handleMove = (direction) => {
 
       </AnimatePresence>
 
+{/* DEPLOYMENT TARGET MODAL */}
+      {pendingInjection && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[250] bg-black/80 backdrop-blur-md flex items-center justify-center p-10">
+          <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-md bg-[#0E0F11] border border-white/10 rounded-3xl shadow-[0_0_50px_rgba(37,99,235,0.15)] flex flex-col overflow-hidden">
+            
+            <div className="flex justify-between items-center p-6 border-b border-white/5 bg-[#161b22]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-600/20 flex items-center justify-center border border-blue-500/30">
+                  <LucideIcons.Download size={20} className="text-blue-400" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white tracking-wide">Deploy Template</h2>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest">Select Destination</p>
+                </div>
+              </div>
+              <button onClick={() => setPendingInjection(null)} className="text-gray-500 hover:text-white transition-colors bg-white/5 p-2 rounded-lg"><LucideIcons.X size={18}/></button>
+            </div>
+
+            <div className="p-6 bg-[#050505] flex flex-col gap-5">
+              <p className="text-xs text-gray-400 leading-relaxed">Where would you like to place this template?</p>
+
+              {/* Radio Selection */}
+              <div className="flex flex-col gap-3">
+                <label className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${injectionTarget === 'current' ? 'bg-blue-600/10 border-blue-500/50' : 'bg-[#1A1B1E] border-white/5 hover:border-white/20'}`}>
+                  <input type="radio" name="deployTarget" checked={injectionTarget === 'current'} onChange={() => setInjectionTarget('current')} className="accent-blue-500" />
+                  <div>
+                    <div className="text-sm font-bold text-gray-200">Current Active Screen</div>
+                    <div className="text-[10px] text-gray-500 mt-0.5">Append to the bottom of the current view</div>
+                  </div>
+                </label>
+
+                <label className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${injectionTarget === 'new' ? 'bg-blue-600/10 border-blue-500/50' : 'bg-[#1A1B1E] border-white/5 hover:border-white/20'}`}>
+                  <input type="radio" name="deployTarget" checked={injectionTarget === 'new'} onChange={() => setInjectionTarget('new')} className="accent-blue-500" />
+                  <div className="flex-1">
+                    <div className="text-sm font-bold text-gray-200">Create a New Screen</div>
+                    <div className="text-[10px] text-gray-500 mt-0.5">Deploy this into a brand new, empty page</div>
+                  </div>
+                </label>
+
+                {/* If 'new' is selected, show the name input */}
+                {injectionTarget === 'new' && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-1">
+                    <input 
+                      autoFocus
+                      type="text" 
+                      value={injectionNewPageName} 
+                      onChange={(e) => setInjectionNewPageName(e.target.value)} 
+                      placeholder="e.g. My New Dashboard" 
+                      className="w-full bg-[#161b22] border border-blue-500/30 p-3.5 rounded-xl text-xs text-white outline-none focus:border-blue-500 transition-colors shadow-inner"
+                    />
+                  </motion.div>
+                )}
+
+                <label className={`flex flex-col gap-2 p-4 rounded-xl border cursor-pointer transition-all ${injectionTarget !== 'current' && injectionTarget !== 'new' ? 'bg-blue-600/10 border-blue-500/50' : 'bg-[#1A1B1E] border-white/5 hover:border-white/20'}`}>
+                  <div className="flex items-center gap-3">
+                    <input type="radio" name="deployTarget" checked={injectionTarget !== 'current' && injectionTarget !== 'new'} onChange={() => setInjectionTarget(schema.pages[0].id)} className="accent-blue-500" />
+                    <div>
+                      <div className="text-sm font-bold text-gray-200">Existing Screen...</div>
+                    </div>
+                  </div>
+                  {(injectionTarget !== 'current' && injectionTarget !== 'new') && (
+                    <select value={injectionTarget} onChange={(e) => setInjectionTarget(e.target.value)} className="mt-2 w-full bg-[#161b22] border border-blue-500/30 p-3 rounded-lg text-xs text-gray-200 outline-none cursor-pointer">
+                      {schema.pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                  )}
+                </label>
+              </div>
+
+            </div>
+
+            <div className="p-5 border-t border-white/5 bg-[#161b22] flex justify-end gap-3 shrink-0">
+              <button onClick={() => setPendingInjection(null)} className="px-5 py-2.5 rounded-xl text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors">Cancel</button>
+              <button onClick={handleExecuteInjection} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:bg-blue-500 transition-colors flex items-center gap-2">
+                <LucideIcons.ArrowRight size={14}/> Deploy Template
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
       {/* ADD PAGE MODAL */}
         {isAddPageModalOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-10">
@@ -2622,6 +2712,18 @@ const handleMove = (direction) => {
 
           <button onClick={() => setIsRightPanelOpen(!isRightPanelOpen)} className={`px-3 py-1.5 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1.5 ${isRightPanelOpen ? 'bg-white text-black' : 'bg-[#161b22] text-gray-400 border border-white/5 hover:bg-white/10 hover:text-white'}`}>
             <LucideIcons.PanelRight size={12} /> Inspector
+          </button>
+
+          <button onClick={() => setShowDashboard(true)} className="px-3 py-1.5 bg-[#161b22] text-gray-300 border border-white/5 text-[10px] font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-1.5">
+            <LucideIcons.LayoutDashboard size={12} /> Dashboard
+          </button>
+
+          {/* --- NEW TEMPLATE STORE BUTTON --- */}
+          <button 
+            onClick={() => window.open('/store', '_blank')} 
+            className="px-3 py-1.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 text-[10px] font-bold rounded-xl hover:bg-pink-500 hover:text-white transition-all flex items-center gap-1.5 shadow-[0_0_10px_rgba(236,72,153,0.1)]"
+          >
+            <LucideIcons.Store size={12} /> Template Store
           </button>
 
           <button onClick={() => setShowDashboard(true)} className="px-3 py-1.5 bg-[#161b22] text-gray-300 border border-white/5 text-[10px] font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-1.5">
@@ -2858,7 +2960,16 @@ const handleMove = (direction) => {
               {activeTab === 'templates' && (
                 <div>
                   <h3 className="text-[10px] font-bold text-pink-500 mb-4 uppercase tracking-widest px-1">✨ Magic Templates</h3>
-                  <p className="text-[10px] text-gray-500 px-1 mb-5 leading-relaxed">Drag entire pre-built sections directly onto your screen.</p>
+                  <p className="text-[10px] text-gray-500 px-1 mb-4 leading-relaxed">Drag entire pre-built sections directly onto your screen.</p>
+                  
+                  {/* --- NEW TEMPLATE STORE BUTTON IN SIDEBAR --- */}
+                  <button 
+                    onClick={() => window.open('/store', '_blank')} 
+                    className="w-full mb-5 py-3 bg-pink-500/10 border border-pink-500/30 text-pink-400 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-pink-500/20 hover:border-pink-500/50 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(236,72,153,0.15)]"
+                  >
+                    <LucideIcons.Store size={14} /> Browse Pro Templates
+                  </button>
+
                   <div className="flex flex-col gap-4">
                     <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "hero"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-pink-500/50 transition-all">
                       <div className="h-24 bg-[#1A1B1E] flex items-center justify-center border-b border-white/5"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&q=80" className="w-full h-full object-cover opacity-30 group-hover:opacity-60 transition-opacity" /></div>
