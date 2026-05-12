@@ -16,6 +16,7 @@ import {
 import { polyfill } from "mobile-drag-drop";
 import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
 import "mobile-drag-drop/default.css"; // Gives visual feedback on mobile
+import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 const searchParams = useSearchParams();
@@ -291,7 +292,7 @@ const PropInput = ({ label, propKey, type = "text", options = [], placeholder = 
   );
 };
 
-export default function Home() {
+function Home() {
   // 1. STRICT INITIALIZATION: Force the root to be a Flexbox Column
   const initialPages = dummySchema?.pages?.length > 0 ? dummySchema.pages : [{
     id: 'home',
@@ -2466,7 +2467,8 @@ const handleMove = (direction) => {
                      {[
                        { id: 'blank', icon: 'File', name: 'Blank Canvas', desc: 'Start from scratch' },
                        { id: 'appbar', icon: 'PanelTop', name: 'With App Bar', desc: 'Standard header navigation' },
-                        { id: 'store', icon: 'Store', label: 'Store', onClick: () => window.open('/store', '_blank') },
+                       { id: 'shop', icon: 'ShoppingBag', name: 'Storefront', desc: 'Search & product grid' },
+                       { id: 'store', icon: 'Store', label: 'Store', onClick: () => window.open('/store', '_blank') },
                        { id: 'cart', icon: 'ShoppingCart', name: 'Shopping Cart', desc: 'List & secure checkout' },
                        { id: 'signup', icon: 'UserPlus', name: 'Authentication', desc: 'Login & signup forms' },
                        { id: 'about', icon: 'Info', name: 'About Us', desc: 'Hero image & text block' }
@@ -3552,5 +3554,17 @@ const handleMove = (direction) => {
       </div>
       )}
     </div>
+  );
+}
+
+export default function BuilderPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center text-indigo-500 font-bold tracking-widest uppercase text-xs">
+        Loading Workspace...
+      </div>
+    }>
+      <Home />
+    </Suspense>
   );
 }
