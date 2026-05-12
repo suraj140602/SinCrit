@@ -861,14 +861,17 @@ const router = useRouter();
     margin: "0px", padding: "0px",
     backgroundType: "solid", backgroundColor: "transparent", gradientStart: "#4F46E5", gradientEnd: "#EC4899",
     radiusTopLeft: "0px", radiusTopRight: "0px", radiusBottomLeft: "0px", radiusBottomRight: "0px",
+    borderWidth: "0", borderColor: "transparent", opacity: "1", // <-- NEW APPEARANCE PROPS
     shadowColor: "transparent", shadowOffsetX: "0", shadowOffsetY: "2", shadowBlur: "4", shadowSpread: "0",
     selfAlign: "auto", position: "relative", top: "", bottom: "", left: "", right: "",
     animationType: "none", animationDuration: "0.5", animationDelay: "0",
-    actionType: "none", targetPage: "", transitionType: "default", // <-- Added Transition Type
-    actionChain: [], // <-- THE NEW SEQUENTIAL LOGIC ENGINE
-    apiUrl: "", apiEndpoint: "", // <-- Added API Endpoint
+    actionType: "none", targetPage: "", transitionType: "default",
+    actionChain: [],
+    apiUrl: "", apiEndpoint: "",
     stateVariable: "", stateValue: "", isBound: false, boundVariable: "",
-    scrollDirection: "vertical", gap: "8px"
+    scrollDirection: "vertical", gap: "8px",
+    fontWeight: "normal", letterSpacing: "0px", textAlign: "left", // <-- NEW TYPOGRAPHY PROPS
+    boxFit: "cover" // <-- NEW IMAGE PROPS
   });
 
   const handleDragStart = (e, type) => { 
@@ -1618,344 +1621,392 @@ const handleMove = (direction) => {
 
 
  const renderPropertyGroups = () => {
-   if (!selectedNode) {
-      return (
-        <div className="space-y-6 flex-1 overflow-y-auto p-5 custom-scrollbar pb-20">
-          
-          {/* --- AI MAGIC THEME GENERATOR --- */}
-          <div className="bg-gradient-to-br from-purple-900/20 to-indigo-900/10 border border-purple-500/30 p-4 rounded-2xl shadow-[0_0_15px_rgba(168,85,247,0.1)] mb-2">
-            <div className="flex items-center gap-2 mb-3">
-              <LucideIcons.Sparkles size={16} className="text-purple-400" />
-              <h3 className="text-[11px] font-bold text-purple-300 uppercase tracking-widest">AI Magic Theme</h3>
-            </div>
-            <p className="text-xs text-gray-400 mb-3 leading-relaxed">Describe your app's vibe. Gemini will generate a complete color palette and UI style instantly.</p>
-            
-            <div className="flex flex-col gap-2">
-              <input 
-                type="text" 
-                value={themePrompt}
-                onChange={(e) => setThemePrompt(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleGenerateMagicTheme()}
-                placeholder="e.g. Dark mode cyberpunk with neon pink..." 
-                className="w-full bg-[#0E0F11] border border-white/10 p-2.5 rounded-xl text-xs text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 transition-colors shadow-inner"
-              />
-              <button 
-                onClick={handleGenerateMagicTheme} 
-                disabled={isGeneratingTheme || !themePrompt}
-                className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_10px_rgba(168,85,247,0.3)]"
-              >
-                {isGeneratingTheme ? (
-                  <><div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Generating...</>
-                ) : (
-                  <><LucideIcons.Wand2 size={14} /> Generate Theme</>
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-[#161b22] border border-white/5 p-4 rounded-xl mb-6 shadow-sm">
-            <p className="text-xs text-gray-400 font-medium leading-relaxed">Click an element on the canvas to edit it, or change manual theme settings below.</p>
-          </div>
-          
-          <div className="border-b border-white/5 pb-6">
-            <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><Smartphone size={14}/> Bottom Navigation</h4>
-            
-            <div className="flex items-center justify-between bg-[#161b22] p-4 rounded-xl border border-white/5 mb-4 shadow-sm">
-               <span className="text-xs font-bold text-gray-300">Enable Tab Bar</span>
-               <button onClick={() => handleGlobalChange('appConfig', 'enableBottomNav', !schema.appConfig.enableBottomNav)} className={`w-10 h-5 rounded-full relative transition-colors ${schema.appConfig.enableBottomNav ? 'bg-blue-600' : 'bg-gray-700'}`}>
-                  <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all ${schema.appConfig.enableBottomNav ? 'left-[22px]' : 'left-[2px]'}`}></div>
+    if (!selectedNode) {
+       return (
+         <div className="space-y-6 flex-1 overflow-y-auto p-5 custom-scrollbar pb-20">
+           
+           {/* --- AI MAGIC THEME GENERATOR --- */}
+           <div className="bg-gradient-to-br from-purple-900/20 to-indigo-900/10 border border-purple-500/30 p-4 rounded-2xl shadow-[0_0_15px_rgba(168,85,247,0.1)] mb-2">
+             <div className="flex items-center gap-2 mb-3">
+               <LucideIcons.Sparkles size={16} className="text-purple-400" />
+               <h3 className="text-[11px] font-bold text-purple-300 uppercase tracking-widest">AI Magic Theme</h3>
+             </div>
+             <p className="text-xs text-gray-400 mb-3 leading-relaxed">Describe your app's vibe. Gemini will generate a complete color palette and UI style instantly.</p>
+             
+             <div className="flex flex-col gap-2">
+               <input 
+                 type="text" 
+                 value={themePrompt}
+                 onChange={(e) => setThemePrompt(e.target.value)}
+                 onKeyDown={(e) => e.key === 'Enter' && handleGenerateMagicTheme()}
+                 placeholder="e.g. Dark mode cyberpunk with neon pink..." 
+                 className="w-full bg-[#0E0F11] border border-white/10 p-2.5 rounded-xl text-xs text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 transition-colors shadow-inner"
+               />
+               <button 
+                 onClick={handleGenerateMagicTheme} 
+                 disabled={isGeneratingTheme || !themePrompt}
+                 className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_10px_rgba(168,85,247,0.3)]"
+               >
+                 {isGeneratingTheme ? (
+                   <><div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Generating...</>
+                 ) : (
+                   <><LucideIcons.Wand2 size={14} /> Generate Theme</>
+                 )}
                </button>
-            </div>
+             </div>
+           </div>
 
-            {schema.appConfig.enableBottomNav && (
-              <div className="p-4 bg-[#0E0F11] border border-white/5 rounded-xl animate-in fade-in zoom-in-95 duration-200">
-                <div className="space-y-4 mb-4 pb-4 border-b border-white/10">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Depth Style</label>
-                    <select value={schema.appConfig.navStyle} onChange={(e) => handleGlobalChange('appConfig', 'navStyle', e.target.value)} className="w-full bg-[#1A1B1E] border border-white/10 rounded-lg p-2.5 text-xs text-gray-200 outline-none focus:border-blue-500 transition-colors cursor-pointer">
-                      <option value="flat">Flat (No Shadow)</option><option value="shadow">Drop Shadow</option><option value="glass">Glassmorphism (Blur)</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-2"><label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Icon Size</label><input type="number" value={schema.appConfig.navIconSize || '22'} onChange={(e) => handleGlobalChange('appConfig', 'navIconSize', e.target.value)} className="w-full bg-[#1A1B1E] border border-white/10 rounded-lg p-2 text-xs text-gray-200 outline-none focus:border-blue-500" /></div>
-                    <div className="flex flex-col gap-2"><label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Animation</label><select value={schema.appConfig.navAnimation || 'scale'} onChange={(e) => handleGlobalChange('appConfig', 'navAnimation', e.target.value)} className="w-full bg-[#1A1B1E] border border-white/10 rounded-lg p-2.5 text-xs text-gray-200 outline-none focus:border-blue-500 cursor-pointer"><option value="none">None</option><option value="scale">Scale Pop</option><option value="bounce">Bounce</option></select></div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 pt-2">
-                    <div className="flex flex-col items-center gap-1"><span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Bg</span><input type="color" value={schema.appConfig.navBackground || '#0d1117'} onChange={(e) => handleGlobalChange('appConfig', 'navBackground', e.target.value)} className="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent" /></div>
-                    <div className="flex flex-col items-center gap-1"><span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Active</span><input type="color" value={schema.appConfig.navActiveColor || '#3b82f6'} onChange={(e) => handleGlobalChange('appConfig', 'navActiveColor', e.target.value)} className="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent" /></div>
-                    <div className="flex flex-col items-center gap-1"><span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Inactive</span><input type="color" value={schema.appConfig.navIconColor || '#4b5563'} onChange={(e) => handleGlobalChange('appConfig', 'navIconColor', e.target.value)} className="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent" /></div>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center mb-3">
-                   <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Navigation Tabs</label>
-                   <button onClick={() => { const items = schema.appConfig.navItems || []; if (items.length >= 5) return alert("Maximum 5 tabs allowed for mobile."); handleGlobalChange('appConfig', 'navItems', [...items, { id: `nav_${Date.now()}`, icon: 'Star', targetPage: '' }]); }} className="text-[9px] bg-blue-600/20 text-blue-400 px-2 py-1 rounded hover:bg-blue-600/30 transition-colors font-bold">+ Add Tab</button>
-                </div>
-                <div className="space-y-2">
-                  {(schema.appConfig.navItems || []).length === 0 && <div className="text-[10px] text-gray-500 text-center py-4 border border-dashed border-white/10 rounded-lg">No tabs added.</div>}
-                  {(schema.appConfig.navItems || []).map((item, idx) => (
-                    <div key={item.id} className="bg-[#161b22] p-3 rounded-lg border border-white/5">
-                       <div className="flex justify-between items-center mb-2">
-                         <span className="text-[9px] font-bold text-gray-500 tracking-widest uppercase">Tab {idx + 1}</span>
-                         <button onClick={() => { const newItems = schema.appConfig.navItems.filter(i => i.id !== item.id); handleGlobalChange('appConfig', 'navItems', newItems); }} className="text-gray-600 hover:text-red-400 transition-colors"><Trash size={12}/></button>
+           <div className="bg-[#161b22] border border-white/5 p-4 rounded-xl mb-6 shadow-sm">
+             <p className="text-xs text-gray-400 font-medium leading-relaxed">Click an element on the canvas to edit it, or change manual theme settings below.</p>
+           </div>
+           
+           <div className="border-b border-white/5 pb-6">
+             <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Smartphone size={14}/> Bottom Navigation</h4>
+             
+             <div className="flex items-center justify-between bg-[#161b22] p-4 rounded-xl border border-white/5 mb-4 shadow-sm">
+                <span className="text-xs font-bold text-gray-300">Enable Tab Bar</span>
+                <button onClick={() => handleGlobalChange('appConfig', 'enableBottomNav', !schema.appConfig.enableBottomNav)} className={`w-10 h-5 rounded-full relative transition-colors ${schema.appConfig.enableBottomNav ? 'bg-blue-600' : 'bg-gray-700'}`}>
+                   <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all ${schema.appConfig.enableBottomNav ? 'left-[22px]' : 'left-[2px]'}`}></div>
+                </button>
+             </div>
+
+             {schema.appConfig.enableBottomNav && (
+               <div className="p-4 bg-[#0E0F11] border border-white/5 rounded-xl animate-in fade-in zoom-in-95 duration-200">
+                 <div className="space-y-4 mb-4 pb-4 border-b border-white/10">
+                   <div className="flex flex-col gap-2">
+                     <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Depth Style</label>
+                     <select value={schema.appConfig.navStyle} onChange={(e) => handleGlobalChange('appConfig', 'navStyle', e.target.value)} className="w-full bg-[#1A1B1E] border border-white/10 rounded-lg p-2.5 text-xs text-gray-200 outline-none focus:border-blue-500 transition-colors cursor-pointer">
+                       <option value="flat">Flat (No Shadow)</option><option value="shadow">Drop Shadow</option><option value="glass">Glassmorphism (Blur)</option>
+                     </select>
+                   </div>
+                   <div className="grid grid-cols-2 gap-3">
+                     <div className="flex flex-col gap-2"><label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Icon Size</label><input type="number" value={schema.appConfig.navIconSize || '22'} onChange={(e) => handleGlobalChange('appConfig', 'navIconSize', e.target.value)} className="w-full bg-[#1A1B1E] border border-white/10 rounded-lg p-2 text-xs text-gray-200 outline-none focus:border-blue-500" /></div>
+                     <div className="flex flex-col gap-2"><label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Animation</label><select value={schema.appConfig.navAnimation || 'scale'} onChange={(e) => handleGlobalChange('appConfig', 'navAnimation', e.target.value)} className="w-full bg-[#1A1B1E] border border-white/10 rounded-lg p-2.5 text-xs text-gray-200 outline-none focus:border-blue-500 cursor-pointer"><option value="none">None</option><option value="scale">Scale Pop</option><option value="bounce">Bounce</option></select></div>
+                   </div>
+                   <div className="grid grid-cols-3 gap-2 pt-2">
+                     <div className="flex flex-col items-center gap-1"><span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Bg</span><input type="color" value={schema.appConfig.navBackground || '#0d1117'} onChange={(e) => handleGlobalChange('appConfig', 'navBackground', e.target.value)} className="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent" /></div>
+                     <div className="flex flex-col items-center gap-1"><span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Active</span><input type="color" value={schema.appConfig.navActiveColor || '#3b82f6'} onChange={(e) => handleGlobalChange('appConfig', 'navActiveColor', e.target.value)} className="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent" /></div>
+                     <div className="flex flex-col items-center gap-1"><span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Inactive</span><input type="color" value={schema.appConfig.navIconColor || '#4b5563'} onChange={(e) => handleGlobalChange('appConfig', 'navIconColor', e.target.value)} className="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent" /></div>
+                   </div>
+                 </div>
+                 <div className="flex justify-between items-center mb-3">
+                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Navigation Tabs</label>
+                    <button onClick={() => { const items = schema.appConfig.navItems || []; if (items.length >= 5) return alert("Maximum 5 tabs allowed for mobile."); handleGlobalChange('appConfig', 'navItems', [...items, { id: `nav_${Date.now()}`, icon: 'Star', targetPage: '' }]); }} className="text-[9px] bg-blue-600/20 text-blue-400 px-2 py-1 rounded hover:bg-blue-600/30 transition-colors font-bold">+ Add Tab</button>
+                 </div>
+                 <div className="space-y-2">
+                   {(schema.appConfig.navItems || []).length === 0 && <div className="text-[10px] text-gray-500 text-center py-4 border border-dashed border-white/10 rounded-lg">No tabs added.</div>}
+                   {(schema.appConfig.navItems || []).map((item, idx) => (
+                     <div key={item.id} className="bg-[#161b22] p-3 rounded-lg border border-white/5">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[9px] font-bold text-gray-500 tracking-widest uppercase">Tab {idx + 1}</span>
+                          <button onClick={() => { const newItems = schema.appConfig.navItems.filter(i => i.id !== item.id); handleGlobalChange('appConfig', 'navItems', newItems); }} className="text-gray-600 hover:text-red-400 transition-colors"><LucideIcons.Trash size={12}/></button>
+                        </div>
+                        <div className="flex gap-2">
+                          <input type="text" value={item.icon} placeholder="Lucide Icon" onChange={(e) => { const newItems = [...schema.appConfig.navItems]; newItems[idx].icon = e.target.value; handleGlobalChange('appConfig', 'navItems', newItems); }} className="w-1/3 bg-[#0E0F11] border border-white/10 rounded-lg p-2 text-xs text-white outline-none focus:border-blue-500 transition-colors" />
+                          <select value={item.targetPage} onChange={(e) => { const newItems = [...schema.appConfig.navItems]; newItems[idx].targetPage = e.target.value; handleGlobalChange('appConfig', 'navItems', newItems); }} className="w-2/3 bg-[#0E0F11] border border-white/10 rounded-lg p-2 text-xs text-gray-300 outline-none focus:border-blue-500 cursor-pointer transition-colors"><option value="">Select Target Page...</option>{schema.pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+                        </div>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             )}
+           </div>
+
+           <div className="border-b border-transparent pb-4">
+             <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Layers size={14}/> Brand Colors</h4>
+             <div className="flex flex-col gap-3">
+               <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">Primary Color</span><input type="color" value={schema.theme.primary} onChange={(e) => handleThemeChange("primary", e.target.value)} className="w-7 h-7 rounded-md border-0 p-0 cursor-pointer bg-transparent" /></div>
+               <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">Secondary Color</span><input type="color" value={schema.theme.secondary || '#EC4899'} onChange={(e) => handleThemeChange("secondary", e.target.value)} className="w-7 h-7 rounded-md border-0 p-0 cursor-pointer bg-transparent" /></div>
+               <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">App Background</span><input type="color" value={schema.theme.background} onChange={(e) => handleThemeChange("background", e.target.value)} className="w-7 h-7 rounded-md border-0 p-0 cursor-pointer bg-transparent" /></div>
+             </div>
+           </div>
+         </div>
+       );
+     }
+
+     const props = selectedNode.props;
+
+     return (
+       <div className="flex flex-col h-full overflow-hidden bg-[#0a0a0a]">
+         
+         {/* FLUTTERFLOW STYLE SUB-NAVIGATION */}
+         <div className="flex items-center justify-around p-2 bg-[#0E0F11] border-b border-white/5 shrink-0 z-10 shadow-md">
+           {[
+             { id: 'properties', icon: 'SlidersHorizontal', label: 'Props' },
+             { id: 'actions', icon: 'Zap', label: 'Actions' },
+             { id: 'backend', icon: 'Database', label: 'Data' },
+             { id: 'animations', icon: 'PlaySquare', label: 'Animate' }
+           ].map(tab => {
+             const IconComp = LucideIcons[tab.icon] || LucideIcons.Circle;
+             const isActive = inspectorTab === tab.id;
+             return (
+               <button
+                 key={tab.id}
+                 onClick={() => setInspectorTab(tab.id)}
+                 className={`flex flex-col items-center gap-1.5 p-2.5 w-16 rounded-xl transition-all ${isActive ? 'bg-[#1A1B1E] text-blue-400 shadow-inner border border-white/5' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'}`}
+               >
+                 <IconComp size={16} className={isActive ? "drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" : ""} />
+                 <span className="text-[8px] font-bold tracking-widest uppercase">{tab.label}</span>
+               </button>
+             )
+           })}
+         </div>
+
+         {/* SCROLLABLE PROPERTY CONTENT */}
+         <div className="flex-1 overflow-y-auto custom-scrollbar p-5 pb-24">
+
+           {/* ============================================================ */}
+           {/* TAB 1: PROPERTIES & STYLING                                  */}
+           {/* ============================================================ */}
+           {inspectorTab === 'properties' && (
+             <div className="space-y-6 animate-in fade-in duration-200">
+               
+               {/* 1. POSITIONING (Applies to all) */}
+               <div className="border-b border-white/5 pb-6">
+                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Monitor size={14}/> Positioning</h4>
+                 <PropInput label="Layout Flow" propKey="position" type="select" options={[{label:'Relative (Normal)', value:'relative'},{label:'Absolute (Free Float)', value:'absolute'}]} value={props.position} onChange={handlePropChange} />
+                 {props.position === 'absolute' && (
+                   <div className="grid grid-cols-2 gap-3 mt-3 p-3 bg-[#161b22] rounded-xl border border-white/5">
+                     <PropInput label="Top" propKey="top" value={props.top} onChange={handlePropChange} />
+                     <PropInput label="Bottom" propKey="bottom" value={props.bottom} onChange={handlePropChange} />
+                     <PropInput label="Left" propKey="left" value={props.left} onChange={handlePropChange} />
+                     <PropInput label="Right" propKey="right" value={props.right} onChange={handlePropChange} />
+                   </div>
+                 )}
+               </div>
+
+               {/* 2. SIZE AND SPACING (Applies to all) */}
+               <div className="border-b border-white/5 pb-6">
+                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Grid size={14}/> Size & Spacing</h4>
+                 <div className="grid grid-cols-2 gap-3">
+                   <PropInput label="Width" propKey="width" value={props.width} onChange={handlePropChange} />
+                   <PropInput label="Height" propKey="height" value={props.height} onChange={handlePropChange} />
+                 </div>
+                 <div className="grid grid-cols-2 gap-3">
+                   <PropInput label="Margin (Outer)" propKey="margin" value={props.margin} onChange={handlePropChange} />
+                   <PropInput label="Padding (Inner)" propKey="padding" value={props.padding} onChange={handlePropChange} />
+                 </div>
+                 {(selectedNode.type === 'Row' || selectedNode.type === 'Column' || selectedNode.type === 'Stack') && (
+                   <div className="grid grid-cols-2 gap-3">
+                      <PropInput label="Main Align" propKey="mainAxisAlignment" type="select" options={[{label:'Start', value:'start'},{label:'Center', value:'center'},{label:'End', value:'end'},{label:'Space Between', value:'spaceBetween'}]} value={props.mainAxisAlignment} onChange={handlePropChange} />
+                      <PropInput label="Cross Align" propKey="crossAxisAlignment" type="select" options={[{label:'Start', value:'start'},{label:'Center', value:'center'},{label:'Stretch', value:'stretch'}]} value={props.crossAxisAlignment} onChange={handlePropChange} />
+                   </div>
+                 )}
+                 {selectedNode.type === 'ListView' && (
+                   <div className="grid grid-cols-2 gap-3">
+                      <PropInput label="Scroll Direction" propKey="scrollDirection" type="select" options={[{label:'Vertical', value:'vertical'},{label:'Horizontal', value:'horizontal'}]} value={props.scrollDirection} onChange={handlePropChange} />
+                      <PropInput label="Gap Between Items" propKey="gap" value={props.gap} onChange={handlePropChange} />
+                   </div>
+                 )}
+               </div>
+
+               {/* 3. TYPOGRAPHY (Text Elements Only) */}
+               {(selectedNode.type === 'Text' || selectedNode.type === 'Button' || selectedNode.type === 'TextInput') && (
+                 <div className="border-b border-white/5 pb-6">
+                   <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Type size={14}/> Typography</h4>
+                   <PropInput label="Static Text Content" propKey={selectedNode.type === 'Text' ? 'content' : selectedNode.type === 'Button' ? 'label' : 'placeholder'} value={props[selectedNode.type === 'Text' ? 'content' : selectedNode.type === 'Button' ? 'label' : 'placeholder']} onChange={handlePropChange} />
+                   <div className="grid grid-cols-2 gap-3 mb-3">
+                      <PropInput label="Font Family" propKey="fontFamily" type="select" options={[{label:'Inter', value:'Inter'},{label:'Roboto', value:'Roboto'},{label:'Poppins', value:'Poppins'},{label:'Montserrat', value:'Montserrat'},{label:'Playfair', value:'Playfair Display'}, {label:'Monospace', value:'monospace'}]} value={props.fontFamily} onChange={handlePropChange} />
+                      <PropInput label="Font Size" propKey="fontSize" value={props.fontSize} onChange={handlePropChange} />
+                   </div>
+                   <div className="grid grid-cols-2 gap-3 mb-3">
+                      <PropInput label="Font Weight" propKey="fontWeight" type="select" options={[{label:'Normal', value:'normal'},{label:'Medium', value:'500'},{label:'Bold', value:'bold'},{label:'Light', value:'300'}]} value={props.fontWeight} onChange={handlePropChange} />
+                      <PropInput label="Letter Spacing" propKey="letterSpacing" value={props.letterSpacing} onChange={handlePropChange} />
+                   </div>
+                   <div className="grid grid-cols-2 gap-3">
+                      <PropInput label="Text Color" propKey="color" type="color" value={props.color} onChange={handlePropChange} />
+                      {(selectedNode.type === 'Text' || selectedNode.type === 'TextInput') && (
+                        <PropInput label="Alignment" propKey="textAlign" type="select" options={[{label:'Left', value:'left'},{label:'Center', value:'center'},{label:'Right', value:'right'},{label:'Justify', value:'justify'}]} value={props.textAlign} onChange={handlePropChange} />
+                      )}
+                   </div>
+                 </div>
+               )}
+
+               {/* 4. APPEARANCE (Backgrounds, Opacity, Borders - Applies to all) */}
+               <div className="border-b border-white/5 pb-6">
+                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Layers size={14}/> Appearance</h4>
+                 
+                 <div className="grid grid-cols-2 gap-3 mb-3">
+                    <PropInput label="Opacity (0 to 1)" propKey="opacity" type="text" value={props.opacity} onChange={handlePropChange} />
+                    <PropInput label="Background Style" propKey="backgroundType" type="select" options={[{label:'Solid Color', value:'solid'},{label:'Linear Gradient', value:'gradient'}, {label: 'Theme Primary', value: 'theme.primary'}, {label: 'Theme Secondary', value: 'theme.secondary'}, {label: 'Transparent', value: 'transparent'}]} value={props.backgroundType} onChange={handlePropChange} />
+                 </div>
+
+                 {props.backgroundType === 'gradient' ? (
+                   <div className="grid grid-cols-2 gap-3 p-3 bg-[#161b22] rounded-xl border border-white/5 mb-4">
+                     <PropInput label="Start Color" propKey="gradientStart" type="color" value={props.gradientStart} onChange={handlePropChange} />
+                     <PropInput label="End Color" propKey="gradientEnd" type="color" value={props.gradientEnd} onChange={handlePropChange} />
+                   </div>
+                 ) : (
+                    <PropInput label="Background Color" propKey="backgroundColor" type="color" value={props.backgroundColor} onChange={handlePropChange} />
+                 )}
+
+                 <div className="mt-4 pt-4 border-t border-white/5">
+                    <label className="text-[9px] font-bold text-gray-500 mb-2 uppercase tracking-widest block">Border Radius (TL, TR, BL, BR)</label>
+                    <div className="grid grid-cols-4 gap-2">
+                       <input type="text" value={props.radiusTopLeft||'0'} onChange={e=>handlePropChange('radiusTopLeft', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg outline-none text-center focus:border-blue-500 transition-colors shadow-inner" />
+                       <input type="text" value={props.radiusTopRight||'0'} onChange={e=>handlePropChange('radiusTopRight', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg outline-none text-center focus:border-blue-500 transition-colors shadow-inner" />
+                       <input type="text" value={props.radiusBottomLeft||'0'} onChange={e=>handlePropChange('radiusBottomLeft', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg outline-none text-center focus:border-blue-500 transition-colors shadow-inner" />
+                       <input type="text" value={props.radiusBottomRight||'0'} onChange={e=>handlePropChange('radiusBottomRight', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg outline-none text-center focus:border-blue-500 transition-colors shadow-inner" />
+                    </div>
+                 </div>
+
+                 {/* NEW BORDER SECTION */}
+                 <div className="mt-4 pt-4 border-t border-white/5">
+                    <label className="text-[9px] font-bold text-gray-500 mb-2 uppercase tracking-widest block">Borders & Strokes</label>
+                    <div className="grid grid-cols-2 gap-3">
+                       <PropInput label="Border Width (px)" propKey="borderWidth" value={props.borderWidth} onChange={handlePropChange} />
+                       <PropInput label="Border Color" propKey="borderColor" type="color" value={props.borderColor} onChange={handlePropChange} />
+                    </div>
+                 </div>
+               </div>
+
+               {/* 5. SHADOWS (Applies to all) */}
+               <div className="border-b border-white/5 pb-6">
+                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.BoxSelect size={14}/> Shadows</h4>
+                 <PropInput label="Shadow Color" propKey="shadowColor" type="color" value={props.shadowColor} onChange={handlePropChange} />
+                 <div className="grid grid-cols-4 gap-2 mt-3">
+                    <div><label className="text-[8px] text-gray-500 block text-center mb-1.5 tracking-widest uppercase">Off X</label><input type="number" value={props.shadowOffsetX||'0'} onChange={e=>handlePropChange('shadowOffsetX', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg text-center focus:border-blue-500 transition-colors" /></div>
+                    <div><label className="text-[8px] text-gray-500 block text-center mb-1.5 tracking-widest uppercase">Off Y</label><input type="number" value={props.shadowOffsetY||'0'} onChange={e=>handlePropChange('shadowOffsetY', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg text-center focus:border-blue-500 transition-colors" /></div>
+                    <div><label className="text-[8px] text-gray-500 block text-center mb-1.5 tracking-widest uppercase">Blur</label><input type="number" value={props.shadowBlur||'0'} onChange={e=>handlePropChange('shadowBlur', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg text-center focus:border-blue-500 transition-colors" /></div>
+                    <div><label className="text-[8px] text-gray-500 block text-center mb-1.5 tracking-widest uppercase">Spread</label><input type="number" value={props.shadowSpread||'0'} onChange={e=>handlePropChange('shadowSpread', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg text-center focus:border-blue-500 transition-colors" /></div>
+                 </div>
+               </div>
+
+               {/* 6. IMAGE SPECIFIC (Source and Fitting) */}
+               {selectedNode.type === 'Image' && (
+                 <div className="border-b border-white/5 pb-6">
+                   <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Image size={14}/> Image Source</h4>
+                   <PropInput label="Image URL" propKey="url" value={props.url} onChange={handlePropChange} />
+                   <div className="mt-3">
+                     <PropInput label="Object Fit" propKey="boxFit" type="select" options={[{label:'Cover (Fill Box)', value:'cover'},{label:'Contain (Show All)', value:'contain'},{label:'Fill (Stretch)', value:'fill'},{label:'Fit Width', value:'fitWidth'}]} value={props.boxFit} onChange={handlePropChange} />
+                   </div>
+                   <button onClick={() => { setShowAssetModal(true); fetchAssets(); }} className="w-full mt-2 py-3 bg-[#161b22] border border-white/10 text-gray-300 rounded-xl text-xs font-bold hover:bg-white/10 transition-colors shadow-sm active:scale-95">
+                     Browse Asset Library
+                   </button>
+                 </div>
+               )}
+
+               {/* ICON SPECIFIC */}
+               {selectedNode.type === 'Icon' && (
+                 <div className="border-b border-white/5 pb-6">
+                   <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest">⭐ Icon Settings</h4>
+                   <PropInput label="Icon Name (Lucide)" propKey="iconName" value={props.iconName} onChange={handlePropChange} />
+                   <div className="grid grid-cols-2 gap-3">
+                      <PropInput label="Icon Size" propKey="size" value={props.size} onChange={handlePropChange} />
+                      <PropInput label="Icon Color" propKey="color" type="color" value={props.color} onChange={handlePropChange} />
+                   </div>
+                 </div>
+               )}
+             </div>
+           )}
+
+           {/* ============================================================ */}
+           {/* TAB 2: ACTIONS & LOGIC                                       */}
+           {/* ============================================================ */}
+           {inspectorTab === 'actions' && (
+             <div className="space-y-6 animate-in fade-in duration-200">
+               <div className="bg-gradient-to-b from-purple-500/10 to-transparent p-5 rounded-2xl border border-purple-500/20 shadow-inner">
+                 <h4 className="text-[10px] font-bold text-purple-400 mb-3 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Zap size={14}/> Action Blocks</h4>
+                 <p className="text-[10px] text-gray-400 mb-4 leading-relaxed">Chain multiple logic operations together when this element is tapped or interacted with.</p>
+                 
+                 <div className="bg-[#0E0F11] border border-white/10 rounded-xl p-3 mb-4 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3">
+                       <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
+                          <LucideIcons.GitMerge size={14} className="text-purple-400" />
                        </div>
-                       <div className="flex gap-2">
-                         <input type="text" value={item.icon} placeholder="Lucide Icon" onChange={(e) => { const newItems = [...schema.appConfig.navItems]; newItems[idx].icon = e.target.value; handleGlobalChange('appConfig', 'navItems', newItems); }} className="w-1/3 bg-[#0E0F11] border border-white/10 rounded-lg p-2 text-xs text-white outline-none focus:border-blue-500 transition-colors" />
-                         <select value={item.targetPage} onChange={(e) => { const newItems = [...schema.appConfig.navItems]; newItems[idx].targetPage = e.target.value; handleGlobalChange('appConfig', 'navItems', newItems); }} className="w-2/3 bg-[#0E0F11] border border-white/10 rounded-lg p-2 text-xs text-gray-300 outline-none focus:border-blue-500 cursor-pointer transition-colors"><option value="">Select Target Page...</option>{schema.pages.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+                       <div>
+                         <div className="text-xs font-bold text-gray-200">Action Chain</div>
+                         <div className="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5">{(props.actionChain || []).length} Steps Configured</div>
                        </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+                 </div>
 
-          <div className="border-b border-transparent pb-4">
-            <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><Layers size={14}/> Brand Colors</h4>
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">Primary Color</span><input type="color" value={schema.theme.primary} onChange={(e) => handleThemeChange("primary", e.target.value)} className="w-7 h-7 rounded-md border-0 p-0 cursor-pointer bg-transparent" /></div>
-              <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">Secondary Color</span><input type="color" value={schema.theme.secondary || '#EC4899'} onChange={(e) => handleThemeChange("secondary", e.target.value)} className="w-7 h-7 rounded-md border-0 p-0 cursor-pointer bg-transparent" /></div>
-              <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">App Background</span><input type="color" value={schema.theme.background} onChange={(e) => handleThemeChange("background", e.target.value)} className="w-7 h-7 rounded-md border-0 p-0 cursor-pointer bg-transparent" /></div>
-            </div>
-          </div>
-        </div>
-      );
-    }
+                 <button onClick={() => { setEditingLogicId(selectedNode.id); setIsLogicModalOpen(true); }} className="w-full py-3 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] flex items-center justify-center gap-2">
+                   Open Flow Editor <LucideIcons.ArrowRight size={14} />
+                 </button>
+               </div>
+             </div>
+           )}
 
-    const props = selectedNode.props;
-
-    return (
-      <div className="flex flex-col h-full overflow-hidden bg-[#0a0a0a]">
-        
-        {/* FLUTTERFLOW STYLE SUB-NAVIGATION */}
-        <div className="flex items-center justify-around p-2 bg-[#0E0F11] border-b border-white/5 shrink-0 z-10 shadow-md">
-          {[
-            { id: 'properties', icon: 'SlidersHorizontal', label: 'Props' },
-            { id: 'actions', icon: 'Zap', label: 'Actions' },
-            { id: 'backend', icon: 'Database', label: 'Data' },
-            { id: 'animations', icon: 'PlaySquare', label: 'Animate' }
-          ].map(tab => {
-            const IconComp = LucideIcons[tab.icon] || LucideIcons.Circle;
-            const isActive = inspectorTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setInspectorTab(tab.id)}
-                className={`flex flex-col items-center gap-1.5 p-2.5 w-16 rounded-xl transition-all ${isActive ? 'bg-[#1A1B1E] text-blue-400 shadow-inner border border-white/5' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'}`}
-              >
-                <IconComp size={16} className={isActive ? "drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" : ""} />
-                <span className="text-[8px] font-bold tracking-widest uppercase">{tab.label}</span>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* SCROLLABLE PROPERTY CONTENT */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-5 pb-24">
-
-          {/* TAB 1: PROPERTIES & STYLING */}
-          {inspectorTab === 'properties' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              
-              <div className="border-b border-white/5 pb-6">
-                <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><Monitor size={14}/> Positioning</h4>
-                <PropInput label="Layout Flow" propKey="position" type="select" options={[{label:'Relative (Normal)', value:'relative'},{label:'Absolute (Free Float)', value:'absolute'}]} value={props.position} onChange={handlePropChange} />
-                {props.position === 'absolute' && (
-                  <div className="grid grid-cols-2 gap-3 mt-3 p-3 bg-[#161b22] rounded-xl border border-white/5">
-                    <PropInput label="Top" propKey="top" value={props.top} onChange={handlePropChange} />
-                    <PropInput label="Bottom" propKey="bottom" value={props.bottom} onChange={handlePropChange} />
-                    <PropInput label="Left" propKey="left" value={props.left} onChange={handlePropChange} />
-                    <PropInput label="Right" propKey="right" value={props.right} onChange={handlePropChange} />
-                  </div>
-                )}
-              </div>
-
-              <div className="border-b border-white/5 pb-6">
-                <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><Grid size={14}/> Size & Spacing</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <PropInput label="Width" propKey="width" value={props.width} onChange={handlePropChange} />
-                  <PropInput label="Height" propKey="height" value={props.height} onChange={handlePropChange} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <PropInput label="Margin (Outer)" propKey="margin" value={props.margin} onChange={handlePropChange} />
-                  <PropInput label="Padding (Inner)" propKey="padding" value={props.padding} onChange={handlePropChange} />
-                </div>
-                {(selectedNode.type === 'Row' || selectedNode.type === 'Column' || selectedNode.type === 'Stack') && (
-                  <div className="grid grid-cols-2 gap-3">
-                     <PropInput label="Main Align" propKey="mainAxisAlignment" type="select" options={[{label:'Start', value:'start'},{label:'Center', value:'center'},{label:'End', value:'end'},{label:'Space Between', value:'spaceBetween'}]} value={props.mainAxisAlignment} onChange={handlePropChange} />
-                     <PropInput label="Cross Align" propKey="crossAxisAlignment" type="select" options={[{label:'Start', value:'start'},{label:'Center', value:'center'},{label:'Stretch', value:'stretch'}]} value={props.crossAxisAlignment} onChange={handlePropChange} />
-                  </div>
-                )}
-                {selectedNode.type === 'ListView' && (
-                  <div className="grid grid-cols-2 gap-3">
-                     <PropInput label="Scroll Direction" propKey="scrollDirection" type="select" options={[{label:'Vertical', value:'vertical'},{label:'Horizontal', value:'horizontal'}]} value={props.scrollDirection} onChange={handlePropChange} />
-                     <PropInput label="Gap Between Items" propKey="gap" value={props.gap} onChange={handlePropChange} />
-                  </div>
-                )}
-              </div>
-
-              {(selectedNode.type === 'Text' || selectedNode.type === 'Button' || selectedNode.type === 'TextInput') && (
-                <div className="border-b border-white/5 pb-6">
-                  <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><Type size={14}/> Typography</h4>
-                  <PropInput label="Static Text Content" propKey={selectedNode.type === 'Text' ? 'content' : selectedNode.type === 'Button' ? 'label' : 'placeholder'} value={props[selectedNode.type === 'Text' ? 'content' : selectedNode.type === 'Button' ? 'label' : 'placeholder']} onChange={handlePropChange} />
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                     <PropInput label="Font Family" propKey="fontFamily" type="select" options={[{label:'Inter', value:'Inter'},{label:'Roboto', value:'Roboto'},{label:'Poppins', value:'Poppins'},{label:'Montserrat', value:'Montserrat'},{label:'Playfair', value:'Playfair Display'}]} value={props.fontFamily} onChange={handlePropChange} />
-                     <PropInput label="Font Size" propKey="fontSize" value={props.fontSize} onChange={handlePropChange} />
-                  </div>
-                  {/* --- NEW: ADDED ALIGNMENT DROPDOWN NEXT TO COLOR --- */}
-                  <div className="grid grid-cols-2 gap-3">
-                     <PropInput label="Text Color" propKey="color" type="color" value={props.color} onChange={handlePropChange} />
-                     {selectedNode.type === 'Text' && (
-                       <PropInput label="Alignment" propKey="textAlign" type="select" options={[{label:'Left', value:'left'},{label:'Center', value:'center'},{label:'Right', value:'right'}]} value={props.textAlign} onChange={handlePropChange} />
-                     )}
-                  </div>
-                </div>
-              )}
-
-              <div className="border-b border-white/5 pb-6">
-                <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><Layers size={14}/> Appearance</h4>
-                <PropInput label="Background Style" propKey="backgroundType" type="select" options={[{label:'Solid Color', value:'solid'},{label:'Linear Gradient', value:'gradient'}, {label: 'Theme Primary', value: 'theme.primary'}, {label: 'Theme Secondary', value: 'theme.secondary'}]} value={props.backgroundType} onChange={handlePropChange} />
-                {props.backgroundType === 'gradient' ? (
-                  <div className="grid grid-cols-2 gap-3 p-3 bg-[#161b22] rounded-xl border border-white/5 mt-3">
-                    <PropInput label="Start Color" propKey="gradientStart" type="color" value={props.gradientStart} onChange={handlePropChange} />
-                    <PropInput label="End Color" propKey="gradientEnd" type="color" value={props.gradientEnd} onChange={handlePropChange} />
-                  </div>
-                ) : (
-                   <PropInput label="Background Color" propKey="backgroundColor" type="color" value={props.backgroundColor} onChange={handlePropChange} />
-                )}
-                <div className="mt-4">
-                   <label className="text-[9px] font-bold text-gray-500 mb-2 uppercase tracking-widest block">Border Radius (TL, TR, BL, BR)</label>
-                   <div className="grid grid-cols-4 gap-2">
-                      <input type="text" value={props.radiusTopLeft||'0'} onChange={e=>handlePropChange('radiusTopLeft', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg outline-none text-center focus:border-blue-500 transition-colors shadow-inner" />
-                      <input type="text" value={props.radiusTopRight||'0'} onChange={e=>handlePropChange('radiusTopRight', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg outline-none text-center focus:border-blue-500 transition-colors shadow-inner" />
-                      <input type="text" value={props.radiusBottomLeft||'0'} onChange={e=>handlePropChange('radiusBottomLeft', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg outline-none text-center focus:border-blue-500 transition-colors shadow-inner" />
-                      <input type="text" value={props.radiusBottomRight||'0'} onChange={e=>handlePropChange('radiusBottomRight', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg outline-none text-center focus:border-blue-500 transition-colors shadow-inner" />
-                   </div>
-                </div>
-              </div>
-
-              <div className="border-b border-transparent pb-6">
-                <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><BoxSelect size={14}/> Shadows</h4>
-                <PropInput label="Shadow Color" propKey="shadowColor" type="color" value={props.shadowColor} onChange={handlePropChange} />
-                <div className="grid grid-cols-4 gap-2 mt-3">
-                   <div><label className="text-[8px] text-gray-500 block text-center mb-1.5 tracking-widest uppercase">Off X</label><input type="number" value={props.shadowOffsetX||'0'} onChange={e=>handlePropChange('shadowOffsetX', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg text-center focus:border-blue-500 transition-colors" /></div>
-                   <div><label className="text-[8px] text-gray-500 block text-center mb-1.5 tracking-widest uppercase">Off Y</label><input type="number" value={props.shadowOffsetY||'0'} onChange={e=>handlePropChange('shadowOffsetY', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg text-center focus:border-blue-500 transition-colors" /></div>
-                   <div><label className="text-[8px] text-gray-500 block text-center mb-1.5 tracking-widest uppercase">Blur</label><input type="number" value={props.shadowBlur||'0'} onChange={e=>handlePropChange('shadowBlur', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg text-center focus:border-blue-500 transition-colors" /></div>
-                   <div><label className="text-[8px] text-gray-500 block text-center mb-1.5 tracking-widest uppercase">Spread</label><input type="number" value={props.shadowSpread||'0'} onChange={e=>handlePropChange('shadowSpread', e.target.value)} className="w-full text-xs text-gray-200 bg-[#0E0F11] p-2 border border-white/10 rounded-lg text-center focus:border-blue-500 transition-colors" /></div>
-                </div>
-              </div>
-
-              {selectedNode.type === 'Image' && (
-                <div className="border-t border-white/5 pt-6">
-                  <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><ImageIcon size={14}/> Image Source</h4>
-                  <PropInput label="Image URL" propKey="url" value={props.url} onChange={handlePropChange} />
-                  <button onClick={() => { setShowAssetModal(true); fetchAssets(); }} className="w-full mt-2 py-3 bg-[#161b22] border border-white/10 text-gray-300 rounded-xl text-xs font-bold hover:bg-white/10 transition-colors shadow-sm active:scale-95">
-                    Browse Asset Library
-                  </button>
-                </div>
-              )}
-
-              {selectedNode.type === 'Icon' && (
-                <div className="border-t border-white/5 pt-6">
-                  <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest">⭐ Icon Settings</h4>
-                  <PropInput label="Icon Name (Lucide)" propKey="iconName" value={props.iconName} onChange={handlePropChange} />
-                  <div className="grid grid-cols-2 gap-3">
-                     <PropInput label="Icon Size" propKey="size" value={props.size} onChange={handlePropChange} />
-                     <PropInput label="Icon Color" propKey="color" type="color" value={props.color} onChange={handlePropChange} />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB 2: ACTIONS & LOGIC */}
-          {inspectorTab === 'actions' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              <div className="bg-gradient-to-b from-purple-500/10 to-transparent p-5 rounded-2xl border border-purple-500/20 shadow-inner">
-                <h4 className="text-[10px] font-bold text-purple-400 mb-3 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Zap size={14}/> Action Blocks</h4>
-                <p className="text-[10px] text-gray-400 mb-4 leading-relaxed">Chain multiple logic operations together when this element is tapped or interacted with.</p>
-                
-                <div className="bg-[#0E0F11] border border-white/10 rounded-xl p-3 mb-4 flex items-center justify-between shadow-sm">
-                   <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
-                         <LucideIcons.GitMerge size={14} className="text-purple-400" />
+           {/* ============================================================ */}
+           {/* TAB 3: BACKEND & DATA QUERY                                  */}
+           {/* ============================================================ */}
+           {inspectorTab === 'backend' && (
+             <div className="space-y-6 animate-in fade-in duration-200">
+               {selectedNode.type === 'ListView' ? (
+                 <div className="bg-gradient-to-b from-emerald-500/10 to-transparent p-5 rounded-2xl border border-emerald-500/20 shadow-inner">
+                   <h4 className="text-[10px] font-bold text-emerald-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Database size={14}/> Live API Query</h4>
+                   <PropInput label="REST API Endpoint (GET)" propKey="apiEndpoint" placeholder="https://api.example.com/data" value={props.apiEndpoint} onChange={handlePropChange} />
+                   <p className="text-[9px] text-gray-500 mb-4 leading-relaxed mt-[-8px]">If provided, this ListView will automatically fetch and loop through the JSON array response.</p>
+                 </div>
+               ) : (selectedNode.type === 'Text' || selectedNode.type === 'Button' || selectedNode.type === 'TextInput' || selectedNode.type === 'Image') ? (
+                 <div className="bg-gradient-to-b from-indigo-500/10 to-transparent p-5 rounded-2xl border border-indigo-500/20 shadow-inner">
+                   <h4 className="text-[10px] font-bold text-indigo-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Variable size={14}/> State Binding</h4>
+                   
+                   <div className="flex flex-col mb-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Link to Variable</label>
+                        <button onClick={() => handlePropChange('isBound', !props.isBound)} className={`w-10 h-5 rounded-full relative transition-colors ${props.isBound ? 'bg-indigo-600' : 'bg-gray-700'}`}>
+                           <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all ${props.isBound ? 'left-[22px]' : 'left-[2px]'}`}></div>
+                        </button>
                       </div>
-                      <div>
-                        <div className="text-xs font-bold text-gray-200">Action Chain</div>
-                        <div className="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5">{(props.actionChain || []).length} Steps Configured</div>
-                      </div>
+                      
+                      {props.isBound ? (
+                        <select value={props.boundVariable || ''} onChange={(e) => handlePropChange('boundVariable', e.target.value)} className="w-full border border-indigo-500/30 p-3 rounded-lg text-xs bg-[#0E0F11] text-indigo-200 outline-none focus:border-indigo-500 transition-colors cursor-pointer shadow-inner">
+                           <option value="">Select a State Variable...</option>
+                           {schema.appState.map(s => <option key={s.key} value={s.key} className="bg-[#1A1B1E] text-gray-200">{s.key} (Default: {s.value})</option>)}
+                        </select>
+                      ) : (
+                        <div className="text-[10px] text-gray-500 text-center py-4 border border-dashed border-white/10 rounded-lg">State binding is off. Content is static.</div>
+                      )}
                    </div>
-                </div>
+                 </div>
+               ) : (
+                 <div className="text-center text-[10px] text-gray-600 py-8 border border-dashed border-white/10 rounded-2xl bg-[#1A1B1E]">
+                   This element type does not support backend queries or state binding.
+                 </div>
+               )}
+             </div>
+           )}
 
-                <button onClick={() => { setEditingLogicId(selectedNode.id); setIsLogicModalOpen(true); }} className="w-full py-3 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] flex items-center justify-center gap-2">
-                  Open Flow Editor <LucideIcons.ArrowRight size={14} />
-                </button>
-              </div>
-            </div>
-          )}
+           {/* ============================================================ */}
+           {/* TAB 4: ANIMATIONS (Massively Expanded)                       */}
+           {/* ============================================================ */}
+           {inspectorTab === 'animations' && (
+             <div className="space-y-6 animate-in fade-in duration-200">
+               <div className="border border-white/5 pb-6 bg-[#161b22] p-5 rounded-2xl shadow-sm">
+                 <h4 className="text-[10px] font-bold text-gray-400 mb-4 flex items-center gap-2 uppercase tracking-widest">✨ Entry Animations</h4>
+                 <p className="text-[9px] text-gray-500 mb-4 leading-relaxed">Triggered when the screen first loads or on scroll.</p>
+                 
+                 <PropInput label="Animation Effect" propKey="animationType" type="select" options={[
+                     {label:'None', value:'none'},
+                     {label:'Fade In', value:'fade'},
+                     {label:'Slide Up', value:'slideUp'},
+                     {label:'Slide Down', value:'slideDown'},
+                     {label:'Slide Left', value:'slideLeft'},
+                     {label:'Slide Right', value:'slideRight'},
+                     {label:'Scale Pop', value:'scale'},
+                     {label:'Bounce', value:'bounce'},
+                     {label:'Pulse (Looping)', value:'pulse'},
+                     {label:'Flip 3D', value:'flip'},
+                     {label:'Rotate Spin', value:'rotate'},
+                     {label:'Wobble', value:'wobble'}
+                 ]} value={props.animationType} onChange={handlePropChange} />
+                 
+                 {props.animationType && props.animationType !== 'none' && (
+                   <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-white/5">
+                     <PropInput label="Duration (s)" propKey="animationDuration" value={props.animationDuration} onChange={handlePropChange} />
+                     <PropInput label="Delay (s)" propKey="animationDelay" value={props.animationDelay} onChange={handlePropChange} />
+                   </div>
+                 )}
+               </div>
+             </div>
+           )}
 
-          {/* TAB 3: BACKEND & DATA QUERY */}
-          {inspectorTab === 'backend' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              
-              {selectedNode.type === 'ListView' ? (
-                <div className="bg-gradient-to-b from-emerald-500/10 to-transparent p-5 rounded-2xl border border-emerald-500/20 shadow-inner">
-                  <h4 className="text-[10px] font-bold text-emerald-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><Database size={14}/> Live API Query</h4>
-                  <PropInput label="REST API Endpoint (GET)" propKey="apiEndpoint" placeholder="https://api.example.com/data" value={props.apiEndpoint} onChange={handlePropChange} />
-                  <p className="text-[9px] text-gray-500 mb-4 leading-relaxed mt-[-8px]">If provided, this ListView will automatically fetch and loop through the JSON array response.</p>
-                </div>
-              ) : (selectedNode.type === 'Text' || selectedNode.type === 'Button' || selectedNode.type === 'TextInput') ? (
-                <div className="bg-gradient-to-b from-indigo-500/10 to-transparent p-5 rounded-2xl border border-indigo-500/20 shadow-inner">
-                  <h4 className="text-[10px] font-bold text-indigo-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Variable size={14}/> State Binding</h4>
-                  
-                  <div className="flex flex-col mb-4">
-                     <div className="flex justify-between items-center mb-4">
-                       <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Link to Variable</label>
-                       <button onClick={() => handlePropChange('isBound', !props.isBound)} className={`w-10 h-5 rounded-full relative transition-colors ${props.isBound ? 'bg-indigo-600' : 'bg-gray-700'}`}>
-                          <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 transition-all ${props.isBound ? 'left-[22px]' : 'left-[2px]'}`}></div>
-                       </button>
-                     </div>
-                     
-                     {props.isBound ? (
-                       <select value={props.boundVariable || ''} onChange={(e) => handlePropChange('boundVariable', e.target.value)} className="w-full border border-indigo-500/30 p-3 rounded-lg text-xs bg-[#0E0F11] text-indigo-200 outline-none focus:border-indigo-500 transition-colors cursor-pointer shadow-inner">
-                          <option value="">Select a State Variable...</option>
-                          {schema.appState.map(s => <option key={s.key} value={s.key} className="bg-[#1A1B1E] text-gray-200">{s.key} (Default: {s.value})</option>)}
-                       </select>
-                     ) : (
-                       <div className="text-[10px] text-gray-500 text-center py-4 border border-dashed border-white/10 rounded-lg">State binding is off. Content is static.</div>
-                     )}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center text-[10px] text-gray-600 py-8 border border-dashed border-white/10 rounded-2xl bg-[#1A1B1E]">
-                  This element type does not support backend queries or state binding.
-                </div>
-              )}
-
-            </div>
-          )}
-
-          {/* TAB 4: ANIMATIONS */}
-          {inspectorTab === 'animations' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              <div className="border border-white/5 pb-6 bg-[#161b22] p-5 rounded-2xl shadow-sm">
-                <h4 className="text-[10px] font-bold text-gray-400 mb-4 flex items-center gap-2 uppercase tracking-widest">✨ Entry Animations</h4>
-                <p className="text-[9px] text-gray-500 mb-4 leading-relaxed">Triggered when the screen first loads.</p>
-                <PropInput label="Animation Effect" propKey="animationType" type="select" options={[{label:'None', value:'none'},{label:'Fade In', value:'fade'},{label:'Slide Up', value:'slideUp'},{label:'Scale Pop', value:'scale'}]} value={props.animationType} onChange={handlePropChange} />
-                
-                {props.animationType && props.animationType !== 'none' && (
-                  <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-white/5">
-                    <PropInput label="Duration (s)" propKey="animationDuration" value={props.animationDuration} onChange={handlePropChange} />
-                    <PropInput label="Delay (s)" propKey="animationDelay" value={props.animationDelay} onChange={handlePropChange} />
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-        </div>
-      </div>
-    );
-  };
+         </div>
+       </div>
+     );
+   };
 
   const LayerTree = ({ node, depth = 0 }) => {
     const isRoot = node.id && node.id.includes('root');
