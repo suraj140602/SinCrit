@@ -1,4 +1,5 @@
 "use client";
+import AppForgeDashboard from './AppForgeDashboard';
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Canvas from "../../components/Canvas";
@@ -2287,193 +2288,25 @@ const handleMove = (direction) => {
           </motion.div>
         )}
 
+{/* EXTERNAL APPFORGE DASHBOARD COMPONENT */}
         {showDashboard && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[150] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 md:p-10">
-            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="w-full max-w-6xl bg-[#0E0F11] border border-white/10 rounded-3xl shadow-2xl flex overflow-hidden shadow-blue-500/10 h-[85vh] md:h-[80vh]">
-              
-              {/* DASHBOARD SIDEBAR */}
-              <div className="w-64 bg-[#161b22] border-r border-white/5 flex flex-col p-6 shrink-0">
-                 <div className="flex items-center gap-3 mb-10">
-                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg">
-                      <LucideIcons.Activity size={20} className="text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-sm font-bold text-white tracking-wide">Project Hub</h2>
-                      <p className="text-[10px] text-gray-500 uppercase tracking-widest">{schema.app?.name || 'AppForge'}</p>
-                    </div>
-                 </div>
-
-                 <div className="space-y-2 flex-1">
-                    <button onClick={() => setDashboardTab('deployments')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-xs font-bold ${dashboardTab === 'deployments' ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}>
-                       <LucideIcons.Rocket size={16} /> CI/CD Pipeline
-                    </button>
-                    <button onClick={() => { setDashboardTab('maintenance'); if(maintenanceTasks.length === 0) handleRunHealthScan(); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-xs font-bold ${dashboardTab === 'maintenance' ? 'bg-purple-600/10 text-purple-400 border border-purple-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}>
-                       <LucideIcons.Wrench size={16} /> Schema Health
-                    </button>
-                    {/* NEW: UNLOCKED CRASH ANALYTICS */}
-                    <button onClick={() => setDashboardTab('crashes')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-xs font-bold ${dashboardTab === 'crashes' ? 'bg-red-600/10 text-red-400 border border-red-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}`}>
-                       <LucideIcons.LineChart size={16} /> Crash Analytics
-                    </button>
-                 </div>
-                 
-                 <button onClick={() => setShowDashboard(false)} className="mt-auto flex items-center justify-center gap-2 px-4 py-3 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors text-xs font-bold">
-                    <LucideIcons.ChevronLeft size={16} /> Back to Builder
-                 </button>
-              </div>
-
-             {/* DASHBOARD CONTENT AREA */}
-              <div className="flex-1 min-w-[700px] overflow-y-auto bg-[#050505] p-4 md:p-8 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed" style={{ backgroundBlendMode: 'overlay' }}>
-                 
-                 {/* TAB 1: CI/CD DEPLOYMENTS */}
-                 {dashboardTab === 'deployments' && (
-                   <div className="flex flex-col gap-6 h-full animate-in fade-in slide-in-from-right-4 duration-300">
-                     
-                     <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-xl font-bold text-white flex items-center gap-3">Live Build Terminal</h2>
-                          <p className="text-xs text-gray-400 mt-1">Monitor GitHub Actions and fix compilation errors instantly with AI.</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                           {isBuilding && <div className="px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center gap-2"><div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div> Compiling</div>}
-                           {apkUrl && <a href={apkUrl} download className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded-xl transition-colors shadow-[0_0_15px_rgba(22,163,74,0.3)] flex items-center gap-2"><LucideIcons.Download size={14}/> Download APK</a>}
-                        </div>
-                     </div>
-
-                     <div className="flex-1 bg-[#0a0a0a] rounded-2xl border border-white/10 flex flex-col overflow-hidden shadow-2xl relative">
-                       <div className="h-10 bg-[#161b22] flex items-center justify-between px-4 border-b border-white/5 shrink-0">
-                         <div className="flex items-center gap-2">
-                           <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
-                           <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                           <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-                           <span className="ml-3 text-[10px] text-gray-500 font-mono tracking-widest flex items-center gap-2"><LucideIcons.Terminal size={12}/> GITHUB_ACTIONS_LOG</span>
-                         </div>
-                       </div>
-                       
-                       <div className="p-5 font-mono text-xs text-gray-300 leading-loose flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-1.5 relative">
-                          {buildLogs.length === 0 && !isBuilding && <div className="text-gray-600">Waiting for deployment trigger...</div>}
-                          
-                          {buildLogs.map((log, i) => (
-                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} key={i} className={`flex gap-3 ${log.includes('Error:') || log.includes('FAILED') ? 'text-red-400' : 'text-gray-300'}`}>
-                              <span className="text-blue-500/50 shrink-0">➜</span>
-                              <span className="whitespace-pre-wrap">{log}</span>
-                            </motion.div>
-                          ))}
-
-                          {/* THE AI AUTO-FIX OVERLAY (Appears if logs contain an error) */}
-                          {buildLogs.some(l => l.includes('Error:') || l.includes('FAILED')) && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start justify-between gap-4">
-                               <div>
-                                 <h4 className="text-sm font-bold text-red-400 flex items-center gap-2 mb-1"><LucideIcons.AlertOctagon size={16}/> Build Failed</h4>
-                                 <p className="text-xs text-red-300/70">The compiler encountered a fatal error. AppForge AI can analyze the stack trace and patch your generator scripts automatically.</p>
-                               </div>
-                               <button onClick={() => {
-                                  setBuildLogs(prev => [...prev, '\n➜ [SYSTEM] Initiating AI Auto-Patch sequence...', '➜ [AI] Analyzing stack trace...', '➜ [AI] Root cause identified: Lucide icon mapping mismatch in Flutter Material library.', '➜ [AI] Patching utils/flutterGenerator.js...', '➜ [SYSTEM] Patch applied successfully. Ready for rebuild.']);
-                               }} className="shrink-0 px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(220,38,38,0.3)]">
-                                  <LucideIcons.Bot size={14}/> Auto-Fix with AI
-                               </button>
-                            </motion.div>
-                          )}
-                          
-                          {isBuilding && <div className="flex gap-3 mt-2"><span className="text-blue-500/50">➜</span><span className="text-blue-400 animate-pulse">Running assembleRelease...</span></div>}
-                       </div>
-                     </div>
-                   </div>
-                 )}
-
-                 {/* TAB 2: SCHEMA HEALTH (Kept existing structure) */}
-                 {dashboardTab === 'maintenance' && (
-                    <div className="flex flex-col gap-6 h-full animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="flex items-center justify-between bg-gradient-to-r from-purple-900/20 to-transparent p-6 rounded-3xl border border-purple-500/20 shadow-inner">
-                         <div>
-                            <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                               <LucideIcons.Sparkles className="text-purple-400" /> Schema Health Checks
-                            </h2>
-                            <p className="text-xs text-gray-400 mt-2 max-w-lg leading-relaxed">Proactively scan your visual schema against Flutter SDK deprecations before you deploy.</p>
-                         </div>
-                         <button onClick={handleRunHealthScan} disabled={isScanningHealth} className="px-6 py-3 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] disabled:opacity-50 flex items-center gap-2">
-                            <LucideIcons.RefreshCw size={16} className={isScanningHealth ? "animate-spin" : ""} />
-                            {isScanningHealth ? 'Scanning...' : 'Run Deep Scan'}
-                         </button>
-                      </div>
-                      {/* ... existing maintenance tasks map ... */}
-                      <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
-                         {maintenanceTasks.map((task, idx) => (
-                           <div key={idx} className="bg-[#161b22] border border-white/10 p-5 rounded-2xl flex items-start justify-between gap-6 shadow-sm">
-                              <div className="flex gap-4">
-                                 <div className={`mt-1 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${task.type === 'error' ? 'bg-red-500/20 text-red-500' : task.type === 'warning' ? 'bg-orange-500/20 text-orange-500' : 'bg-blue-500/20 text-blue-500'}`}>
-                                    {task.type === 'error' ? <LucideIcons.AlertTriangle size={16} /> : task.type === 'warning' ? <LucideIcons.AlertCircle size={16} /> : <LucideIcons.Info size={16} />}
-                                 </div>
-                                 <div>
-                                    <h4 className="text-sm font-bold text-gray-200 mb-1">{task.title}</h4>
-                                    <p className="text-xs text-gray-400 leading-relaxed max-w-xl">{task.description}</p>
-                                 </div>
-                              </div>
-                           </div>
-                         ))}
-                      </div>
-                    </div>
-                 )}
-
-                 {/* TAB 3: CRASH ANALYTICS (NEW & UNLOCKED) */}
-                 {dashboardTab === 'crashes' && (
-                    <div className="flex flex-col gap-6 h-full animate-in fade-in slide-in-from-right-4 duration-300">
-                      <div className="flex items-center justify-between">
-                         <div>
-                            <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                               <LucideIcons.Flame className="text-red-500" /> Live Crash Analytics
-                            </h2>
-                            <p className="text-xs text-gray-400 mt-2 max-w-lg leading-relaxed">Runtime errors captured from your deployed Flutter apps. AI can automatically trace these back to your AppForge visual schema and apply a fix.</p>
-                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-4 shrink-0">
-                         <div className="bg-[#161b22] p-5 rounded-2xl border border-white/5 shadow-sm">
-                            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Crash-Free Users</div>
-                            <div className="text-3xl font-bold text-green-400">99.8%</div>
-                         </div>
-                         <div className="bg-[#161b22] p-5 rounded-2xl border border-white/5 shadow-sm">
-                            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Total Issues (7d)</div>
-                            <div className="text-3xl font-bold text-red-400">12</div>
-                         </div>
-                         <div className="bg-[#161b22] p-5 rounded-2xl border border-white/5 shadow-sm">
-                            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">AI Auto-Patches</div>
-                            <div className="text-3xl font-bold text-purple-400">4</div>
-                         </div>
-                      </div>
-
-                      <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
-                         {/* Mocked Runtime Error */}
-                         <div className="bg-[#1A1B1E] border border-red-500/20 p-5 rounded-2xl flex flex-col gap-4">
-                            <div className="flex items-start justify-between">
-                               <div className="flex items-center gap-3">
-                                  <div className="px-2 py-1 bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-widest rounded border border-red-500/20">Fatal</div>
-                                  <h4 className="text-sm font-bold text-gray-200">Null check operator used on a null value</h4>
-                               </div>
-                               <span className="text-[10px] text-gray-500">2 mins ago • v1.0.4</span>
-                            </div>
-                            
-                            <div className="bg-[#0E0F11] p-3 rounded-lg border border-white/5 font-mono text-[10px] text-gray-400">
-                               #0      PageHome.build.{"<anonymous closure>"} (package:appforge/main.dart:45:22)<br/>
-                               #1      ListenableBuilder.build (package:flutter/src/widgets/transitions.dart:1022:15)
-                            </div>
-                            
-                            <div className="flex items-center justify-between mt-2 pt-4 border-t border-white/5">
-                               <div className="flex items-center gap-2 text-xs text-gray-400">
-                                  <LucideIcons.Search size={14} className="text-blue-400"/> Found in schema: <span className="font-mono text-blue-400">Text_1715562000</span>
-                               </div>
-                               <button className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white border border-purple-500/30 text-xs font-bold rounded-lg transition-colors flex items-center gap-2">
-                                  <LucideIcons.Wand2 size={14}/> Generate Schema Fix
-                               </button>
-                            </div>
-                         </div>
-                      </div>
-
-                    </div>
-                 )}
-
-              </div>
-            </motion.div>
-          </motion.div>
+          <AppForgeDashboard
+            schema={schema}
+            apkUrl={apkUrl}
+            isBuilding={isBuilding}
+            buildLogs={buildLogs}
+            setBuildLogs={setBuildLogs}
+            onClose={() => setShowDashboard(false)}
+            onSetSchema={setSchema}
+            onTriggerBuild={() => {
+              if (!user || !dbProjectId) return alert("Please log in and Save your project before building.");
+              setBuildLogs(['Initializing AppForge Cloud Compiler...', 'Parsing JSON Schema to Dart...']);
+              setTimeout(() => setBuildLogs(prev => [...prev, 'Resolving Flutter dependencies (flutter pub get)...']), 1500);
+              setTimeout(() => setBuildLogs(prev => [...prev, 'Compiling native Android binaries (assembleRelease)...']), 3500);
+              setTimeout(() => setBuildLogs(prev => [...prev, 'Applying ProGuard rules and shrinking APK...']), 6000);
+              startActualCloudBuild(dbProjectId);
+            }}
+          />
         )}
 
         {/* AI AUDITOR MODAL */}
