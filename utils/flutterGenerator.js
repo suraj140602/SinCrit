@@ -55,17 +55,47 @@ const parseEdgeInsets = (val) => {
 
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-// --- SAFE ICON TRANSLATOR ---
+// --- SAFE ICON TRANSLATOR (FIXED FOR GITHUB ACTIONS BUILD) ---
 const getFlutterIcon = (rawName) => {
     if (!rawName) return 'help_outline';
-    const name = rawName.toLowerCase().replace(/[- ]/g, '_');
+    
+    // Step 1: Clean spaces/dashes and convert PascalCase to snake_case
+    let safeName = rawName.trim().replace(/[- ]/g, '_');
+    safeName = safeName.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
+    
+    // Step 2: Explicit mapping for Lucide to Material mismatches
     const iconMap = {
-        'plus': 'add', 'pluscircle': 'add_circle', 'x': 'close',
-        'user': 'person', 'users': 'people', 'trash': 'delete',
-        'play': 'play_arrow', 'layout': 'dashboard', 'database': 'storage',
-        'zap': 'bolt'
+        'log_out': 'logout', // Fixes the exact compiler crash
+        'plus': 'add', 
+        'plus_circle': 'add_circle', 
+        'x': 'close',
+        'user': 'person', 
+        'users': 'people', 
+        'trash': 'delete',
+        'play': 'play_arrow', 
+        'layout': 'dashboard', 
+        'layout_dashboard': 'dashboard',
+        'database': 'storage',
+        'zap': 'bolt',
+        'message_square': 'chat',
+        'sliders_horizontal': 'tune',
+        'refresh_cw': 'refresh',
+        'trending_up': 'trending_up',
+        'play_circle': 'play_circle',
+        'chevron_left': 'chevron_left',
+        'chevron_right': 'chevron_right',
+        'shopping_bag': 'shopping_bag',
+        'credit_card': 'credit_card',
+        'mail': 'mail',
+        'bell': 'notifications',
+        'activity': 'show_chart',
+        'heart': 'favorite',
+        'star': 'star',
+        'image': 'image',
+        'box': 'inventory_2'
     };
-    return iconMap[name] || name;
+    
+    return iconMap[safeName] || safeName;
 };
 
 // ---------------------------------------------------------------------------
@@ -779,4 +809,3 @@ export const generateFlutterDotEnv = (schema) => {
 
     return lines.join('\n') + '\n';
 };
-
