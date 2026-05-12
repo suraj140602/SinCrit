@@ -20,7 +20,6 @@ import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
-const searchParams = useSearchParams();
 
 
 // --- PREMIUM AI TEMPLATE LIBRARY ---
@@ -267,6 +266,8 @@ const PropInput = ({ label, propKey, type = "text", options = [], placeholder = 
 };
 
 function Home() {
+  const searchParams = useSearchParams();
+const router = useRouter();
   // 1. STRICT INITIALIZATION: Force the root to be a Flexbox Column
   const initialPages = dummySchema?.pages?.length > 0 ? dummySchema.pages : [{
     id: 'home',
