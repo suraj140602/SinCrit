@@ -270,6 +270,8 @@ const router = useRouter();
   });
 
 
+  const [isPremium, setIsPremium] = useState(false); // <--- NEW STATE
+  
   // --- AI CONFIGURATION STATE ---
   const [aiProvider, setAiProvider] = useState('gemini-default'); // 'gemini-default', 'claude-3-5', 'gpt-4o'
   const [customApiKey, setCustomApiKey] = useState('');
@@ -461,6 +463,16 @@ const router = useRouter();
   const handleExecuteInjection = () => {
     if (!pendingInjection) return;
 
+    // --- NEW: STORE PAYWALL GATEKEEPER ---
+    const freeTemplates = ['hero', 'login', 'productCard', 'storyList', 'sectionTitle'];
+    if (!freeTemplates.includes(pendingInjection) && !isPremium) {
+       alert("✨ This is a Premium Theme from the Store! Please upgrade your workspace to deploy it.");
+       setPendingInjection(null); // Close the modal
+       handleCheckout(); // Send them to Stripe!
+       return;
+    }
+    // -------------------------------------
+
     let targetPageId = currentPageId;
     let newSchema = JSON.parse(JSON.stringify(schema));
 
@@ -550,9 +562,15 @@ const router = useRouter();
 
   const loadUserProject = async (userId) => {
     try {
+      // --- NEW: FETCH PREMIUM STATUS ---
+      const { data: profileData } = await supabase.from('profiles').select('is_premium').eq('id', userId).single();
+      setIsPremium(profileData?.is_premium || false);
+      // ---------------------------------
+
       const { data } = await supabase.from('projects').select('*').eq('user_id', userId).limit(1).single();
       if (data) {
         const loadedSchema = { 
+
             ...data.schema, 
             components: data.schema.components || [], 
             appState: data.schema.appState || [],
@@ -1084,6 +1102,18 @@ const router = useRouter();
       let sourceObj = null;
       if (action === 'template') {
         const tKey = e.dataTransfer.getData("templateKey");
+        
+        // --- NEW: PAYWALL GATEKEEPER ---
+        // Define which templates are free. Everything else triggers the paywall!
+        const freeTemplates = ['hero', 'login', 'productCard', 'storyList', 'sectionTitle'];
+        
+        if (!freeTemplates.includes(tKey) && !isPremium) {
+           alert("✨ This is a Premium Template! Please upgrade your workspace to unlock it.");
+           handleCheckout(); // Send them to Stripe!
+           return;
+        }
+        // -------------------------------
+
         sourceObj = TEMPLATES[tKey];
       } else {
         const cId = e.dataTransfer.getData("compId");
@@ -2745,15 +2775,7 @@ const handleMove = (direction) => {
             <LucideIcons.Eye size={12} /> Preview
           </button>
 
-          <button onClick={() => {
-             if (!user || !dbProjectId) return alert("Please log in and Save your project before building.");
-             setShowDashboard(true);
-             setBuildLogs(['Initializing AppForge Cloud Compiler...', 'Parsing JSON Schema to Dart...']);
-             setTimeout(() => setBuildLogs(prev => [...prev, 'Resolving Flutter dependencies (flutter pub get)...']), 1500);
-             setTimeout(() => setBuildLogs(prev => [...prev, 'Compiling native Android binaries (assembleRelease)...']), 3500);
-             setTimeout(() => setBuildLogs(prev => [...prev, 'Applying ProGuard rules and shrinking APK...']), 6000);
-             startActualCloudBuild(dbProjectId);
-          }} disabled={isBuilding} className="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-xl hover:bg-blue-500 transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] disabled:opacity-50 flex items-center gap-1.5 ml-1">
+          <button onClick={handleDeploy} disabled={isBuilding} className="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-xl hover:bg-blue-500 transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] disabled:opacity-50 flex items-center gap-1.5 ml-1">
             {isBuilding ? 'Building...' : <><LucideIcons.Rocket size={12} fill="white"/> Deploy</>}
           </button>
         </div>
