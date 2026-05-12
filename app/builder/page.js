@@ -2737,10 +2737,6 @@ const handleMove = (direction) => {
             <LucideIcons.PanelRight size={12} /> Inspector
           </button>
 
-          <button onClick={() => setShowDashboard(true)} className="px-3 py-1.5 bg-[#161b22] text-gray-300 border border-white/5 text-[10px] font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-1.5">
-            <LucideIcons.LayoutDashboard size={12} /> Dashboard
-          </button>
-
 
           <button onClick={() => setShowDashboard(true)} className="px-3 py-1.5 bg-[#161b22] text-gray-300 border border-white/5 text-[10px] font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-1.5">
             <LucideIcons.LayoutDashboard size={12} /> Dashboard
