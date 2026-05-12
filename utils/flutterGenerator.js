@@ -65,7 +65,7 @@ const getFlutterIcon = (rawName) => {
     
     // Step 2: Explicit mapping for Lucide to Material mismatches
     const iconMap = {
-        'log_out': 'logout', // Fixes the exact compiler crash
+        'log_out': 'logout',
         'plus': 'add', 
         'plus_circle': 'add_circle', 
         'x': 'close',
@@ -92,23 +92,207 @@ const getFlutterIcon = (rawName) => {
         'heart': 'favorite',
         'star': 'star',
         'image': 'image',
-        'box': 'inventory_2'
+        'box': 'inventory_2',
+        // Extra common Lucide → Material mappings
+        'search': 'search',
+        'settings': 'settings',
+        'home': 'home',
+        'menu': 'menu',
+        'arrow_left': 'arrow_back',
+        'arrow_right': 'arrow_forward',
+        'arrow_up': 'arrow_upward',
+        'arrow_down': 'arrow_downward',
+        'check': 'check',
+        'check_circle': 'check_circle',
+        'alert_circle': 'error',
+        'alert_triangle': 'warning',
+        'info': 'info',
+        'eye': 'visibility',
+        'eye_off': 'visibility_off',
+        'lock': 'lock',
+        'unlock': 'lock_open',
+        'edit': 'edit',
+        'edit_2': 'edit',
+        'edit_3': 'edit',
+        'copy': 'content_copy',
+        'clipboard': 'assignment',
+        'share': 'share',
+        'share_2': 'share',
+        'download': 'download',
+        'upload': 'upload',
+        'link': 'link',
+        'external_link': 'open_in_new',
+        'map_pin': 'location_on',
+        'map': 'map',
+        'phone': 'phone',
+        'video': 'videocam',
+        'camera': 'camera_alt',
+        'mic': 'mic',
+        'volume_2': 'volume_up',
+        'volume_x': 'volume_off',
+        'calendar': 'calendar_today',
+        'clock': 'access_time',
+        'filter': 'filter_list',
+        'sort': 'sort',
+        'grid': 'grid_view',
+        'list': 'list',
+        'bar_chart': 'bar_chart',
+        'bar_chart_2': 'bar_chart',
+        'pie_chart': 'pie_chart',
+        'file': 'insert_drive_file',
+        'file_text': 'description',
+        'folder': 'folder',
+        'folder_open': 'folder_open',
+        'save': 'save',
+        'printer': 'print',
+        'send': 'send',
+        'inbox': 'inbox',
+        'archive': 'archive',
+        'trash_2': 'delete',
+        'bookmark': 'bookmark',
+        'tag': 'label',
+        'flag': 'flag',
+        'award': 'emoji_events',
+        'gift': 'card_giftcard',
+        'shopping_cart': 'shopping_cart',
+        'package': 'inventory',
+        'truck': 'local_shipping',
+        'wifi': 'wifi',
+        'bluetooth': 'bluetooth',
+        'battery': 'battery_full',
+        'sun': 'wb_sunny',
+        'moon': 'dark_mode',
+        'cloud': 'cloud',
+        'umbrella': 'umbrella',
+        'globe': 'language',
+        'maximize': 'fullscreen',
+        'minimize': 'fullscreen_exit',
+        'rotate_cw': 'rotate_right',
+        'rotate_ccw': 'rotate_left',
+        'zoom_in': 'zoom_in',
+        'zoom_out': 'zoom_out',
+        'crop': 'crop',
+        'scissors': 'content_cut',
+        'paperclip': 'attach_file',
+        'more_horizontal': 'more_horiz',
+        'more_vertical': 'more_vert',
+        'chevron_up': 'expand_less',
+        'chevron_down': 'expand_more',
+        'corner_up_left': 'reply',
+        'log_in': 'login',
+        'user_plus': 'person_add',
+        'user_minus': 'person_remove',
+        'user_check': 'how_to_reg',
+        'shield': 'security',
+        'shield_check': 'verified_user',
+        'key': 'key',
+        'terminal': 'terminal',
+        'code': 'code',
+        'cpu': 'memory',
+        'server': 'dns',
+        'hard_drive': 'storage',
+        'monitor': 'monitor',
+        'smartphone': 'smartphone',
+        'tablet': 'tablet',
+        'headphones': 'headphones',
+        'music': 'music_note',
+        'skip_back': 'skip_previous',
+        'skip_forward': 'skip_next',
+        'pause': 'pause',
+        'stop_circle': 'stop_circle',
+        'repeat': 'repeat',
+        'shuffle': 'shuffle',
+        'fast_forward': 'fast_forward',
+        'rewind': 'fast_rewind',
+        'minus': 'remove',
+        'minus_circle': 'remove_circle',
+        'divide': 'close',
+        'percent': 'percent',
+        'dollar_sign': 'attach_money',
+        'credit_card': 'credit_card',
+        'briefcase': 'work',
+        'building': 'business',
+        'building_2': 'apartment',
+        'map_pin': 'place',
+        'navigation': 'navigation',
+        'compass': 'explore',
+        'target': 'gps_fixed',
+        'crosshair': 'my_location',
+        'at_sign': 'alternate_email',
+        'hash': 'tag',
+        'type': 'title',
+        'align_left': 'format_align_left',
+        'align_center': 'format_align_center',
+        'align_right': 'format_align_right',
+        'bold': 'format_bold',
+        'italic': 'format_italic',
+        'underline': 'format_underlined',
+        'list_ordered': 'format_list_numbered',
+        'thermometer': 'thermostat',
+        'droplet': 'water_drop',
+        'wind': 'air',
+        'feather': 'feather',
+        'layers': 'layers',
+        'toggle_left': 'toggle_off',
+        'toggle_right': 'toggle_on',
+        'sliders': 'tune',
+        'sidebar': 'view_sidebar',
+        'columns': 'view_column',
+        'layout_grid': 'grid_view',
+        'panel_left': 'view_sidebar',
+        'panel_right': 'view_sidebar',
+        'help_circle': 'help',
+        'message_circle': 'chat_bubble',
+        'message_square': 'chat',
+        'messages_square': 'forum',
+        'thumbs_up': 'thumb_up',
+        'thumbs_down': 'thumb_down',
+        'smile': 'sentiment_satisfied',
+        'frown': 'sentiment_dissatisfied',
+        'meh': 'sentiment_neutral',
+        'chart_bar': 'bar_chart',
+        'chart_line': 'show_chart',
+        'chart_pie': 'pie_chart',
+        'rss': 'rss_feed',
+        'podcast': 'podcasts',
+        'radio': 'radio',
+        'tv': 'tv',
+        'film': 'movie',
+        'clapperboard': 'movie_creation',
+        'youtube': 'play_circle',
+        'twitch': 'live_tv',
+        'instagram': 'camera_alt',
+        'twitter': 'chat',
+        'facebook': 'group',
+        'linkedin': 'work',
+        'github': 'code',
+        'gitlab': 'code',
+        'figma': 'design_services',
+        'framer': 'auto_awesome',
+        'dribbble': 'sports_basketball',
+        'notion': 'article',
+        'slack': 'chat',
+        'discord': 'forum',
     };
-    
-    return iconMap[safeName] || safeName;
+
+    const resolved = iconMap[safeName] || safeName;
+
+    // Step 3: Final safety net — strip any characters Flutter's Icons class
+    // won't accept (only lowercase letters, digits, and underscores are valid).
+    // Also collapse consecutive underscores and trim leading/trailing ones.
+    const safe = resolved
+        .replace(/[^a-z0-9_]/g, '_')   // replace invalid chars with underscore
+        .replace(/_+/g, '_')            // collapse consecutive underscores
+        .replace(/^_|_$/g, '');         // trim leading/trailing underscores
+
+    // Fallback to help_outline if we somehow ended up with an empty string
+    return safe.length > 0 ? safe : 'help_outline';
 };
 
 // ---------------------------------------------------------------------------
 // ENV HELPERS
-// Reads secrets from .env.local (Next.js / Vite convention).
-// In the browser build, NEXT_PUBLIC_ vars are inlined by the bundler.
-// In Node/test environments, process.env is used directly.
 // ---------------------------------------------------------------------------
 
-/**
- * Returns the env key name for a given secret so callers can reference it
- * consistently and the generator can emit the correct env var name.
- */
 const ENV_KEYS = {
     SUPABASE_URL:      'NEXT_PUBLIC_SUPABASE_URL',
     SUPABASE_ANON_KEY: 'NEXT_PUBLIC_SUPABASE_ANON_KEY',
@@ -118,23 +302,13 @@ const ENV_KEYS = {
     FIREBASE_PROJECT_ID:    'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
 };
 
-/**
- * Reads a value from the environment.
- * Falls back to the schema value so existing callers keep working when
- * the env var hasn't been set yet (e.g. during local dev without .env.local).
- */
 const readEnv = (key, fallback = '') => {
-    // Next.js inlines NEXT_PUBLIC_ vars at build time; Vite uses import.meta.env.
     if (typeof process !== 'undefined' && process.env && process.env[key]) {
         return process.env[key];
     }
     return fallback;
 };
 
-/**
- * Resolves Supabase credentials.
- * Priority: .env.local → schema → empty string.
- */
 const resolveSupabase = (schema) => {
     const rawUrl  = readEnv(ENV_KEYS.SUPABASE_URL,      schema?.supabaseConfig?.url      || '');
     const anonKey = readEnv(ENV_KEYS.SUPABASE_ANON_KEY, schema?.supabaseConfig?.anonKey  || '');
@@ -147,10 +321,6 @@ const resolveSupabase = (schema) => {
     };
 };
 
-/**
- * Resolves Firebase credentials.
- * Priority: .env.local → schema → empty string.
- */
 const resolveFirebase = (schema) => {
     const fc = schema?.firebaseConfig || {};
     return {
@@ -163,7 +333,6 @@ const resolveFirebase = (schema) => {
 
 // ---------------------------------------------------------------------------
 // Checks whether any node in the tree uses a specific widget type.
-// Used to gate conditional imports so we don't emit unused pub dependencies.
 // ---------------------------------------------------------------------------
 const schemaUsesWidget = (schema, type) => {
     const search = (node) => {
@@ -176,11 +345,9 @@ const schemaUsesWidget = (schema, type) => {
 
 export const generateFlutterCode = (schema) => {
     
-    // Resolve secrets from .env.local (with schema fallback)
     const supabase = resolveSupabase(schema);
     const firebase = resolveFirebase(schema);
 
-    // Detect which optional widgets are actually used so we only import what's needed
     const usesMap     = schemaUsesWidget(schema, 'MapView');
     const usesWebView = schemaUsesWidget(schema, 'WebView');
 
@@ -253,7 +420,6 @@ ${stateMutators}
             }
             if ((action.type === 'apiCall' || action.type === 'api') && action.url) {
                 const method = action.method === 'POST' ? 'post' : 'get';
-                // Supabase URLs: inject auth headers using resolved (env-safe) credentials
                 let headerCode = `null`;
                 if (supabase.active && action.url.includes(supabase.url)) {
                     headerCode = `{ 'apikey': '${supabase.anonKey}', 'Authorization': 'Bearer ${supabase.anonKey}' }`;
@@ -300,7 +466,6 @@ ${stateMutators}
         const props = node.props || {};
         let widgetCode = '';
 
-        // --- SAFE STRING ESCAPING (Prevents $19.99 from crashing the compiler) ---
         let rawText = props.content || props.label || props.placeholder || '';
         let safeText = String(rawText)
             .replace(/\\/g, '\\\\') 
@@ -513,7 +678,6 @@ ${stateMutators}
                 if (props.apiEndpointId) {
                     const apiDef = schema.apiEndpoints?.find(a => a.id === props.apiEndpointId);
                     if (apiDef && apiDef.url) {
-                        // Inject Supabase auth headers from resolved (env-safe) credentials
                         let apiHeaderCode = `null`;
                         if (supabase.active && apiDef.url.includes(supabase.url)) {
                             apiHeaderCode = `{ 'apikey': '${supabase.anonKey}', 'Authorization': 'Bearer ${supabase.anonKey}' }`;
@@ -665,8 +829,6 @@ class ${className} extends StatelessWidget {
     });
 
     // 5. ASSEMBLE IMPORTS
-    // Core — always included. flutter_dotenv is always included so secrets
-    // are NEVER compiled into the binary as string literals.
     let imports = `import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -674,11 +836,9 @@ import 'dart:ui';
 import 'dart:async';
 `;
 
-    // Optional imports — only emitted when the schema actually uses these widgets
     if (usesMap)     imports += `import 'package:google_maps_flutter/google_maps_flutter.dart';\n`;
     if (usesWebView) imports += `import 'package:webview_flutter/webview_flutter.dart';\n`;
 
-    // Backend-specific imports
     if (schema.backendProvider === 'firebase') {
         imports += `import 'package:firebase_core/firebase_core.dart';\nimport 'package:firebase_auth/firebase_auth.dart';\nimport 'package:cloud_firestore/cloud_firestore.dart';\n`;
     } else if (supabase.active) {
@@ -686,13 +846,10 @@ import 'dart:async';
     }
 
     // 6. ASSEMBLE main() BODY
-    // ⚠️  Credentials are NEVER interpolated here as string literals.
-    //     The generated Dart always reads from dotenv at runtime.
     let mainBody = `
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Load .env before anything else — crash loudly in debug, swallow in release.
     await dotenv.load(fileName: '.env');
 
     PlatformDispatcher.instance.onError = (error, stack) => true;
@@ -701,7 +858,6 @@ import 'dart:async';
     };`;
 
     if (schema.backendProvider === 'firebase') {
-        // The generated Dart reads from dotenv — no literal key values here.
         mainBody += `
     try {
       await Firebase.initializeApp(
@@ -714,7 +870,6 @@ import 'dart:async';
       );
     } catch (e) {}`;
     } else if (supabase.active) {
-        // Same — dotenv keys only, no raw values.
         mainBody += `
     try {
       await Supabase.initialize(
@@ -772,16 +927,6 @@ ${pageClasses}
 
 // ---------------------------------------------------------------------------
 // generateFlutterDotEnv(schema)
-// Call this alongside generateFlutterCode() and write the result to a file
-// named ".env" in the Flutter project root. This file holds the real values
-// and must be kept out of version control.
-//
-// Usage in your export handler:
-//   const dartCode  = generateFlutterCode(schema);
-//   const dotEnvStr = generateFlutterDotEnv(schema);
-//   zip.addFile('lib/main.dart', dartCode);
-//   zip.addFile('.env',          dotEnvStr);   // ← real secrets go here
-//   zip.addFile('.gitignore',    '*.env\n.env\n');
 // ---------------------------------------------------------------------------
 export const generateFlutterDotEnv = (schema) => {
     const supabase = resolveSupabase(schema);
