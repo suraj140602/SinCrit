@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
+import Canvas from '../../components/Canvas';
+import { TEMPLATES } from '../../data/templates';
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -581,6 +583,9 @@ function MarketplaceCard({ item, onInstall }) {
   const isWireframe = item.cat === 'wireframes';
   const isFree = item.price === 'FREE';
 
+  // Check if we actually have the JSON code for this template yet
+  const templateSchema = TEMPLATES[item.templateKey];
+
   return (
     <div
       onMouseEnter={() => setHovered(true)}
@@ -605,153 +610,82 @@ function MarketplaceCard({ item, onInstall }) {
         flexDirection: 'column',
       }}
     >
-      {/* Card Hero */}
+      {/* ── LIVE RENDERING HERO AREA ── */}
       <div style={{
-        height: 160,
-        background: isWireframe
-          ? 'repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 24px), repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 24px)'
-          : `linear-gradient(135deg, ${item.colors[0]}22 0%, ${item.colors[1]}18 100%)`,
-        borderBottom: `1px solid rgba(255,255,255,0.04)`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        height: 220, // Taller to fit the UI preview
         position: 'relative',
         overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        borderBottom: `1px solid rgba(255,255,255,0.04)`,
+        background: '#050505',
       }}>
-        {/* Background orbs */}
-        {!isWireframe && (
+        
+        {/* If we have the template JSON, render the LIVE CANVAS! */}
+        {templateSchema ? (
+          <div style={{
+            position: 'absolute',
+            top: 20, // Padding from top
+            width: 375, // Standard mobile width
+            height: 812,
+            transform: `scale(${hovered ? 0.55 : 0.5})`, // Scales the whole UI down!
+            transformOrigin: 'top center',
+            transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            pointerEvents: 'none', // Prevents the user from clicking buttons inside the preview
+            zIndex: 1,
+            // Add a subtle border to mimic a phone screen edge
+            border: '2px solid rgba(255,255,255,0.1)',
+            borderRadius: '40px',
+            overflow: 'hidden',
+            backgroundColor: '#0E0F11'
+          }}>
+            <Canvas 
+               // We pass a dummy schema just to satisfy the Canvas requirements
+               schema={{ theme: { primary: item.colors[0], secondary: item.colors[1], background: '#0E0F11' } }} 
+               rootNode={templateSchema} 
+               previewMode="iphone"
+               showGrid={false}
+               isLivePreview={false}
+            />
+          </div>
+        ) : (
+          /* FALLBACK: If we haven't coded this JSON template yet, show the beautiful orbs */
           <>
-            <div style={{
-              position: 'absolute', width: 100, height: 100,
-              borderRadius: '50%',
-              background: `radial-gradient(circle, ${item.colors[0]}30 0%, transparent 70%)`,
-              top: '-20%', left: '10%',
-              transition: 'transform 0.5s ease',
-              transform: hovered ? 'scale(1.4)' : 'scale(1)',
-            }} />
-            <div style={{
-              position: 'absolute', width: 80, height: 80,
-              borderRadius: '50%',
-              background: `radial-gradient(circle, ${item.colors[1]}25 0%, transparent 70%)`,
-              bottom: '-10%', right: '15%',
-              transition: 'transform 0.5s ease',
-              transform: hovered ? 'scale(1.3)' : 'scale(1)',
-            }} />
+            <div style={{ position: 'absolute', width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle, ${item.colors[0]}30 0%, transparent 70%)`, top: '-20%', left: '10%', transition: 'transform 0.5s ease', transform: hovered ? 'scale(1.4)' : 'scale(1)' }} />
+            <div style={{ position: 'absolute', width: 80, height: 80, borderRadius: '50%', background: `radial-gradient(circle, ${item.colors[1]}25 0%, transparent 70%)`, bottom: '-10%', right: '15%', transition: 'transform 0.5s ease', transform: hovered ? 'scale(1.3)' : 'scale(1)' }} />
+            <div style={{ fontSize: 48, opacity: 0.35, filter: `drop-shadow(0 0 12px ${item.accentColor})`, transition: 'all 0.4s ease', transform: hovered ? 'scale(1.15) translateY(20px)' : 'scale(1) translateY(20px)', color: item.accentColor, zIndex: 1 }}>
+              {item.icon}
+            </div>
+            {/* "Coming Soon" Badge for templates you haven't written JSON for yet */}
+            <div style={{ position: 'absolute', bottom: 10, fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 'bold', tracking: 'widest', zIndex: 2 }}>JSON COMING SOON</div>
           </>
         )}
-        {/* Icon */}
-        <div style={{
-          fontSize: isWireframe ? 40 : 48,
-          opacity: isWireframe ? 0.15 : 0.35,
-          filter: isWireframe ? 'none' : `drop-shadow(0 0 12px ${item.accentColor})`,
-          transition: 'all 0.4s ease',
-          transform: hovered ? 'scale(1.15) rotate(5deg)' : 'scale(1) rotate(0)',
-          color: isWireframe ? '#6b7280' : item.accentColor,
-          fontFamily: 'monospace',
-          zIndex: 1,
-        }}>
-          {item.icon}
-        </div>
 
-        {/* Price badge */}
-        <div style={{
-          position: 'absolute', top: 12, right: 12,
-          padding: '4px 10px',
-          borderRadius: 8,
-          fontSize: 10,
-          fontWeight: 700,
-          letterSpacing: '0.1em',
-          background: isFree
-            ? 'rgba(16,185,129,0.15)'
-            : 'linear-gradient(135deg, rgba(245,158,11,0.9), rgba(239,68,68,0.9))',
-          color: isFree ? '#34d399' : '#fff',
-          border: isFree ? '1px solid rgba(52,211,153,0.3)' : 'none',
-        }}>
+        {/* Price & Tag Badges */}
+        <div style={{ position: 'absolute', top: 12, right: 12, padding: '4px 10px', borderRadius: 8, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', background: isFree ? 'rgba(16,185,129,0.15)' : 'linear-gradient(135deg, rgba(245,158,11,0.9), rgba(239,68,68,0.9))', color: isFree ? '#34d399' : '#fff', border: isFree ? '1px solid rgba(52,211,153,0.3)' : 'none', zIndex: 10 }}>
           {item.price}
         </div>
-
-        {/* Tag badge */}
         {item.tag && (
-          <div style={{
-            position: 'absolute', top: 12, left: 12,
-            padding: '4px 10px',
-            borderRadius: 8,
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: '0.12em',
-            background: item.tag === 'NEW' ? 'rgba(99,102,241,0.8)' : 'rgba(236,72,153,0.8)',
-            color: '#fff',
-          }}>
+          <div style={{ position: 'absolute', top: 12, left: 12, padding: '4px 10px', borderRadius: 8, fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', background: item.tag === 'NEW' ? 'rgba(99,102,241,0.8)' : 'rgba(236,72,153,0.8)', color: '#fff', zIndex: 10 }}>
             {item.tag}
-          </div>
-        )}
-
-        {/* Wireframe grid lines */}
-        {isWireframe && (
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', flexDirection: 'column',
-            padding: 20, gap: 8, opacity: 0.3,
-          }}>
-            <div style={{ height: 14, borderRadius: 3, background: '#6b7280', width: '60%' }} />
-            <div style={{ height: 8, borderRadius: 3, background: '#6b7280', width: '40%' }} />
-            <div style={{ flex: 1, borderRadius: 6, border: '1px solid #6b7280', marginTop: 8 }} />
           </div>
         )}
       </div>
 
-      {/* Card Body */}
+      {/* Card Body (Text and CTA remain unchanged) */}
       <div style={{ padding: '20px 20px 16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ fontSize: 10, color: item.accentColor, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, opacity: 0.8 }}>
-          {item.sub}
-        </div>
-        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 8, lineHeight: 1.3 }}>
-          {item.title}
-        </h3>
-        <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6, marginBottom: 14, flex: 1 }}>
-          {item.desc}
-        </p>
-
-        {/* Feature tags */}
+        <div style={{ fontSize: 10, color: item.accentColor, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, opacity: 0.8 }}>{item.sub}</div>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 8, lineHeight: 1.3 }}>{item.title}</h3>
+        <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6, marginBottom: 14, flex: 1 }}>{item.desc}</p>
+        
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
-          {item.features.slice(0, 3).map(f => (
-            <span key={f} style={{
-              padding: '3px 8px', borderRadius: 6,
-              fontSize: 10, fontWeight: 600,
-              background: `${item.accentColor}15`,
-              color: item.accentColor,
-              border: `1px solid ${item.accentColor}25`,
-            }}>{f}</span>
-          ))}
-          {item.features.length > 3 && (
-            <span style={{ padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 600, background: 'rgba(255,255,255,0.05)', color: '#64748b', border: '1px solid rgba(255,255,255,0.06)' }}>
-              +{item.features.length - 3}
-            </span>
-          )}
+          {item.features.slice(0, 3).map(f => <span key={f} style={{ padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 600, background: `${item.accentColor}15`, color: item.accentColor, border: `1px solid ${item.accentColor}25` }}>{f}</span>)}
+          {item.features.length > 3 && <span style={{ padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 600, background: 'rgba(255,255,255,0.05)', color: '#64748b', border: '1px solid rgba(255,255,255,0.06)' }}>+{item.features.length - 3}</span>}
         </div>
 
-        {/* CTA */}
-        <button style={{
-          width: '100%',
-          padding: '11px 0',
-          borderRadius: 12,
-          border: `1px solid ${hovered ? item.accentColor : item.accentColor + '40'}`,
-          background: hovered
-            ? `linear-gradient(135deg, ${item.colors[0]}, ${item.colors[1]})`
-            : `${item.accentColor}10`,
-          color: hovered ? '#fff' : item.accentColor,
-          fontSize: 12,
-          fontWeight: 700,
-          letterSpacing: '0.05em',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-        }}>
-          <span style={{ fontSize: 14 }}>↓</span>
-          {isFree ? 'Install Free' : 'Push to Canvas'}
+        <button style={{ width: '100%', padding: '11px 0', borderRadius: 12, border: `1px solid ${hovered ? item.accentColor : item.accentColor + '40'}`, background: hovered ? `linear-gradient(135deg, ${item.colors[0]}, ${item.colors[1]})` : `${item.accentColor}10`, color: hovered ? '#fff' : item.accentColor, fontSize: 12, fontWeight: 700, letterSpacing: '0.05em', cursor: 'pointer', transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <span style={{ fontSize: 14 }}>↓</span> {isFree ? 'Install Free' : 'Push to Canvas'}
         </button>
       </div>
     </div>

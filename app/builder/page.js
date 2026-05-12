@@ -19,56 +19,7 @@ import "mobile-drag-drop/default.css"; // Gives visual feedback on mobile
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 export const dynamic = 'force-dynamic';
-
-
-
-// --- PREMIUM AI TEMPLATE LIBRARY ---
-const TEMPLATES = {
-  login: {
-    id: "login_root",
-    type: "Column",
-    props: { width: "100%", height: "100%", padding: "30px", mainAxisAlignment: "center", crossAxisAlignment: "center", backgroundColor: "#0E0F11" },
-    children: [
-      { id: "log_icon", type: "Icon", props: { iconName: "Hexagon", size: "64", color: "#6366f1", margin: "0 0 20px 0" } },
-      { id: "log_t1", type: "Text", props: { content: "Welcome Back", fontSize: "28", fontFamily: "Inter", color: "#ffffff", textAlign: "center", margin: "0 0 10px 0" } },
-      { id: "log_t2", type: "Text", props: { content: "Sign in to continue to AppForge", fontSize: "14", color: "#888888", textAlign: "center", margin: "0 0 40px 0" } },
-      { id: "log_in1", type: "TextInput", props: { placeholder: "Email Address", width: "100%", padding: "16px", backgroundColor: "#1A1B1E", color: "#ffffff", radiusTopLeft: "12", radiusTopRight: "12", radiusBottomLeft: "12", radiusBottomRight: "12", margin: "0 0 16px 0" } },
-      { id: "log_in2", type: "TextInput", props: { placeholder: "Password", width: "100%", padding: "16px", backgroundColor: "#1A1B1E", color: "#ffffff", radiusTopLeft: "12", radiusTopRight: "12", radiusBottomLeft: "12", radiusBottomRight: "12", margin: "0 0 30px 0" } },
-      { id: "log_btn", type: "Button", props: { label: "Sign In", width: "100%", padding: "18px", backgroundColor: "#6366f1", color: "#ffffff", radiusTopLeft: "12", radiusTopRight: "12", radiusBottomLeft: "12", radiusBottomRight: "12", shadowColor: "#6366f1", shadowBlur: "20", shadowOffsetY: "8" } }
-    ]
-  },
-  
-  cryptoWallet: {
-    id: "crypto_root",
-    type: "Container",
-    props: { width: "100%", padding: "24px", radiusTopLeft: "24", radiusTopRight: "24", radiusBottomLeft: "24", radiusBottomRight: "24", backgroundType: "gradient", gradientStart: "#6366f1", gradientEnd: "#a855f7", shadowColor: "#a855f7", shadowBlur: "30", shadowOffsetY: "10", margin: "20px 0" },
-    children: [
-      { id: "cw_row1", type: "Row", props: { width: "100%", mainAxisAlignment: "spaceBetween", margin: "0 0 20px 0" }, children: [
-          { id: "cw_t1", type: "Text", props: { content: "Total Balance", fontSize: "14", color: "#ffffff" } },
-          { id: "cw_icon", type: "Icon", props: { iconName: "Wallet", size: "20", color: "#ffffff" } }
-      ]},
-      { id: "cw_t2", type: "Text", props: { content: "$24,532.89", fontSize: "36", fontFamily: "Inter", color: "#ffffff", margin: "0 0 30px 0" } },
-      { id: "cw_btn", type: "Button", props: { label: "Send Crypto", width: "100%", padding: "16px", backgroundColor: "#000000", color: "#ffffff", radiusTopLeft: "16", radiusTopRight: "16", radiusBottomLeft: "16", radiusBottomRight: "16" } }
-    ]
-  },
-
-  userProfile: {
-    id: "profile_root",
-    type: "Column",
-    props: { width: "100%", padding: "20px", crossAxisAlignment: "center" },
-    children: [
-      { id: "prof_img", type: "Image", props: { url: "https://i.pravatar.cc/150?img=11", width: "100px", height: "100px", radiusTopLeft: "50", radiusTopRight: "50", radiusBottomLeft: "50", radiusBottomRight: "50", margin: "0 0 16px 0", shadowColor: "#000000", shadowBlur: "20" } },
-      { id: "prof_t1", type: "Text", props: { content: "Sarah Jenkins", fontSize: "24", fontFamily: "Inter", color: "#ffffff", textAlign: "center", margin: "0 0 4px 0" } },
-      { id: "prof_t2", type: "Text", props: { content: "Lead Designer @ AppForge", fontSize: "12", color: "#888888", textAlign: "center", margin: "0 0 24px 0" } },
-      { id: "prof_stats", type: "Row", props: { width: "100%", mainAxisAlignment: "spaceBetween", padding: "20px", backgroundColor: "#161b22", radiusTopLeft: "16", radiusTopRight: "16", radiusBottomLeft: "16", radiusBottomRight: "16", margin: "0 0 24px 0" }, children: [
-          { id: "stat1", type: "Column", props: { crossAxisAlignment: "center" }, children: [ { id: "s1_v", type: "Text", props: { content: "1.2k", fontSize: "18", color: "#ffffff" } }, { id: "s1_l", type: "Text", props: { content: "Followers", fontSize: "10", color: "#888888" } } ] },
-          { id: "stat2", type: "Column", props: { crossAxisAlignment: "center" }, children: [ { id: "s2_v", type: "Text", props: { content: "48", fontSize: "18", color: "#ffffff" } }, { id: "s2_l", type: "Text", props: { content: "Projects", fontSize: "10", color: "#888888" } } ] },
-          { id: "stat3", type: "Column", props: { crossAxisAlignment: "center" }, children: [ { id: "s3_v", type: "Text", props: { content: "4.9", fontSize: "18", color: "#ffffff" } }, { id: "s3_l", type: "Text", props: { content: "Rating", fontSize: "10", color: "#888888" } } ] }
-      ]},
-      { id: "prof_btn", type: "Button", props: { label: "Edit Profile", width: "100%", padding: "16px", backgroundColor: "#3b82f6", color: "#ffffff", radiusTopLeft: "12", radiusTopRight: "12", radiusBottomLeft: "12", radiusBottomRight: "12" } }
-    ]
-  }
-};
+import { TEMPLATES } from "../../data/templates";
 
 const WIDGET_CATEGORIES = [
   {
