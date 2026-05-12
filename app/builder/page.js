@@ -18,6 +18,7 @@ import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scro
 import "mobile-drag-drop/default.css"; // Gives visual feedback on mobile
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+export const dynamic = 'force-dynamic';
 
 const searchParams = useSearchParams();
 
