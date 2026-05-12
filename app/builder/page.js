@@ -2438,6 +2438,7 @@ const handleMove = (direction) => {
         )}
 
 {/* EXTERNAL APPFORGE DASHBOARD COMPONENT */}
+        {/* EXTERNAL APPFORGE DASHBOARD COMPONENT */}
         {showDashboard && (
           <AppForgeDashboard
             schema={schema}
@@ -2447,14 +2448,7 @@ const handleMove = (direction) => {
             setBuildLogs={setBuildLogs}
             onClose={() => setShowDashboard(false)}
             onSetSchema={setSchema}
-            onTriggerBuild={() => {
-              if (!user || !dbProjectId) return alert("Please log in and Save your project before building.");
-              setBuildLogs(['Initializing AppForge Cloud Compiler...', 'Parsing JSON Schema to Dart...']);
-              setTimeout(() => setBuildLogs(prev => [...prev, 'Resolving Flutter dependencies (flutter pub get)...']), 1500);
-              setTimeout(() => setBuildLogs(prev => [...prev, 'Compiling native Android binaries (assembleRelease)...']), 3500);
-              setTimeout(() => setBuildLogs(prev => [...prev, 'Applying ProGuard rules and shrinking APK...']), 6000);
-              startActualCloudBuild(dbProjectId);
-            }}
+            onTriggerBuild={handleDeploy} // <--- THIS IS THE ONLY LINE YOU NEED TO CHANGE!
           />
         )}
 
@@ -3234,7 +3228,9 @@ const handleMove = (direction) => {
                       <div className="flex flex-wrap gap-2">
                         <button onClick={() => setShowSqlModal(true)} className="flex-1 justify-center bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Code2 size={12}/> SQL</button>
                         
-                        <button onClick={handleOneClickDeploy} className="flex-1 justify-center bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white border border-green-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Rocket size={12}/> Deploy</button>
+                        <button onClick={handleDeploy} disabled={isBuilding} className="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-xl hover:bg-blue-500 transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] disabled:opacity-50 flex items-center gap-1.5 ml-1">
+                            {isBuilding ? 'Building...' : <><LucideIcons.Rocket size={12} fill="white"/> Deploy</>}
+                          </button>
                         
                         <button onClick={handleAiGenerateBackend} disabled={isGeneratingBackend} className="flex-1 justify-center bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white border border-purple-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1 disabled:opacity-50">
                            <LucideIcons.Bot size={12}/> {isGeneratingBackend ? 'Wait...' : 'AI Gen'}
