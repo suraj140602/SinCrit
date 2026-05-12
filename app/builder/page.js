@@ -3221,30 +3221,33 @@ const handleMove = (direction) => {
                  
                   {/* 2. ADVANCED DATABASE SCHEMA & RLS BUILDER */}
                   <div className="bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex flex-col gap-4">
-                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                    
+                    {/* FIXED: Changed to flex-col so the title and buttons stack cleanly */}
+                    <div className="flex flex-col gap-4 border-b border-white/5 pb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shrink-0">
                           <LucideIcons.Database size={16} className="text-blue-400" />
                         </div>
                         <div>
-                          <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest">2. Data Schema & Security</h3>
-                          <p className="text-[9px] text-gray-500 mt-0.5">Map tables, columns, and RLS policies.</p>
+                          <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest">2. Data Schema</h3>
+                          <p className="text-[9px] text-gray-500 mt-0.5">Map tables and RLS policies.</p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => setShowSqlModal(true)} className="bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 text-[9px] font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Code2 size={12}/> View SQL</button>
+                      
+                      {/* FIXED: Added flex-wrap and shortened labels so buttons fit beautifully */}
+                      <div className="flex flex-wrap gap-2">
+                        <button onClick={() => setShowSqlModal(true)} className="flex-1 justify-center bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Code2 size={12}/> SQL</button>
                         
-                        {/* --- NEW BUTTONS FOR 6 & 7 --- */}
-                        <button onClick={handleOneClickDeploy} className="bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white border border-green-500/30 text-[9px] font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Rocket size={12}/> Deploy to Supabase</button>
+                        <button onClick={handleOneClickDeploy} className="flex-1 justify-center bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white border border-green-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Rocket size={12}/> Deploy</button>
                         
-                        <button onClick={handleAiGenerateBackend} disabled={isGeneratingBackend} className="bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white border border-purple-500/30 text-[9px] font-bold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 disabled:opacity-50">
-                           <LucideIcons.Bot size={12}/> {isGeneratingBackend ? 'Generating...' : 'AI Generate'}
+                        <button onClick={handleAiGenerateBackend} disabled={isGeneratingBackend} className="flex-1 justify-center bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white border border-purple-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1 disabled:opacity-50">
+                           <LucideIcons.Bot size={12}/> {isGeneratingBackend ? 'Wait...' : 'AI Gen'}
                         </button>
                         
                         <button onClick={() => {
                            const tables = schema.appConfig.dbTables || [];
                            handleGlobalChange('appConfig', 'dbTables', [...tables, { id: `tbl_${Date.now()}`, name: 'new_table', columns: [], rlsEnabled: true, rlsAuthOnly: true }]);
-                        }} className="bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-500/20 text-[9px] font-bold px-3 py-1.5 rounded-lg transition-all">+ Table</button>
+                        }} className="flex-1 justify-center bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-500/20 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all">+ Table</button>
                       </div>
                     </div>
                     
@@ -3252,29 +3255,29 @@ const handleMove = (direction) => {
                       {(schema.appConfig.dbTables || []).map((table, tIdx) => (
                         <div key={table.id} className="bg-[#161b22] border border-white/5 rounded-xl overflow-hidden shadow-sm">
                            
-                           {/* TABLE HEADER */}
+                           {/* TABLE HEADER - FIXED: min-w-0 on input, shrink-0 on trash */}
                            <div className="bg-[#1A1B1E] p-3 border-b border-white/5 flex justify-between items-center">
-                             <div className="flex items-center gap-2 w-full pr-4">
-                                <LucideIcons.Table2 size={14} className="text-gray-500" />
+                             <div className="flex items-center gap-2 w-full pr-2">
+                                <LucideIcons.Table2 size={14} className="text-gray-500 shrink-0" />
                                 <input type="text" value={table.name} onChange={(e) => {
                                    const newTables = [...schema.appConfig.dbTables];
                                    newTables[tIdx].name = e.target.value.toLowerCase().replace(/\s+/g, '_');
                                    handleGlobalChange('appConfig', 'dbTables', newTables);
-                                }} className="bg-transparent border-none text-xs font-bold text-blue-400 outline-none w-full font-mono placeholder:text-gray-600" placeholder="table_name" />
+                                }} className="bg-transparent border-none text-xs font-bold text-blue-400 outline-none w-full min-w-0 font-mono placeholder:text-gray-600" placeholder="table_name" />
                              </div>
                              <button onClick={() => {
                                 const newTables = schema.appConfig.dbTables.filter(t => t.id !== table.id);
                                 handleGlobalChange('appConfig', 'dbTables', newTables);
-                             }} className="text-gray-600 hover:text-red-500 transition-colors"><LucideIcons.Trash size={14}/></button>
+                             }} className="text-gray-600 hover:text-red-500 transition-colors shrink-0"><LucideIcons.Trash size={14}/></button>
                            </div>
 
-                           {/* RLS SECURITY SETTINGS (NEW) */}
-                           <div className="bg-purple-500/5 px-3 py-2 border-b border-white/5 flex items-center justify-between">
+                           {/* RLS SECURITY SETTINGS - FIXED: Changed to flex-col so labels don't get crushed */}
+                           <div className="bg-purple-500/5 px-3 py-3 border-b border-white/5 flex flex-col gap-3">
                              <div className="flex items-center gap-2">
-                               <LucideIcons.ShieldAlert size={12} className={table.rlsEnabled ? "text-emerald-500" : "text-red-500"} />
+                               <LucideIcons.ShieldAlert size={12} className={table.rlsEnabled ? "text-emerald-500 shrink-0" : "text-red-500 shrink-0"} />
                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Row Level Security (RLS)</span>
                              </div>
-                             <div className="flex items-center gap-3">
+                             <div className="flex flex-wrap items-center gap-3">
                                 <label className="flex items-center gap-1.5 text-[9px] text-gray-400 cursor-pointer">
                                   <input type="checkbox" checked={table.rlsEnabled} onChange={(e) => {
                                       const newTables = [...schema.appConfig.dbTables];
@@ -3296,30 +3299,30 @@ const handleMove = (direction) => {
                              </div>
                            </div>
                            
-                           {/* COLUMNS */}
+                           {/* COLUMNS - FIXED: added flex-1 and min-w-0 to prevent input pushing */}
                            <div className="p-3 space-y-2">
                              <div className="text-[9px] text-gray-600 font-mono mb-2">id (UUID) & created_at (TIMESTAMP) auto-generated</div>
                              {table.columns.map((col, cIdx) => (
-                               <div key={col.id} className="flex items-center gap-2">
+                               <div key={col.id} className="flex items-center gap-1.5">
                                  <div className="w-1 h-3 rounded-full bg-gray-600 shrink-0"></div>
                                  <input type="text" value={col.name} onChange={(e) => {
                                     const newTables = [...schema.appConfig.dbTables];
                                     newTables[tIdx].columns[cIdx].name = e.target.value.toLowerCase().replace(/\s+/g, '_');
                                     handleGlobalChange('appConfig', 'dbTables', newTables);
-                                 }} className="flex-1 bg-[#0E0F11] border border-white/5 p-2 rounded-lg text-[10px] text-gray-300 outline-none font-mono focus:border-blue-500/50" placeholder="column_name" />
+                                 }} className="flex-1 min-w-0 bg-[#0E0F11] border border-white/5 p-2 rounded-lg text-[10px] text-gray-300 outline-none font-mono focus:border-blue-500/50" placeholder="col_name" />
                                  
                                  <select value={col.type} onChange={(e) => {
                                     const newTables = [...schema.appConfig.dbTables];
                                     newTables[tIdx].columns[cIdx].type = e.target.value;
                                     handleGlobalChange('appConfig', 'dbTables', newTables);
-                                 }} className="w-[85px] bg-[#0E0F11] border border-white/5 p-2 rounded-lg text-[10px] text-gray-400 outline-none font-mono cursor-pointer focus:border-blue-500/50">
+                                 }} className="w-[75px] shrink-0 bg-[#0E0F11] border border-white/5 p-2 rounded-lg text-[10px] text-gray-400 outline-none font-mono cursor-pointer focus:border-blue-500/50">
                                    <option value="text">text</option><option value="numeric">numeric</option><option value="boolean">boolean</option><option value="uuid">uuid</option><option value="timestamp">timestamp</option>
                                  </select>
                                  <button onClick={() => {
                                     const newTables = [...schema.appConfig.dbTables];
                                     newTables[tIdx].columns.splice(cIdx, 1);
                                     handleGlobalChange('appConfig', 'dbTables', newTables);
-                                 }} className="text-gray-600 hover:text-red-500 p-1"><LucideIcons.X size={12}/></button>
+                                 }} className="text-gray-600 hover:text-red-500 p-1 shrink-0"><LucideIcons.X size={12}/></button>
                                </div>
                              ))}
                              
