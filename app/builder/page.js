@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Canvas from "../../components/Canvas";
 import ErrorBoundary from "../../components/ErrorBoundary"; 
@@ -232,6 +232,7 @@ const router = useRouter();
     
   }];
 
+ 
   const [schema, setSchema] = useState({ 
     ...dummySchema, 
     pages: initialPages, // Overwrite with strict structure
@@ -340,6 +341,8 @@ const router = useRouter();
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const hasInjected = useRef(false);
+  const hasLoadedDb = useRef(false);
   const [dbProjectId, setDbProjectId] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -391,6 +394,7 @@ const router = useRouter();
       const newSchema = JSON.parse(JSON.stringify(schema));
       const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
       
+
       if (pIndex !== -1) {
          if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
          newSchema.pages[pIndex].root.children.push(clonedNode);
@@ -427,6 +431,69 @@ const router = useRouter();
     return () => window.removeEventListener('touchmove', preventScrollWhileDragging);
   }, []);
 
+// --- THE BULLETPROOF INTERCEPTOR ---
+  useEffect(() => {
+    // 1. Wait until Supabase finishes loading
+    if (isAuthLoading) return;
+    
+    // 2. Read the URL safely
+    const urlParams = new URLSearchParams(window.location.search);
+    const injectKey = urlParams.get('inject');
+    
+    // 3. Reset lock if URL is clean
+    if (!injectKey) {
+       hasInjected.current = false;
+       return;
+    }
+
+    // 4. Stop if already injected or template doesn't exist
+    if (hasInjected.current || !TEMPLATES[injectKey]) return;
+    
+    // 5. Lock it!
+    hasInjected.current = true; 
+
+    // --- THE CANVAS CRASH FIX: Recursively apply missing default props ---
+    const applyDefaults = (node) => {
+      node.props = { ...getProDefaults(), ...node.props };
+      
+      // Ensure layout elements have a children array so the Canvas map function doesn't crash
+      if (['Container', 'Card', 'Padding', 'Center', 'Stack', 'Row', 'Column', 'ListView'].includes(node.type)) {
+        if (!node.children) node.children = [];
+      }
+      
+      if (node.children) {
+        node.children.forEach(applyDefaults);
+      }
+      return node;
+    };
+    // ---------------------------------------------------------------------
+
+    // 6. Prepare the node and apply the defaults
+    let clonedNode = regenerateIds(JSON.parse(JSON.stringify(TEMPLATES[injectKey])));
+    clonedNode = applyDefaults(clonedNode); 
+
+    // 7. Inject it into the current schema
+    const newSchema = JSON.parse(JSON.stringify(schema));
+    const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
+    
+    if (pIndex !== -1) {
+      if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
+      newSchema.pages[pIndex].root.children.push(clonedNode);
+      
+      // 8. Safely push to history and update selected ID
+      commitHistory(newSchema);
+      setSelectedId(clonedNode.id);
+      
+      // 9. Instantly wipe URL without triggering a Next.js re-render loop
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    
+  // We disable exhaustive deps here so we don't trigger infinite loops with `schema`
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthLoading, searchParams, currentPageId]);
+
+  
+
   const commitHistory = (newSchema) => {
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(JSON.parse(JSON.stringify(newSchema)));
@@ -436,17 +503,25 @@ const router = useRouter();
     setSchema(newSchema);
   };
 
-  useEffect(() => {
+ useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      if (session?.user) loadUserProject(session.user.id);
-      else setIsAuthLoading(false);
+      if (session?.user && !hasLoadedDb.current) {
+        hasLoadedDb.current = true;
+        loadUserProject(session.user.id);
+      } else if (!session?.user) {
+        setIsAuthLoading(false);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) loadUserProject(session.user.id);
-      else setIsAuthLoading(false);
+      if (session?.user && !hasLoadedDb.current) {
+        hasLoadedDb.current = true;
+        loadUserProject(session.user.id);
+      } else if (!session?.user) {
+        setIsAuthLoading(false);
+      }
     });
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -456,6 +531,7 @@ const router = useRouter();
       alert("Payment Successful! Starting your cloud build now...");
       startActualCloudBuild(pid); 
     }
+    
     return () => subscription.unsubscribe();
   }, []);
 

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Canvas from '../../components/Canvas';
 import { TEMPLATES } from '../../data/templates';
-
+import { useRouter } from 'next/navigation';
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
 const CATEGORIES = [
@@ -695,6 +695,7 @@ function MarketplaceCard({ item, onInstall }) {
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 export default function ThemeStore() {
+  const router = useRouter(); // <--- 1. Initialize the router here
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('all');
@@ -704,7 +705,12 @@ export default function ThemeStore() {
   const handleInstall = (templateKey) => {
     setInstalled(prev => ({ ...prev, [templateKey]: true }));
     setNotification(templateKey);
-    setTimeout(() => setNotification(null), 2500);
+    
+    // 2. Show the beautiful toast for 1 second, then jump to the Builder!
+    setTimeout(() => {
+      setNotification(null);
+      router.push(`/builder?inject=${templateKey}`);
+    }, 1000);
   };
 
   const filtered = ITEMS.filter(item => {
