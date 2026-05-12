@@ -16,6 +16,37 @@ import {
 import { polyfill } from "mobile-drag-drop";
 import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
 import "mobile-drag-drop/default.css"; // Gives visual feedback on mobile
+import { useSearchParams, useRouter } from 'next/navigation';
+
+const searchParams = useSearchParams();
+
+  // --- THEME STORE INTERCEPTOR ---
+  // Listens for a template coming from the new Store page
+  useEffect(() => {
+    const injectKey = searchParams.get('inject');
+    
+    // If a template key exists in the URL, inject it!
+    if (injectKey && TEMPLATES[injectKey]) {
+      const sourceObj = TEMPLATES[injectKey];
+      const clonedNode = regenerateIds(JSON.parse(JSON.stringify(sourceObj)));
+      
+      const newSchema = JSON.parse(JSON.stringify(schema));
+      const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
+      
+      if (pIndex !== -1) {
+         if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
+         newSchema.pages[pIndex].root.children.push(clonedNode);
+         
+         // Save the update
+         commitHistory(newSchema);
+         setSelectedId(clonedNode.id);
+         
+         // Silently clean the URL so it doesn't duplicate if they refresh the page!
+         router.replace('/builder', undefined, { shallow: true }); 
+      }
+    }
+  }, [searchParams]);
+
 
 // --- PREMIUM AI TEMPLATE LIBRARY ---
 const TEMPLATES = {
@@ -2435,7 +2466,7 @@ const handleMove = (direction) => {
                      {[
                        { id: 'blank', icon: 'File', name: 'Blank Canvas', desc: 'Start from scratch' },
                        { id: 'appbar', icon: 'PanelTop', name: 'With App Bar', desc: 'Standard header navigation' },
-                       { id: 'shop', icon: 'ShoppingBag', name: 'Storefront', desc: 'Search & product grid' },
+                        { id: 'store', icon: 'Store', label: 'Store', onClick: () => window.open('/store', '_blank') },
                        { id: 'cart', icon: 'ShoppingCart', name: 'Shopping Cart', desc: 'List & secure checkout' },
                        { id: 'signup', icon: 'UserPlus', name: 'Authentication', desc: 'Login & signup forms' },
                        { id: 'about', icon: 'Info', name: 'About Us', desc: 'Hero image & text block' }
