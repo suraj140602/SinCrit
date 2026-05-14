@@ -3627,18 +3627,19 @@ const handleMove = (direction) => {
                      </h3>
                      
                      {selectedNode && !selectedNode.id.includes('root') && (
-                       <div className="flex gap-2 shrink-0 mb-6 border-b border-white/5 pb-6">
-                         <button onClick={() => handleMove('up')} disabled={!canMoveUp} className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${canMoveUp ? 'bg-[#161b22] border-white/10 text-gray-200 hover:bg-[#1c2128]' : 'bg-[#0d0d0d] border-white/5 text-gray-600'}`}>↑ Layer Up</button>
-                         <button onClick={() => handleMove('down')} disabled={!canMoveDown} className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${canMoveDown ? 'bg-[#161b22] border-white/10 text-gray-200 hover:bg-[#1c2128]' : 'bg-[#0d0d0d] border-white/5 text-gray-600'}`}>↓ Layer Down</button>
-                       </div>
-                     )}
+                       <div className="flex flex-col gap-3 mt-6 shrink-0 border-t border-white/5 pt-6">
+                         
+                         {/* Local Save & Delete */}
+                         <div className="flex gap-3">
+                           <button onClick={handleSaveComponent} className="flex-1 py-3 bg-indigo-500/10 text-indigo-400 rounded-xl text-[11px] font-bold border border-indigo-500/20 hover:bg-indigo-500/20 transition-colors uppercase tracking-wider">⭐ Save Module</button>
+                           <button onClick={handleDelete} className="px-5 py-3 bg-red-500/10 text-red-500 rounded-xl text-[11px] font-bold border border-red-500/20 hover:bg-red-500/20 transition-colors">🗑️</button>
+                         </div>
 
-                     {renderPropertyGroups()}
-                     
-                     {selectedNode && !selectedNode.id.includes('root') && (
-                       <div className="flex gap-3 mt-6 shrink-0 border-t border-white/5 pt-6">
-                         <button onClick={handleSaveComponent} className="flex-1 py-3 bg-indigo-500/10 text-indigo-400 rounded-xl text-[11px] font-bold border border-indigo-500/20 hover:bg-indigo-500/20 transition-colors uppercase tracking-wider">⭐ Save Module</button>
-                         <button onClick={handleDelete} className="px-5 py-3 bg-red-500/10 text-red-500 rounded-xl text-[11px] font-bold border border-red-500/20 hover:bg-red-500/20 transition-colors">🗑️</button>
+                         {/* NEW: THE PUSH TO STORE BUTTON */}
+                         <button onClick={handlePushToStore} className="w-full py-3 bg-green-600/10 text-green-400 rounded-xl text-[11px] font-bold border border-green-500/30 hover:bg-green-600 hover:text-white transition-all uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
+                           <LucideIcons.UploadCloud size={14} /> Push to Store
+                         </button>
+
                        </div>
                      )}
                   </div>
