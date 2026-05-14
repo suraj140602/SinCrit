@@ -42,12 +42,13 @@ export async function GET(req) {
         .eq('id', userId);
     }
 
-const baseUrl = 'https://sin-crit.vercel.app';
+// --- NUCLEAR FIX: Hardcode the Vercel URL ---
+    const baseUrl = 'https://sin-crit.vercel.app'; 
 
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${process.env.NEXT_PUBLIC_URL}/builder`, // If they click 'back'
-      return_url: `${process.env.NEXT_PUBLIC_URL}/builder?stripe_connected=true`, // On success
+      refresh_url: `${baseUrl}/builder`, 
+      return_url: `${baseUrl}/builder?stripe_connected=true`, 
       type: 'account_onboarding',
     });
 
