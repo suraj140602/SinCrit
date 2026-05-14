@@ -862,9 +862,8 @@ const router = useRouter();
     if (!profile?.stripe_account_id) {
       const wantsToConnect = confirm("💸 You need to connect a bank account via Stripe to get paid for your themes! Do you want to set that up now?");
       if (wantsToConnect) {
-        // Redirect them to your Stripe Connect API route (which you will build in Next.js)
-        alert("Redirecting to Stripe Connect... (You will need to add your Stripe OAuth URL here)");
-        // window.location.href = '/api/stripe/connect'; 
+        // --- FIXED: Actual redirect to our new Stripe API route ---
+        window.location.href = `/api/stripe/connect?userId=${user.id}`; 
       }
       return;
     }
