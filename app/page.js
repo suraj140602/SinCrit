@@ -73,8 +73,7 @@ const scaleUp = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#050505] text-[#f5f5f7] font-sans antialiased selection:bg-[#02569B] selection:text-white overflow-x-hidden">
-      
+<div className="min-h-screen bg-[#050505] text-[#f5f5f7] font-sans antialiased selection:bg-[#02569B] selection:text-white overflow-x-hidden w-full max-w-[100vw]">      
       {/* APPLE-STYLE MINIMAL NAVBAR */}
       <motion.nav 
         initial={{ y: -20, opacity: 0 }}
