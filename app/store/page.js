@@ -591,7 +591,7 @@ function MarketplaceCard({ item, onInstall }) {
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => onInstall(item.templateKey)}
+      onClick={() => onInstall(item)}
       style={{
         background: isWireframe
           ? 'linear-gradient(135deg, #161b22 0%, #0d1117 100%)'
@@ -684,7 +684,8 @@ function MarketplaceCard({ item, onInstall }) {
         </div>
 
         <button style={{ width: '100%', padding: '11px 0', borderRadius: 12, border: `1px solid ${hovered ? item.accentColor : item.accentColor + '40'}`, background: hovered ? `linear-gradient(135deg, ${item.colors[0]}, ${item.colors[1]})` : `${item.accentColor}10`, color: hovered ? '#fff' : item.accentColor, fontSize: 12, fontWeight: 700, letterSpacing: '0.05em', cursor: 'pointer', transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <span style={{ fontSize: 14 }}>↓</span> {isFree ? 'Install Free' : 'Push to Canvas'}
+          <span style={{ fontSize: 14 }}>{isFree ? '↓' : '💳'}</span> 
+          {isFree ? 'Install Free' : `Buy for ${item.price}`} {/* <--- CHANGED THIS LINE */}
         </button>
       </div>
     </div>
@@ -751,15 +752,41 @@ export default function ThemeStore() {
   }, []);
   // ------------------------------------------------------------------
 
-  const handleInstall = (templateKey) => {
-    setInstalled(prev => ({ ...prev, [templateKey]: true }));
-    setNotification(templateKey);
-    
-    // Show the beautiful toast for 1 second, then jump to the Builder!
-    setTimeout(() => {
-      setNotification(null);
-      router.push(`/builder?inject=${templateKey}`);
-    }, 1000);
+  const handleInstall = async (item) => {
+    // 1. If it's FREE, or they already own it, let them push it to canvas immediately!
+    if (item.price === 'FREE' || installed[item.templateKey]) {
+      setInstalled(prev => ({ ...prev, [item.templateKey]: true }));
+      setNotification(item.templateKey);
+      
+      setTimeout(() => {
+        setNotification(null);
+        router.push(`/builder?inject=${item.templateKey}`);
+      }, 1000);
+      return;
+    }
+
+    // 2. If it's PAID, send them to Stripe Checkout!
+    try {
+      // Get the logged-in buyer
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return alert("Please log in to purchase this theme.");
+
+      // Ping the checkout API we built earlier
+      const res = await fetch('/api/store-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ themeId: item.id, buyerId: user.id })
+      });
+      
+      const { url, error } = await res.json();
+      if (error) throw new Error(error);
+      
+      // Redirect to the Stripe Checkout payment page!
+      window.location.href = url; 
+
+    } catch (err) {
+      alert("Checkout failed: " + err.message);
+    }
   };
 
   const filtered = storeItems.filter(item => {

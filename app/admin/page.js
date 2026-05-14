@@ -1,4 +1,5 @@
 "use client";
+import { toast } from 'react-hot-toast';
 import React, { useState } from 'react';
 import * as LucideIcons from 'lucide-react';
 export const dynamic = 'force-dynamic';

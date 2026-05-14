@@ -1,37 +1,69 @@
-import Stripe from 'stripe';
 import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-export async function POST(request) {
-  try {
-    const { userId } = await request.json();
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          // TODO: Create a $49/mo product in your Stripe Dashboard and paste the Price ID here
-          price: 'price_1TVU3mEcIA7SUbFJVqvXaEW4', 
-          quantity: 1,
-        },
-      ],
-      // FIX: Changed from 'payment' to 'subscription'
-      mode: 'subscription', 
-      
-      // We pass the userId so the Webhook knows whose account to upgrade
-      metadata: {
-        userId: userId
-      },
-      
-      // Hardcoded temporarily to guarantee it works
-      success_url: `http://localhost:3000/?success=true`,
-      cancel_url: `http://localhost:3000/?canceled=true`,
+export async function GET(req) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+
+    // Validate env — crash early with a clear message
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!baseUrl) {
+      return NextResponse.json(
+        { error: 'NEXT_PUBLIC_APP_URL is not configured on the server' },
+        { status: 500 }
+      );
+    }
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('stripe_account_id')
+      .eq('id', userId)
+      .single();
+
+    if (profileError && profileError.code !== 'PGRST116') {
+      throw profileError;
+    }
+
+    let accountId = profile?.stripe_account_id;
+
+    if (!accountId) {
+      const account = await stripe.accounts.create({ type: 'express' });
+      accountId = account.id;
+
+      const { error: updateError } = await supabaseAdmin
+        .from('profiles')
+        .update({ stripe_account_id: accountId })
+        .eq('id', userId);
+
+      if (updateError) throw updateError;
+    }
+
+    const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `${baseUrl}/builder`,
+      return_url: `${baseUrl}/builder?stripe_connected=true`,
+      type: 'account_onboarding',
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.redirect(accountLink.url);
   } catch (error) {
-    console.error("Stripe Checkout Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Stripe Connect Error:', error);
+    return NextResponse.json(
+      { error: 'Failed to connect Stripe', details: error.message },
+      { status: 500 }
+    );
   }
 }
