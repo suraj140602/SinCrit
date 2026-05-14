@@ -38,7 +38,7 @@ export async function GET(req) {
       // Immediately save this new Stripe Account ID to their Supabase profile
       await supabaseAdmin
         .from('profiles')
-        .update({ stripe_account_id: accountId })
+        .upsert({ id: userId, stripe_account_id: accountId })
         .eq('id', userId);
     }
 
