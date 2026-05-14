@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Canvas from '../../components/Canvas';
 import { TEMPLATES } from '../../data/templates';
 import { useRouter } from 'next/navigation';
+
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
 const CATEGORIES = [
@@ -575,7 +576,6 @@ const ITEMS = [
     features: ['WebGL 3D Space', 'Floating Cards', '3D Navigation', 'Ambient Particles'],
   },
 ];
-
 // ─── CARD COMPONENT ───────────────────────────────────────────────────────────
 
 function MarketplaceCard({ item, onInstall }) {
@@ -634,14 +634,12 @@ function MarketplaceCard({ item, onInstall }) {
             transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
             pointerEvents: 'none', // Prevents the user from clicking buttons inside the preview
             zIndex: 1,
-            // Add a subtle border to mimic a phone screen edge
             border: '2px solid rgba(255,255,255,0.1)',
             borderRadius: '40px',
             overflow: 'hidden',
             backgroundColor: '#0E0F11'
           }}>
             <Canvas 
-               // We pass a dummy schema just to satisfy the Canvas requirements
                schema={{ theme: { primary: item.colors[0], secondary: item.colors[1], background: '#0E0F11' } }} 
                rootNode={templateSchema} 
                previewMode="iphone"
@@ -657,7 +655,7 @@ function MarketplaceCard({ item, onInstall }) {
             <div style={{ fontSize: 48, opacity: 0.35, filter: `drop-shadow(0 0 12px ${item.accentColor})`, transition: 'all 0.4s ease', transform: hovered ? 'scale(1.15) translateY(20px)' : 'scale(1) translateY(20px)', color: item.accentColor, zIndex: 1 }}>
               {item.icon}
             </div>
-            {/* "Coming Soon" Badge for templates you haven't written JSON for yet */}
+            {/* "Coming Soon" Badge */}
             <div style={{ position: 'absolute', bottom: 10, fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: 'bold', tracking: 'widest', zIndex: 2 }}>JSON COMING SOON</div>
           </>
         )}
@@ -673,7 +671,7 @@ function MarketplaceCard({ item, onInstall }) {
         )}
       </div>
 
-      {/* Card Body (Text and CTA remain unchanged) */}
+      {/* Card Body */}
       <div style={{ padding: '20px 20px 16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div style={{ fontSize: 10, color: item.accentColor, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, opacity: 0.8 }}>{item.sub}</div>
         <h3 style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 8, lineHeight: 1.3 }}>{item.title}</h3>
@@ -695,18 +693,40 @@ function MarketplaceCard({ item, onInstall }) {
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 export default function ThemeStore() {
-  const router = useRouter(); // <--- 1. Initialize the router here
+  const router = useRouter(); 
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('all');
   const [installed, setInstalled] = useState({});
   const [notification, setNotification] = useState(null);
 
+  // --- NEW: THE ANTI-THEFT HOOK PLACED SAFELY INSIDE THE FUNCTION ---
+  useEffect(() => {
+    const preventTheft = (e) => {
+      // Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+      }
+    };
+    
+    // Block Right Click
+    const preventContextMenu = (e) => e.preventDefault();
+
+    window.addEventListener('keydown', preventTheft);
+    window.addEventListener('contextmenu', preventContextMenu);
+    
+    return () => {
+      window.removeEventListener('keydown', preventTheft);
+      window.removeEventListener('contextmenu', preventContextMenu);
+    };
+  }, []);
+  // ------------------------------------------------------------------
+
   const handleInstall = (templateKey) => {
     setInstalled(prev => ({ ...prev, [templateKey]: true }));
     setNotification(templateKey);
     
-    // 2. Show the beautiful toast for 1 second, then jump to the Builder!
+    // Show the beautiful toast for 1 second, then jump to the Builder!
     setTimeout(() => {
       setNotification(null);
       router.push(`/builder?inject=${templateKey}`);
@@ -726,7 +746,8 @@ export default function ThemeStore() {
   const activeLabel = CATEGORIES.find(c => c.id === activeCategory)?.label || 'All Assets';
 
   return (
-    <div style={{
+    // NEW: ADDED select-none HERE TO PREVENT TEXT HIGHLIGHTING/COPYING
+    <div className="select-none" style={{
       minHeight: '100vh',
       background: '#060609',
       color: '#f1f5f9',
@@ -1003,5 +1024,4 @@ export default function ThemeStore() {
       )}
     </div>
   );
-
 }

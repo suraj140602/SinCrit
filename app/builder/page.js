@@ -47,6 +47,7 @@ const WIDGET_CATEGORIES = [
       { type: 'Icon', icon: 'Star' },
       { type: 'Card', icon: 'CreditCard' },
       { type: 'Divider', icon: 'Minus' },
+      { type: 'CustomCode', icon: 'TerminalSquare' } // <--- ADD THIS
     ]
   },
   {
@@ -1910,6 +1911,29 @@ const handleMove = (direction) => {
                  )}
                </div>
 
+               {/* CUSTOM CODE SPECIFIC SETTINGS */}
+               {selectedNode.type === 'CustomCode' && (
+                 <div className="border-b border-white/5 pb-6">
+                   <h4 className="text-[10px] font-bold text-emerald-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.TerminalSquare size={14}/> Raw Dart Integration</h4>
+                   
+                   <div className="flex flex-col gap-1.5 mb-4">
+                     <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">pub.dev Dependencies (Optional)</label>
+                     <input type="text" value={props.dependencies || ''} onChange={(e) => handlePropChange('dependencies', e.target.value)} placeholder="e.g., flutter_pdfview: ^1.2.0" className="w-full bg-[#161b22] border border-white/10 p-2 rounded text-xs text-emerald-400 font-mono outline-none" />
+                   </div>
+
+                   <div className="flex flex-col gap-1.5">
+                     <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Raw Dart Widget Code</label>
+                     <textarea 
+                       rows={8} 
+                       value={props.rawDart || ''} 
+                       onChange={(e) => handlePropChange('rawDart', e.target.value)} 
+                       placeholder="Container(child: Text('Custom Code'))" 
+                       className="w-full bg-[#0a0a0a] border border-white/10 p-3 rounded-lg text-[10px] text-gray-300 font-mono outline-none focus:border-emerald-500 custom-scrollbar resize-y" 
+                     />
+                   </div>
+                 </div>
+               )}
+
                {/* 3. TYPOGRAPHY (Text Elements Only) */}
                {(selectedNode.type === 'Text' || selectedNode.type === 'Button' || selectedNode.type === 'TextInput') && (
                  <div className="border-b border-white/5 pb-6">
@@ -2037,6 +2061,7 @@ const handleMove = (direction) => {
                </div>
              </div>
            )}
+           
 
            {/* ============================================================ */}
            {/* TAB 3: BACKEND & DATA QUERY                                  */}
