@@ -168,12 +168,14 @@ export default function LandingPage() {
           Trusted by Developers At
         </p>
         
-        <div className="flex whitespace-nowrap">
+        {/* FIXED: Added w-full */}
+        <div className="flex whitespace-nowrap w-full">
           {/* Double map for seamless infinite scrolling */}
           {[...Array(2)].map((_, i) => (
             <motion.div 
               key={i}
-              className="flex items-center gap-12 sm:gap-16 lg:gap-32 px-8 min-w-full justify-around opacity-50 grayscale hover:grayscale-0 transition-all duration-500"
+              // FIXED: Added `shrink-0` and `w-max` so they stop crushing into each other on mobile!
+              className="flex items-center gap-12 sm:gap-16 lg:gap-32 px-8 min-w-full w-max shrink-0 justify-around opacity-50 grayscale hover:grayscale-0 transition-all duration-500"
               animate={{ x: ["0%", "-100%"] }}
               transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
             >
