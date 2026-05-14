@@ -54,8 +54,12 @@ export async function GET(req) {
     // 5. Redirect the user's browser to the Stripe secure page
     return NextResponse.redirect(accountLink.url);
 
-  } catch (error) {
+    } catch (error) {
     console.error('Stripe Connect Error:', error);
-    return NextResponse.json({ error: 'Failed to connect Stripe' }, { status: 500 });
+    // FIXED: Now it will print the EXACT reason it crashed to your browser!
+    return NextResponse.json({ 
+      error: 'Failed to connect Stripe', 
+      details: error.message 
+    }, { status: 500 });
   }
 }
