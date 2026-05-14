@@ -42,8 +42,8 @@ export async function GET(req) {
         .eq('id', userId);
     }
 
-    // 4. Generate the secure link to Stripe's onboarding UI
-    // Ensure NEXT_PUBLIC_URL is set in your .env.local (e.g., http://localhost:3000)
+const baseUrl = 'https://sin-crit.vercel.app';
+
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${process.env.NEXT_PUBLIC_URL}/builder`, // If they click 'back'
