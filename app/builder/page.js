@@ -441,6 +441,27 @@ const router = useRouter();
     return () => window.removeEventListener('touchmove', preventScrollWhileDragging);
   }, []);
 
+  // --- FIX 1: DEBOUNCED AUTO-SAVE ---
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    // Prevent saving the dummy schema immediately on page load
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    
+    // Only auto-save if they are logged in and the project has an ID
+    if (!user || !dbProjectId) return;
+
+    // Wait 3 seconds after their last action to save
+    const autoSaveTimer = setTimeout(() => {
+      handleSaveProject(); 
+    }, 3000);
+
+    return () => clearTimeout(autoSaveTimer); // Cancel timer if they keep editing
+  }, [schema]);
+
 // --- THE DEPLOYMENT INTERCEPTOR ---
   useEffect(() => {
     if (isAuthLoading) return;
@@ -835,6 +856,19 @@ const router = useRouter();
     if (!user) return alert("You must be logged in to publish to the store.");
     if (!selectedId || selectedId.includes('root')) return alert("Select an element or component to publish.");
     
+    // 1. Check if they have a Stripe Account linked!
+    const { data: profile } = await supabase.from('profiles').select('stripe_account_id').eq('id', user.id).single();
+
+    if (!profile?.stripe_account_id) {
+      const wantsToConnect = confirm("💸 You need to connect a bank account via Stripe to get paid for your themes! Do you want to set that up now?");
+      if (wantsToConnect) {
+        // Redirect them to your Stripe Connect API route (which you will build in Next.js)
+        alert("Redirecting to Stripe Connect... (You will need to add your Stripe OAuth URL here)");
+        // window.location.href = '/api/stripe/connect'; 
+      }
+      return;
+    }
+
     const pIndex = schema.pages.findIndex(p => p.id === currentPageId);
     const nodeToSave = findNode(schema.pages[pIndex].root, selectedId);
     if (!nodeToSave) return;
@@ -842,12 +876,27 @@ const router = useRouter();
     const title = prompt("Marketplace Title (e.g. Cyberpunk Search Bar):");
     if (!title) return;
     
-    const price = prompt("Set your price in USD (e.g. 10.00, or type 0 for FREE):", "5.00");
-    if (!price) return;
+    const priceStr = prompt("Set your price in USD (e.g. 10.00, or type 0 for FREE):", "5.00");
+    if (priceStr === null) return;
+    const price = parseFloat(priceStr);
 
-    // In a real production app, you'd send this to your Next.js API route 
-    // which inserts it into the `marketplace_items` Supabase table we created.
-    alert(`🚀 "${title}" has been pushed to the store for $${price}! It will be live once approved.`);
+    // 2. Actually push it to the Supabase database!
+    const { error } = await supabase.from('marketplace_items').insert([{
+      creator_id: user.id,
+      title: title,
+      description: "A custom community widget built in AppForge.",
+      price_usd: isNaN(price) ? 0 : price,
+      category: "components",
+      schema_json: nodeToSave, // The actual widget code!
+      creator_stripe_account_id: profile.stripe_account_id,
+      is_verified: true // Set to true so you can see it instantly for testing
+    }]);
+
+    if (error) {
+      alert("Failed to push to store: " + error.message);
+    } else {
+      alert(`🚀 "${title}" is now live on the AppForge Marketplace!`);
+    }
   };
 
   const handlePropChange = (propKey, newValue) => {

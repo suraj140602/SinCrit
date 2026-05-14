@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Canvas from '../../components/Canvas';
 import { TEMPLATES } from '../../data/templates';
 import { useRouter } from 'next/navigation';
+import { supabase } from "../../utils/supabase";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -583,8 +584,8 @@ function MarketplaceCard({ item, onInstall }) {
   const isWireframe = item.cat === 'wireframes';
   const isFree = item.price === 'FREE';
 
-  // Check if we actually have the JSON code for this template yet
-  const templateSchema = TEMPLATES[item.templateKey];
+ // Look for hardcoded templates first, otherwise use the database schema!
+  const templateSchema = TEMPLATES[item.templateKey] || item.dbSchema;
 
   return (
     <div
@@ -700,6 +701,34 @@ export default function ThemeStore() {
   const [installed, setInstalled] = useState({});
   const [notification, setNotification] = useState(null);
 
+  const [storeItems, setStoreItems] = useState(ITEMS); // Start with hardcoded items
+
+  useEffect(() => {
+    const fetchCommunityItems = async () => {
+       const { data, error } = await supabase.from('marketplace_items').select('*').eq('is_verified', true);
+       if (data && data.length > 0) {
+          const communityItems = data.map(dbItem => ({
+             id: dbItem.id,
+             title: dbItem.title,
+             desc: dbItem.description,
+             sub: 'COMMUNITY ASSET',
+             price: dbItem.price_usd === 0 ? 'FREE' : `$${dbItem.price_usd.toFixed(2)}`,
+             cat: 'animated-cards', 
+             features: ['Community Made', 'Auto-Updates'],
+             colors: ['#3b82f6', '#8b5cf6'],
+             accentColor: '#6366f1',
+             icon: '🧩',
+             templateKey: `db_${dbItem.id}`, // Unique key for DB items
+             dbSchema: dbItem.schema_json // Attach the real code!
+          }));
+          
+          // Merge hardcoded items with community items
+          setStoreItems([...ITEMS, ...communityItems]);
+       }
+    };
+    fetchCommunityItems();
+  }, []);
+
   // --- NEW: THE ANTI-THEFT HOOK PLACED SAFELY INSIDE THE FUNCTION ---
   useEffect(() => {
     const preventTheft = (e) => {
@@ -733,7 +762,7 @@ export default function ThemeStore() {
     }, 1000);
   };
 
-  const filtered = ITEMS.filter(item => {
+  const filtered = storeItems.filter(item => {
     const catMatch = activeCategory === 'all' || item.cat === activeCategory;
     const searchMatch = !search
       || item.title.toLowerCase().includes(search.toLowerCase())
