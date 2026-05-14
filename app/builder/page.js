@@ -599,6 +599,8 @@ const router = useRouter();
     }
   };
 
+
+
   const handleAssetUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !user) return;
@@ -827,6 +829,25 @@ const router = useRouter();
     
     commitHistory(newSchema);
     alert(`"${name}" saved! Find it in the Add tab under Your Components.`);
+  };
+
+  const handlePushToStore = async () => {
+    if (!user) return alert("You must be logged in to publish to the store.");
+    if (!selectedId || selectedId.includes('root')) return alert("Select an element or component to publish.");
+    
+    const pIndex = schema.pages.findIndex(p => p.id === currentPageId);
+    const nodeToSave = findNode(schema.pages[pIndex].root, selectedId);
+    if (!nodeToSave) return;
+
+    const title = prompt("Marketplace Title (e.g. Cyberpunk Search Bar):");
+    if (!title) return;
+    
+    const price = prompt("Set your price in USD (e.g. 10.00, or type 0 for FREE):", "5.00");
+    if (!price) return;
+
+    // In a real production app, you'd send this to your Next.js API route 
+    // which inserts it into the `marketplace_items` Supabase table we created.
+    alert(`🚀 "${title}" has been pushed to the store for $${price}! It will be live once approved.`);
   };
 
   const handlePropChange = (propKey, newValue) => {

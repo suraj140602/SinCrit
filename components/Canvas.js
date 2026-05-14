@@ -278,6 +278,31 @@ const Canvas = ({ schema, rootNode, selectedId, onSelect, onDropToNode, onResize
       className: `group relative ${isSelected ? 'ring-offset-1 ring-1 ring-blue-500/50' : ''} ${!isLivePreview ? 'hover:outline hover:outline-1 hover:outline-blue-400/50 cursor-pointer transition-outline duration-200' : ''}`
     };
 
+    if (node.type === 'CustomCode') {
+    return (
+      <div 
+        key={node.id}
+        onClick={(e) => { e.stopPropagation(); onSelect(node.id); }}
+        style={{ 
+          width: '100%', 
+          height: '50px', 
+          backgroundColor: '#0E0F11', 
+          border: '1px dashed #10B981', // Emerald green dashed border
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          color: '#10B981', 
+          fontSize: '10px', 
+          fontFamily: 'monospace', 
+          borderRadius: '8px',
+          margin: '8px 0'
+        }}
+      >
+        <span className="opacity-50 mr-2">{"</>"}</span> Custom Dart Widget
+      </div>
+    );
+  }
+
     switch (node.type) {
       case 'Container':
       case 'Stack':
