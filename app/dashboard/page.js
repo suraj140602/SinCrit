@@ -193,7 +193,7 @@ function DashboardInner() {
     if (selectedProject) fetchProjectTasks(selectedProject.id);
   }, [selectedProject, fetchProjectTasks]);
 
-  // ── Create project ──
+  // ── Create project (BULLETPROOF) ──
   const handleCreateProject = async () => {
     if (!pName.trim() || !user) return;
     setSaving(true);
@@ -201,15 +201,36 @@ function DashboardInner() {
       const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: pName, description: pDesc, deadline: pDeadline, color: pColor, manager_id: user.id }),
+        // FIX: Send null if deadline is empty, otherwise Postgres crashes!
+        body: JSON.stringify({ 
+          name: pName, 
+          description: pDesc, 
+          deadline: pDeadline || null, 
+          color: pColor, 
+          manager_id: user.id 
+        }),
       });
-      const { project } = await res.json();
-      setProjects(prev => [project, ...prev]);
+      
+      const data = await res.json();
+
+      // GUARD: If API fails, stop execution and don't crash React!
+      if (!res.ok || !data.project) {
+        setFlash(`❌ Error: ${data.error || "Failed to create project"}`);
+        setTimeout(() => setFlash(""), 4000);
+        setSaving(false);
+        return;
+      }
+
+      // Safe State Update
+      setProjects(prev => [data.project, ...prev]);
       setShowNewProject(false);
       setPName(""); setPDesc(""); setPDeadline(""); setPColor("#3b82f6");
       setFlash("✓ Project created!");
       setTimeout(() => setFlash(""), 3000);
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err); 
+      setFlash("❌ Network Error");
+    }
     setSaving(false);
   };
 
