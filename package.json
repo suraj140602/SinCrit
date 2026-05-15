@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",
+    "children": "^0.2.3",
     "framer-motion": "^12.38.0",
     "jszip": "^3.10.1",
     "lucide-react": "^1.14.0",
