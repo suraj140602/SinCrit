@@ -1417,41 +1417,6 @@ export default function ThemeStore() {
     fetchCommunityItems();
   }, []);
 
-  // ─── TEMPORARY DB SEEDER (DELETE AFTER USING ONCE!) ───
-
-  const handleSeedDatabase = async () => {
-    if(!confirm("Upload all 10 items to Supabase?")) return;
-    
-    // 1. Get the current logged-in user
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      alert("❌ You must be logged into the app to upload assets!");
-      return;
-    }
-    
-    for (const item of ITEMS) {
-      const { error } = await supabase.from('marketplace_items').insert({
-        title: item.title,
-        description: item.desc,
-        price_usd: item.price === 'FREE' ? 0 : 9.99,
-        category: item.cat,
-        is_verified: true,
-        dart_code: item.dartCode,
-        schema_json: JSON.stringify({ icon: item.icon, colors: item.colors }),
-        creator_id: user.id // 2. Assign ownership to YOU!
-      });
-      
-      if (error) {
-        console.error("Error uploading " + item.title + ":", error.message);
-        alert("Failed on " + item.title + ". Check console!");
-        break; 
-      } else {
-        console.log("Successfully uploaded: " + item.title);
-      }
-    }
-    alert("All 10 Flutter Pages successfully uploaded to Supabase!");
-  };
   // --- ANTI-THEFT HOOK ---
   useEffect(() => {
     const preventTheft = (e) => {
@@ -1600,9 +1565,6 @@ export default function ThemeStore() {
 
         {/* Right side */}
         <div className="flex items-center gap-4">
-          <button onClick={handleSeedDatabase} className="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg shadow-lg">
-            UPLOAD TO DB
-          </button>
           <select className="bg-[#1c1c1e] text-gray-300 text-xs font-medium px-3 py-1.5 rounded-lg border border-white/5 outline-none cursor-pointer hidden md:block">
             <option>All Plans</option>
             <option>Free Assets</option>
