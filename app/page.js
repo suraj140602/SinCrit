@@ -93,14 +93,14 @@ export default function LandingPage() {
             <a href="#pricing" className="hover:text-white transition-colors duration-300">Enterprise</a>
           </div>
           
-          {/* NEW: LOGIN AND SIGNUP BUTTONS */}
+          {/* LOGIN AND SIGNUP BUTTONS */}
           <div className="flex items-center gap-4">
-            <Link href="/builder">
+            <Link href="/auth">
               <span className="text-xs font-semibold text-[#86868b] hover:text-white transition-colors duration-300 cursor-pointer">
                 Log In
               </span>
             </Link>
-            <Link href="/builder">
+            <Link href="/auth">
               <button className="bg-[#f5f5f7] text-black px-4 py-1.5 rounded-full text-xs font-semibold hover:bg-white hover:scale-105 transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                 Sign Up Free
               </button>
@@ -145,7 +145,7 @@ export default function LandingPage() {
           </motion.p>
           
           <motion.div variants={slideUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/builder">
+            <Link href="/auth">
               <button className="h-12 w-full sm:w-auto px-8 bg-[#f5f5f7] hover:bg-white text-black hover:scale-[1.02] active:scale-[0.98] rounded-full font-semibold text-[15px] flex items-center justify-center gap-2 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]">
                 Start Engineering Free <ChevronRight size={16} />
               </button>
@@ -168,13 +168,11 @@ export default function LandingPage() {
           Trusted by Developers At
         </p>
         
-        {/* FIXED: Added w-full */}
         <div className="flex whitespace-nowrap w-full">
           {/* Double map for seamless infinite scrolling */}
           {[...Array(2)].map((_, i) => (
             <motion.div 
               key={i}
-              // FIXED: Added `shrink-0` and `w-max` so they stop crushing into each other on mobile!
               className="flex items-center gap-12 sm:gap-16 lg:gap-32 px-8 min-w-full w-max shrink-0 justify-around opacity-50 grayscale hover:grayscale-0 transition-all duration-500"
               animate={{ x: ["0%", "-100%"] }}
               transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
@@ -189,7 +187,7 @@ export default function LandingPage() {
         </div>
       </motion.div>
 
-      {/* REALISTIC IDE DASHBOARD PREVIEW - MOBILE OPTIMIZED (HORIZONTAL SCROLL) */}
+      {/* REALISTIC IDE DASHBOARD PREVIEW */}
       <motion.div 
         variants={scaleUp}
         initial="hidden"
@@ -220,7 +218,7 @@ export default function LandingPage() {
                </div>
              </div>
 
-             {/* IDE Body - NEW: Horizontal Scroll for Mobile */}
+             {/* IDE Body */}
              <div className="flex flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar snap-x snap-mandatory">
                
                 {/* LEFT PANEL: Add Widgets */}
@@ -407,7 +405,7 @@ export default function LandingPage() {
                 <PricingFeature text="Standard Supabase Connect" />
                 <PricingFeature text="Community Support" />
               </ul>
-              <Link href="/builder">
+              <Link href="/auth">
                 <button className="w-full py-4 rounded-2xl bg-[#1c1c1e] hover:bg-[#2c2c2e] text-white font-semibold transition-colors text-[15px]">Start Engineering</button>
               </Link>
             </motion.div>
@@ -424,7 +422,7 @@ export default function LandingPage() {
                 <PricingFeature text="Custom CI/CD Pipelines" />
                 <PricingFeature text="Priority Enterprise Support" />
               </ul>
-              <Link href="/builder">
+              <Link href="/auth">
                 <button className="w-full py-4 rounded-2xl bg-[#f5f5f7] hover:bg-white text-black font-semibold transition-colors text-[15px] shadow-[0_0_20px_rgba(255,255,255,0.2)]">Upgrade Engine</button>
               </Link>
             </motion.div>

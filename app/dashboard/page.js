@@ -213,35 +213,83 @@ function DashboardInner() {
     setSaving(false);
   };
 
-  // ── Create task ──
+// ── Create task (BULLETPROOF) ──
   const handleCreateTask = async () => {
     if (!tTitle.trim() || !user) return;
-    setSaving(true);
+    
     const projId = tProject || selectedProject?.id || projects[0]?.id;
+    
+    // 1. Guard: Ensure a project actually exists before calling the API
+    if (!projId) {
+      setFlash("⚠️ Please create a Project first!");
+      setTimeout(() => setFlash(""), 4000);
+      return;
+    }
+
+    setSaving(true);
     try {
       const res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: tTitle, description: tDesc, project_id: projId, assigned_to: tAssignee || user.id, created_by: user.id, priority: tPriority, due_date: tDue }),
+        body: JSON.stringify({ 
+          title: tTitle, description: tDesc, project_id: projId, 
+          assigned_to: tAssignee || user.id, created_by: user.id, 
+          priority: tPriority, due_date: tDue 
+        }),
       });
-      const { task } = await res.json();
-      if (selectedProject && task.project_id === selectedProject.id) setProjectTasks(prev => [task, ...prev]);
+      
+      const data = await res.json();
+
+      // 2. Guard: If API fails, stop execution and show error!
+      if (!res.ok || !data.task) {
+        setFlash(`❌ Error: ${data.error || "Failed to create task"}`);
+        setTimeout(() => setFlash(""), 4000);
+        setSaving(false);
+        return;
+      }
+
+      const { task } = data;
+
+      // 3. Safe State Update
+      if (selectedProject && task.project_id === selectedProject.id) {
+        setProjectTasks(prev => [task, ...prev]);
+      }
       setTasks(prev => [task, ...prev]);
+      
       setShowNewTask(false);
       setTTitle(""); setTDesc(""); setTAssignee(""); setTPriority("medium"); setTDue(""); setTProject("");
       setFlash("✓ Task created!");
       setTimeout(() => setFlash(""), 3000);
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err); 
+      setFlash("❌ Network Error");
+    }
     setSaving(false);
   };
 
-  // ── Update task status ──
+  // ── Update task status (BULLETPROOF) ──
   const updateTaskStatus = async (taskId, status) => {
-    const res = await fetch("/api/tasks", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: taskId, status }) });
-    const { task } = await res.json();
-    const updater = prev => prev.map(t => t.id === taskId ? task : t);
-    setProjectTasks(updater);
-    setTasks(updater);
+    try {
+      const res = await fetch("/api/tasks", { 
+        method: "PATCH", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ id: taskId, status }) 
+      });
+      
+      const data = await res.json();
+      
+      // Guard: Only update state if the API successfully returned the updated task
+      if (!res.ok || !data.task) {
+        console.error("Failed to update status:", data.error);
+        return; 
+      }
+
+      const updater = prev => prev.map(t => t.id === taskId ? data.task : t);
+      setProjectTasks(updater);
+      setTasks(updater);
+    } catch(err) {
+      console.error(err);
+    }
   };
 
   // ── Delete task ──
