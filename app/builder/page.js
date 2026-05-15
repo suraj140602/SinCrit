@@ -1,4 +1,5 @@
 "use client";
+import UserMenu from "../../components/UserMenu"
 import AppForgeDashboard from '../../components/AppForgeDashboard';
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +22,13 @@ import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 import { TEMPLATES } from "../../data/templates";
+
+// Simple SVG Icon helper
+const Icon = ({ path }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    {path.split("|").map((d, i) => <path key={i} d={d} />)}
+  </svg>
+);
 
 const WIDGET_CATEGORIES = [
   {
@@ -2811,8 +2819,9 @@ const handleMove = (direction) => {
         </div>
       )}
 
-      {/* TOP NAVBAR */}
-      <div className="h-14 bg-[#0a0a0a] border-b border-white/10 flex items-center justify-between px-4 shrink-0 z-20 overflow-x-auto hide-scrollbar gap-8">
+     {/* TOP NAVBAR */}
+      {/* CRITICAL FIX: Removed 'overflow-x-auto hide-scrollbar' so the dropdown doesn't get cut off! Added relative z-[100] */}
+      <div className="h-14 bg-[#0a0a0a] border-b border-white/10 flex items-center justify-between px-4 shrink-0 relative z-[100] gap-4">
         
         {/* Left Side: Logo & Command */}
         <div className="flex items-center gap-6 shrink-0 min-w-max">
@@ -2828,50 +2837,54 @@ const handleMove = (direction) => {
         </div>
         
         {/* Right Side: Tools & Actions */}
-        <div className="flex items-center gap-2 shrink-0 min-w-max pr-4">
-          <button onClick={() => setShowGrid(!showGrid)} className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold rounded-lg transition-all ${showGrid ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20' : 'bg-transparent text-gray-500 hover:bg-white/5 hover:text-white border border-transparent'}`}>
+        <div className="flex items-center gap-2 shrink-0">
+          
+          <button onClick={() => setShowGrid(!showGrid)} className={`hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold rounded-lg transition-all ${showGrid ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20' : 'bg-transparent text-gray-500 hover:bg-white/5 hover:text-white border border-transparent'}`}>
              <Grid size={12}/> Grid
           </button>
           
-          <div className="w-px h-4 bg-white/10 mx-0.5"></div>
+          <div className="w-px h-4 bg-white/10 mx-0.5 hidden lg:block"></div>
           
-          <button onClick={handleUndo} disabled={historyIndex === 0} className={`p-1.5 rounded-lg transition-colors ${historyIndex === 0 ? 'text-gray-700' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}><LucideIcons.Undo2 size={14}/></button>
-          <button onClick={handleRedo} disabled={historyIndex === history.length - 1} className={`p-1.5 rounded-lg transition-colors ${historyIndex === history.length - 1 ? 'text-gray-700' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}><LucideIcons.Redo2 size={14}/></button>
+          <div className="hidden md:flex items-center gap-1">
+            <button onClick={handleUndo} disabled={historyIndex === 0} className={`p-1.5 rounded-lg transition-colors ${historyIndex === 0 ? 'text-gray-700' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}><LucideIcons.Undo2 size={14}/></button>
+            <button onClick={handleRedo} disabled={historyIndex === history.length - 1} className={`p-1.5 rounded-lg transition-colors ${historyIndex === history.length - 1 ? 'text-gray-700' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}><LucideIcons.Redo2 size={14}/></button>
+          </div>
           
-          <div className="w-px h-4 bg-white/10 mx-0.5"></div>
+          <div className="w-px h-4 bg-white/10 mx-0.5 hidden lg:block"></div>
           
-          {user && <button onClick={handleLogout} className="px-2.5 py-1.5 text-[10px] font-bold rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-colors">Sign Out</button>}
-          
+          <button onClick={() => { setShowAiAuditor(true); handleRunAiAudit(); }} className="hidden xl:flex px-3 py-1.5 bg-purple-600/10 text-purple-400 border border-purple-600/20 text-[10px] font-bold rounded-xl hover:bg-purple-600 hover:text-white transition-all items-center gap-1.5">
+            <LucideIcons.Sparkles size={12} /> AI Audit
+          </button>
+
+          <button onClick={() => { setPreviewActivePageId(currentPageId); setShowLivePreview(true); }} className="hidden sm:flex px-3 py-1.5 bg-orange-500/10 text-orange-500 border border-orange-500/20 text-[10px] font-bold rounded-xl hover:bg-orange-500 hover:text-white transition-all items-center gap-1.5">
+            <LucideIcons.Eye size={12} /> Preview
+          </button>
+
+          <button onClick={() => setIsRightPanelOpen(!isRightPanelOpen)} className={`hidden lg:flex px-3 py-1.5 text-[10px] font-bold rounded-xl transition-all items-center gap-1.5 ${isRightPanelOpen ? 'bg-white text-black' : 'bg-[#161b22] text-gray-400 border border-white/5 hover:bg-white/10 hover:text-white'}`}>
+            <LucideIcons.PanelRight size={12} /> Inspector
+          </button>
+
+          <button onClick={() => setWorkspaceRole(workspaceRole === 'admin' ? 'client' : 'admin')} className={`hidden lg:flex px-3 py-1.5 text-[10px] font-bold rounded-xl transition-all border items-center gap-1.5 ${workspaceRole === 'client' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-[#161b22] text-gray-400 border-white/5 hover:bg-white/10 hover:text-white'}`}>
+            {workspaceRole === 'client' ? <><LucideIcons.Eye size={12}/> Client View</> : <><LucideIcons.Users size={12}/> View as Client</>}
+          </button>
+
+          <button onClick={() => setShowDashboard(true)} className="hidden md:flex px-3 py-1.5 bg-[#161b22] text-gray-300 border border-white/5 text-[10px] font-bold rounded-xl hover:bg-white/10 transition-all items-center gap-1.5">
+            <LucideIcons.LayoutDashboard size={12} /> Dashboard
+          </button>
+
           <button onClick={handleSaveProject} className={`px-4 py-1.5 text-[10px] font-bold rounded-xl border transition-all flex items-center gap-1.5 ${isSaved ? 'bg-green-500/20 text-green-400 border-green-500/20' : 'bg-[#161b22] text-white border-white/5 hover:bg-white/10'}`}>
             <Save size={12} /> {isSaved ? 'Saved' : 'Save'}
           </button>
           
-          {/* Client Hand-off Toggle */}
-          <button onClick={() => setWorkspaceRole(workspaceRole === 'admin' ? 'client' : 'admin')} className={`px-3 py-1.5 text-[10px] font-bold rounded-xl transition-all border flex items-center gap-1.5 ${workspaceRole === 'client' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-[#161b22] text-gray-400 border-white/5 hover:bg-white/10 hover:text-white'}`}>
-            {workspaceRole === 'client' ? <><LucideIcons.Eye size={12}/> Client View</> : <><LucideIcons.Users size={12}/> View as Client</>}
-          </button>
-
-          <button onClick={() => setIsRightPanelOpen(!isRightPanelOpen)} className={`px-3 py-1.5 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1.5 ${isRightPanelOpen ? 'bg-white text-black' : 'bg-[#161b22] text-gray-400 border border-white/5 hover:bg-white/10 hover:text-white'}`}>
-            <LucideIcons.PanelRight size={12} /> Inspector
-          </button>
-
-
-          <button onClick={() => setShowDashboard(true)} className="px-3 py-1.5 bg-[#161b22] text-gray-300 border border-white/5 text-[10px] font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-1.5">
-            <LucideIcons.LayoutDashboard size={12} /> Dashboard
-          </button>
-
-          {/* AI Audit Button */}
-          <button onClick={() => { setShowAiAuditor(true); handleRunAiAudit(); }} className="px-3 py-1.5 bg-purple-600/10 text-purple-400 border border-purple-600/20 text-[10px] font-bold rounded-xl hover:bg-purple-600 hover:text-white transition-all flex items-center gap-1.5">
-            <LucideIcons.Sparkles size={12} /> AI Audit
-          </button>
-
-          <button onClick={() => { setPreviewActivePageId(currentPageId); setShowLivePreview(true); }} className="px-3 py-1.5 bg-orange-500/10 text-orange-500 border border-orange-500/20 text-[10px] font-bold rounded-xl hover:bg-orange-500 hover:text-white transition-all flex items-center gap-1.5">
-            <LucideIcons.Eye size={12} /> Preview
-          </button>
-
           <button onClick={handleDeploy} disabled={isBuilding} className="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-xl hover:bg-blue-500 transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] disabled:opacity-50 flex items-center gap-1.5 ml-1">
             {isBuilding ? 'Building...' : <><LucideIcons.Rocket size={12} fill="white"/> Deploy</>}
           </button>
+
+          {/* THE USER MENU - Absolute far right! */}
+          <div className="ml-1 pl-3 border-l border-white/10 relative">
+            <UserMenu />
+          </div>
+          
         </div>
       </div>
 
