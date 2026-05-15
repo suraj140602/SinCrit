@@ -3,67 +3,73 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export async function GET(req) {
+// ────────────────────────────────────────────────────────────
+// POST /api/checkout  →  creates a Stripe Checkout Session
+// ────────────────────────────────────────────────────────────
+export async function POST(req) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
+    const { userId, projectId } = await req.json();
 
     if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+      return NextResponse.json({ error: 'userId is required' }, { status: 400 });
     }
 
-    // Validate env — crash early with a clear message
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (!baseUrl) {
-      return NextResponse.json(
-        { error: 'NEXT_PUBLIC_APP_URL is not configured on the server' },
-        { status: 500 }
-      );
-    }
-
-    const { data: profile, error: profileError } = await supabaseAdmin
+    // 1. Guard: is the user already premium?
+    const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('stripe_account_id')
+      .select('is_premium, email')
       .eq('id', userId)
       .single();
 
-    if (profileError && profileError.code !== 'PGRST116') {
-      throw profileError;
+    if (profile?.is_premium) {
+      return NextResponse.json({ alreadyPremium: true });
     }
 
-    let accountId = profile?.stripe_account_id;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://sin-crit.vercel.app';
 
-    if (!accountId) {
-      const account = await stripe.accounts.create({ type: 'express' });
-      accountId = account.id;
+    // 2. Build success / cancel URLs — NO payment-loop query params
+    const successUrl = `${baseUrl}/builder?upgraded=true&projectId=${projectId || ''}`;
+    const cancelUrl  = `${baseUrl}/builder?upgrade_cancelled=true`;
 
-      const { error: updateError } = await supabaseAdmin
-        .from('profiles')
-        .update({ stripe_account_id: accountId })
-        .eq('id', userId);
-
-      if (updateError) throw updateError;
-    }
-
-    const accountLink = await stripe.accountLinks.create({
-      account: accountId,
-      refresh_url: `${baseUrl}/builder`,
-      return_url: `${baseUrl}/builder?stripe_connected=true`,
-      type: 'account_onboarding',
+    // 3. Create a one-time Checkout Session (subscription)
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      customer_email: profile?.email || undefined,
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            recurring: { interval: 'month' },
+            product_data: {
+              name: 'AppForge Pro',
+              description: 'Unlimited APK builds, Flutter export, AI features & more.',
+              images: [`${baseUrl}/logo.png`],
+            },
+            unit_amount: 1900, // $19.00
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: { userId, projectId: projectId || '' },
+      success_url: successUrl,
+      cancel_url:  cancelUrl,
+      allow_promotion_codes: true,
     });
 
-    return NextResponse.redirect(accountLink.url);
+    return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error('Stripe Connect Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to connect Stripe', details: error.message },
-      { status: 500 }
-    );
+    console.error('Checkout error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+// Block GET / other methods
+export async function GET()    { return NextResponse.json({ error: 'Method not allowed' }, { status: 405 }); }
+export async function PUT()    { return NextResponse.json({ error: 'Method not allowed' }, { status: 405 }); }
+export async function DELETE() { return NextResponse.json({ error: 'Method not allowed' }, { status: 405 }); }

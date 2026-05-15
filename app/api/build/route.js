@@ -8,8 +8,8 @@ export async function POST(request) {
     const GITHUB_PAT = process.env.GITHUB_PAT;
     
     // UPDATED WITH YOUR EXACT GITHUB DETAILS
-    const GITHUB_USERNAME = "suraj140602"; 
-    const REPO_NAME = "APKBuildEngine"; 
+    const githubUsername = process.env.GITHUB_USERNAME;
+    const repoName = process.env.GITHUB_REPO_NAME;
 
     if (!GITHUB_PAT) {
        return NextResponse.json({ error: "Server configuration missing (GitHub token)" }, { status: 500 });
