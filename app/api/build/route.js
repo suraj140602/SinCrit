@@ -16,7 +16,7 @@ export async function POST(request) {
     }
 
     // Call the GitHub API to trigger the workflow dispatch
-    const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/dispatches`, {
+    const response = await fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/dispatches`, {
       method: 'POST',
       headers: {
         'Accept': 'application/vnd.github.v3+json',

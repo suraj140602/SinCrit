@@ -7,7 +7,7 @@ const parseSize = (val, isWidth = true) => {
         const percent = parseFloat(strVal) / 100;
         if (percent === 1) return isWidth ? 'constraints.maxWidth' : 'constraints.maxHeight';
         return `(${isWidth ? 'constraints.maxWidth' : 'constraints.maxHeight'} * ${percent})`;
-    } 
+    }
     const num = parseFloat(strVal.replace(/[^0-9.-]/g, ''));
     if (isNaN(num)) return 'null';
     return num.toFixed(1);
@@ -58,22 +58,22 @@ const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 // --- SAFE ICON TRANSLATOR (FIXED FOR GITHUB ACTIONS BUILD) ---
 const getFlutterIcon = (rawName) => {
     if (!rawName) return 'help_outline';
-    
+
     // Step 1: Clean spaces/dashes and convert PascalCase to snake_case
     let safeName = rawName.trim().replace(/[- ]/g, '_');
     safeName = safeName.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
-    
+
     // Step 2: Explicit mapping for Lucide to Material mismatches
     const iconMap = {
         'log_out': 'logout',
-        'plus': 'add', 
-        'plus_circle': 'add_circle', 
+        'plus': 'add',
+        'plus_circle': 'add_circle',
         'x': 'close',
-        'user': 'person', 
-        'users': 'people', 
+        'user': 'person',
+        'users': 'people',
         'trash': 'delete',
-        'play': 'play_arrow', 
-        'layout': 'dashboard', 
+        'play': 'play_arrow',
+        'layout': 'dashboard',
         'layout_dashboard': 'dashboard',
         'database': 'storage',
         'zap': 'bolt',
@@ -294,12 +294,12 @@ const getFlutterIcon = (rawName) => {
 // ---------------------------------------------------------------------------
 
 const ENV_KEYS = {
-    SUPABASE_URL:      'NEXT_PUBLIC_SUPABASE_URL',
+    SUPABASE_URL: 'NEXT_PUBLIC_SUPABASE_URL',
     SUPABASE_ANON_KEY: 'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-    FIREBASE_API_KEY:       'NEXT_PUBLIC_FIREBASE_API_KEY',
-    FIREBASE_APP_ID:        'NEXT_PUBLIC_FIREBASE_APP_ID',
-    FIREBASE_MESSAGING_ID:  'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
-    FIREBASE_PROJECT_ID:    'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+    FIREBASE_API_KEY: 'NEXT_PUBLIC_FIREBASE_API_KEY',
+    FIREBASE_APP_ID: 'NEXT_PUBLIC_FIREBASE_APP_ID',
+    FIREBASE_MESSAGING_ID: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+    FIREBASE_PROJECT_ID: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
 };
 
 const readEnv = (key, fallback = '') => {
@@ -310,9 +310,9 @@ const readEnv = (key, fallback = '') => {
 };
 
 const resolveSupabase = (schema) => {
-    const rawUrl  = readEnv(ENV_KEYS.SUPABASE_URL,      schema?.supabaseConfig?.url      || '');
-    const anonKey = readEnv(ENV_KEYS.SUPABASE_ANON_KEY, schema?.supabaseConfig?.anonKey  || '');
-    const url     = rawUrl.trim().replace(/\/+$/, '');
+    const rawUrl = readEnv(ENV_KEYS.SUPABASE_URL, schema?.supabaseConfig?.url || '');
+    const anonKey = readEnv(ENV_KEYS.SUPABASE_ANON_KEY, schema?.supabaseConfig?.anonKey || '');
+    const url = rawUrl.trim().replace(/\/+$/, '');
     const isPlaceholder = url.includes('your-project.supabase.co');
     return {
         url,
@@ -324,10 +324,10 @@ const resolveSupabase = (schema) => {
 const resolveFirebase = (schema) => {
     const fc = schema?.firebaseConfig || {};
     return {
-        apiKey:            readEnv(ENV_KEYS.FIREBASE_API_KEY,      fc.apiKey            || ''),
-        appId:             readEnv(ENV_KEYS.FIREBASE_APP_ID,       fc.appId             || ''),
+        apiKey: readEnv(ENV_KEYS.FIREBASE_API_KEY, fc.apiKey || ''),
+        appId: readEnv(ENV_KEYS.FIREBASE_APP_ID, fc.appId || ''),
         messagingSenderId: readEnv(ENV_KEYS.FIREBASE_MESSAGING_ID, fc.messagingSenderId || ''),
-        projectId:         readEnv(ENV_KEYS.FIREBASE_PROJECT_ID,   fc.projectId         || ''),
+        projectId: readEnv(ENV_KEYS.FIREBASE_PROJECT_ID, fc.projectId || ''),
     };
 };
 
@@ -344,11 +344,11 @@ const schemaUsesWidget = (schema, type) => {
 };
 
 export const generateFlutterCode = (schema) => {
-    
+
     const supabase = resolveSupabase(schema);
     const firebase = resolveFirebase(schema);
 
-    const usesMap     = schemaUsesWidget(schema, 'MapView');
+    const usesMap = schemaUsesWidget(schema, 'MapView');
     const usesWebView = schemaUsesWidget(schema, 'WebView');
 
     // 1. GENERATE STATE MANAGEMENT
@@ -360,7 +360,7 @@ export const generateFlutterCode = (schema) => {
         schema.appState.forEach(state => {
             const varName = state.key.replace(/[^a-zA-Z0-9]/g, '');
             const vType = state.type || 'String';
-            
+
             let formattedValue = state.value;
             if (vType === 'String') {
                 formattedValue = `'${state.value.replace(/'/g, "\\'")}'`;
@@ -371,8 +371,8 @@ export const generateFlutterCode = (schema) => {
             }
 
             stateVariables += `  ${vType} _${varName} = ${formattedValue};\n`;
-            stateGetters   += `  ${vType} get ${varName} => _${varName};\n`;
-            stateMutators  += `  void update${capitalize(varName)}(${vType} val) {\n    _${varName} = val;\n    notifyListeners();\n  }\n`;
+            stateGetters += `  ${vType} get ${varName} => _${varName};\n`;
+            stateMutators += `  void update${capitalize(varName)}(${vType} val) {\n    _${varName} = val;\n    notifyListeners();\n  }\n`;
         });
     }
 
@@ -404,13 +404,13 @@ ${stateMutators}
         let code = '';
         chain.forEach(action => {
             if (action.type === 'navigate' && action.target) {
-                code += `      Navigator.pushNamed(context, '/${action.target}');\n`; 
+                code += `      Navigator.pushNamed(context, '/${action.target}');\n`;
             }
             if ((action.type === 'updateState' || action.type === 'state') && action.variable) {
                 const cleanVar = action.variable.replace(/[^a-zA-Z0-9]/g, '');
                 const stateObj = schema.appState?.find(s => s.key === action.variable);
                 const vType = stateObj ? (stateObj.type || 'String') : 'String';
-                
+
                 let passValue = `'${action.value || ''}'`;
                 if (vType === 'int') passValue = `int.tryParse('${action.value}') ?? 0`;
                 if (vType === 'double') passValue = `double.tryParse('${action.value}') ?? 0.0`;
@@ -468,13 +468,13 @@ ${stateMutators}
 
         let rawText = props.content || props.label || props.placeholder || '';
         let safeText = String(rawText)
-            .replace(/\\/g, '\\\\') 
-            .replace(/\$/g, '\\$')  
-            .replace(/'/g, "\\'");  
-            
+            .replace(/\\/g, '\\\\')
+            .replace(/\$/g, '\\$')
+            .replace(/'/g, "\\'");
+
         let contentStr = `'${safeText}'`;
         let requiresStateListener = false;
-        
+
         if (props.isBound && props.boundVariable) {
             const cleanVar = props.boundVariable.replace(/[^a-zA-Z0-9]/g, '');
             contentStr = `AppState.instance.${cleanVar}`;
@@ -482,8 +482,8 @@ ${stateMutators}
         }
 
         const absoluteChildrenNodes = (node.children || []).filter(c => c && c.props && c.props.position === 'absolute');
-        const staticChildrenNodes   = (node.children || []).filter(c => c && (!c.props || c.props.position !== 'absolute'));
-        const childrenCode          = staticChildrenNodes.length > 0 ? staticChildrenNodes.map(buildWidget).join(',\n') : '';
+        const staticChildrenNodes = (node.children || []).filter(c => c && (!c.props || c.props.position !== 'absolute'));
+        const childrenCode = staticChildrenNodes.length > 0 ? staticChildrenNodes.map(buildWidget).join(',\n') : '';
 
         switch (node.type) {
 
@@ -553,7 +553,7 @@ ${stateMutators}
                 if (props.isBound && props.boundVariable) {
                     const cleanVar = props.boundVariable.replace(/[^a-zA-Z0-9]/g, '');
                     progressValue = `(double.tryParse(AppState.instance.${cleanVar}) ?? 0.0)`;
-                    requiresStateListener = true; 
+                    requiresStateListener = true;
                 }
                 widgetCode = `ClipRRect(
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(${parseRadius(props.radiusTopLeft)}), topRight: Radius.circular(${parseRadius(props.radiusTopRight)}), bottomLeft: Radius.circular(${parseRadius(props.radiusBottomLeft)}), bottomRight: Radius.circular(${parseRadius(props.radiusBottomRight)})),
@@ -587,7 +587,7 @@ ${stateMutators}
             case 'Wrap':
                 let wrapAlign = 'WrapAlignment.start';
                 if (props.alignment === 'center') wrapAlign = 'WrapAlignment.center';
-                if (props.alignment === 'end')    wrapAlign = 'WrapAlignment.end';
+                if (props.alignment === 'end') wrapAlign = 'WrapAlignment.end';
                 widgetCode = `Wrap(
                   spacing: ${parseSize(props.spacing || '8px', true)},
                   runSpacing: ${parseSize(props.runSpacing || '8px', false)},
@@ -657,8 +657,11 @@ ${stateMutators}
                 break;
 
             case 'Stack':
-                const allChildrenCode = staticChildrenNodes.map(buildWidget).join(',\n');
-                widgetCode = `Stack(clipBehavior: Clip.none, children: <Widget>[\n${allChildrenCode}\n])`;
+                const stackChildren = [
+                    ...staticChildrenNodes.map(buildWidget),
+                    ...absoluteChildrenNodes.map(buildWidget)  // Positioned() wrapping happens inside buildWidget
+                ].join(',\n');
+                widgetCode = `Stack(clipBehavior: Clip.none, children: <Widget>[\n${stackChildren}\n])`;
                 break;
 
             case 'ListView':
@@ -674,7 +677,7 @@ ${stateMutators}
                     return Padding(padding: EdgeInsets.only(${gapDir}: ${parseSize(props.gap || '8px', true)}), child: ${staticChildrenNodes.length > 0 ? buildWidget(staticChildrenNodes[0]) : 'const SizedBox.shrink()'});
                   },
                 )`;
-                
+
                 if (props.apiEndpointId) {
                     const apiDef = schema.apiEndpoints?.find(a => a.id === props.apiEndpointId);
                     if (apiDef && apiDef.url) {
@@ -700,7 +703,14 @@ ${stateMutators}
                 break;
 
             case 'Container':
-                widgetCode = staticChildrenNodes.length > 0 ? buildWidget(staticChildrenNodes[0]) : `const SizedBox.shrink()`;
+                const containerChildren = staticChildrenNodes.length > 0
+                    ? staticChildrenNodes.map(buildWidget).join(',\n')
+                    : '';
+                widgetCode = staticChildrenNodes.length === 1
+                    ? buildWidget(staticChildrenNodes[0])
+                    : staticChildrenNodes.length > 1
+                        ? `Column(children: <Widget>[${containerChildren}])`
+                        : `const SizedBox.shrink()`;
                 break;
 
             case 'Shape':
@@ -708,21 +718,21 @@ ${stateMutators}
                 widgetCode = `const SizedBox.shrink()`;
                 break;
         }
-        
+
         if (requiresStateListener && (node.type === 'Text' || node.type === 'Button')) {
             widgetCode = `ListenableBuilder(listenable: AppState.instance, builder: (context, child) { return ${widgetCode}; })`;
         }
-        
+
         let containerProps = '';
         if (props.padding && props.padding !== '0px') containerProps += `padding: ${parseEdgeInsets(props.padding)},\n`;
-        if (props.margin  && props.margin  !== '0px') containerProps += `margin: ${parseEdgeInsets(props.margin)},\n`;
-        
-        let safeWidth  = parseSize(props.width, true);
+        if (props.margin && props.margin !== '0px') containerProps += `margin: ${parseEdgeInsets(props.margin)},\n`;
+
+        let safeWidth = parseSize(props.width, true);
         let safeHeight = parseSize(props.height, false);
 
         if (node.type === 'ListView' && props.scrollDirection === 'horizontal' && safeHeight === 'null') safeHeight = '120.0';
 
-        if (safeWidth  !== 'null') containerProps += `width: ${safeWidth},\n`;
+        if (safeWidth !== 'null') containerProps += `width: ${safeWidth},\n`;
         if (safeHeight !== 'null') containerProps += `height: ${safeHeight},\n`;
 
         let decorationProps = '';
@@ -744,10 +754,6 @@ ${stateMutators}
             wrappedWidget = `Container(\n${containerProps}child: ${widgetCode},\n)`;
         }
 
-        if (node.type !== 'Stack' && absoluteChildrenNodes.length > 0) {
-            const absoluteCode = absoluteChildrenNodes.map(buildWidget).join(',\n');
-            wrappedWidget = `Stack(clipBehavior: Clip.none, children: <Widget>[${wrappedWidget}, ${absoluteCode}])`;
-        }
 
         if (props.position === 'absolute') {
             wrappedWidget = `Positioned(top: ${parseSize(props.top, false)}, left: ${parseSize(props.left, true)}, bottom: ${parseSize(props.bottom, false)}, right: ${parseSize(props.right, true)}, child: ${wrappedWidget})`;
@@ -760,7 +766,7 @@ ${stateMutators}
     // 4. GENERATE FULL PAGES & ROUTING
     let pageClasses = '';
     let routes = '';
-    
+
     const navItems = schema.appConfig?.navItems || [];
     let bottomNavItemsCode = '';
     navItems.forEach((item) => {
@@ -771,7 +777,7 @@ ${stateMutators}
     schema.pages.forEach((page, index) => {
         const className = `Page${page.id.replace(/[^a-zA-Z0-9]/g, '')}`;
         const isInitialRoute = (schema.app?.initialPage === page.id) || (index === 0);
-        
+
         routes += `        '/${page.id}': (context) => const ${className}(),\n`;
         if (isInitialRoute) {
             routes = `        '/': (context) => const ${className}(),\n` + routes;
@@ -779,14 +785,14 @@ ${stateMutators}
 
         let bottomNavCode = '';
         if (schema.appConfig && schema.appConfig.enableBottomNav && navItems.length >= 2) {
-            const isGlass     = schema.appConfig.navStyle === 'glass';
-            const elevation   = schema.appConfig.navStyle === 'shadow' ? '16.0' : '0.0';
-            const bgColor     = schema.appConfig.navBackground  || '#ffffff';
+            const isGlass = schema.appConfig.navStyle === 'glass';
+            const elevation = schema.appConfig.navStyle === 'shadow' ? '16.0' : '0.0';
+            const bgColor = schema.appConfig.navBackground || '#ffffff';
             const activeColor = schema.appConfig.navActiveColor || schema.theme.primary;
             const inactiveColor = schema.appConfig.navIconColor || '#888888';
 
             const currentIndex = navItems.findIndex(n => n.targetPage === page.id);
-            const activeIdx    = currentIndex !== -1 ? currentIndex : 0;
+            const activeIdx = currentIndex !== -1 ? currentIndex : 0;
 
             bottomNavCode = `
       bottomNavigationBar: ${isGlass ? `ClipRRect(child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), child: ` : ''}BottomNavigationBar(
@@ -836,7 +842,7 @@ import 'dart:ui';
 import 'dart:async';
 `;
 
-    if (usesMap)     imports += `import 'package:google_maps_flutter/google_maps_flutter.dart';\n`;
+    if (usesMap) imports += `import 'package:google_maps_flutter/google_maps_flutter.dart';\n`;
     if (usesWebView) imports += `import 'package:webview_flutter/webview_flutter.dart';\n`;
 
     if (schema.backendProvider === 'firebase') {

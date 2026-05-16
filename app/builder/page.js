@@ -456,6 +456,30 @@ function Home() {
     return () => window.removeEventListener('touchmove', preventScrollWhileDragging);
   }, []);
 
+  // Add this function to your Builder component
+const generateFlutterCode = async () => {
+  // Assuming 'schema' is your master JSON state containing the nodes, theme, etc.
+  try {
+    const response = await fetch('/api/generate-app', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        schema: currentSchema, // Pass your entire canvas state
+        task: "Build the main.dart UI using the AppForge patterns." 
+      })
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+      console.log("Generated Dart Code:\n", data.code);
+      // Here you could open a Modal to show the code to the user, 
+      // or trigger a file download!
+    }
+  } catch (error) {
+    console.error("Failed to generate code", error);
+  }
+};
+
   // --- FIX 1: DEBOUNCED AUTO-SAVE ---
   const isFirstRender = useRef(true);
 
