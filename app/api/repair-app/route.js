@@ -14,10 +14,10 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Missing code or logs' }, { status: 400 });
     }
 
-    // 1. FAST PATH: Run your local regex analyzer to categorize the error instantly
+    // 1. FAST PATH: Run your local regex analyzer
     const knownIssues = analyzeLog(errorLogs);
     
-    // 2. DEEP REPAIR: Compile the dense repair context for Gemini
+    // 2. DEEP REPAIR: Compile the dense repair context
     const systemInstruction = compileRepairContext(schema, errorLogs, "Fix the Dart build errors.");
     
     const model = genAI.getGenerativeModel({ 
@@ -43,7 +43,7 @@ Apply the exact fixes needed so this compiles perfectly. Output ONLY the raw cor
     return NextResponse.json({ 
       success: true, 
       code: fixedCode,
-      insights: knownIssues // We return this so the UI can show the user what we fixed!
+      insights: knownIssues
     });
 
   } catch (error) {

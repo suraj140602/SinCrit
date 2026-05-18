@@ -81,22 +81,6 @@ export const KNOWN_ERRORS = [
   },
 ];
 
-{/* Drop this above your Code Editor / Preview window */ }
-{
-  repairInsights.length > 0 && (
-    <div className="bg-emerald-900/30 border border-emerald-500/50 p-4 rounded-xl mb-4">
-      <h3 className="text-emerald-400 font-bold mb-2 flex items-center gap-2">
-        <Sparkles size={16} /> AI Auto-Repair Successful
-      </h3>
-      <ul className="text-sm text-emerald-200 space-y-1">
-        {repairInsights.map((insight, idx) => (
-          <li key={idx}>✓ {insight.title}: <span className="opacity-70">{insight.suggestion}</span></li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
 export const analyzeLog = (logText) => {
   const results = [];
   for (const rule of KNOWN_ERRORS) {
