@@ -11,9 +11,11 @@ export async function POST(req) {
       body: JSON.stringify({ dart_code }),
     });
 
+        const data = await response.json();
+
+
     if (!response.ok) throw new Error(`Python API error: ${response.status}`);
 
-    const data = await response.json();
     return NextResponse.json(data);
 
   } catch (error) {

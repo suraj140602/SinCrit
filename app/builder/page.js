@@ -6,9 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import Canvas from "../../components/Canvas";
 import ErrorBoundary from "../../components/ErrorBoundary";
 import { dummySchema } from "../../data/dummySchema";
-import { generateFlutterCode } from "../../utils/flutterGenerator";
+import { generateFlutterCode } from "../../utils/flutterGenerator"; // Synchronous generator
 import { supabase } from "../../utils/supabase";
-import { generateSupabaseSQL } from "../../utils/sqlGenerator"; // <--- ADD THIS HERE!
+import { generateSupabaseSQL } from "../../utils/sqlGenerator"; 
 import * as LucideIcons from "lucide-react";
 import {
   Search, Plus, Grid, Save, Trash, Layers, Database, Zap,
@@ -17,13 +17,11 @@ import {
 } from "lucide-react";
 import { polyfill } from "mobile-drag-drop";
 import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
-import "mobile-drag-drop/default.css"; // Gives visual feedback on mobile
+import "mobile-drag-drop/default.css"; 
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 import { TEMPLATES } from "../../data/templates";
-
-
 
 // Simple SVG Icon helper
 const Icon = ({ path }) => (
@@ -57,7 +55,7 @@ const WIDGET_CATEGORIES = [
       { type: 'Icon', icon: 'Star' },
       { type: 'Card', icon: 'CreditCard' },
       { type: 'Divider', icon: 'Minus' },
-      { type: 'CustomCode', icon: 'TerminalSquare' } // <--- ADD THIS
+      { type: 'CustomCode', icon: 'TerminalSquare' } 
     ]
   },
   {
@@ -76,15 +74,12 @@ const WIDGET_CATEGORIES = [
 ];
 
 const ClientDashboard = ({ schema }) => {
-  // Manage the active page for the interactive preview
   const [activePageId, setActivePageId] = useState(schema.app?.initialPage || schema.pages[0]?.id);
   const activePage = schema.pages.find(p => p.id === activePageId) || schema.pages[0];
 
   return (
     <div className="flex-1 flex flex-col bg-[#050505] overflow-y-auto p-10 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed" style={{ backgroundBlendMode: 'overlay' }}>
       <div className="max-w-7xl mx-auto w-full space-y-8">
-
-        {/* Client Header */}
         <div className="flex justify-between items-end border-b border-white/10 pb-6">
           <div>
             <h1 className="text-3xl font-bold text-white tracking-tight">{schema.app?.name || 'My App'} Management</h1>
@@ -99,7 +94,6 @@ const ClientDashboard = ({ schema }) => {
           </div>
         </div>
 
-        {/* Dynamic Project Stats (Reads from real schema) */}
         <div className="grid grid-cols-4 gap-6">
           <div className="bg-[#0E0F11] border border-white/5 p-6 rounded-3xl shadow-sm">
             <div className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-2">Total Screens</div>
@@ -119,10 +113,7 @@ const ClientDashboard = ({ schema }) => {
           </div>
         </div>
 
-        {/* Main Layout: Preview on Left, Data on Right */}
         <div className="flex gap-8 pb-20">
-
-          {/* INTERACTIVE APP PREVIEW */}
           <div className="bg-[#0E0F11] border border-white/5 rounded-3xl shadow-sm overflow-hidden flex flex-col w-fit shrink-0">
             <div className="bg-[#161b22] px-6 py-4 border-b border-white/5 flex justify-between items-center">
               <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
@@ -148,7 +139,6 @@ const ClientDashboard = ({ schema }) => {
             </div>
           </div>
 
-          {/* DATABASE ARCHITECTURE VIEWER */}
           <div className="flex-1 flex flex-col gap-6">
             <div className="bg-[#0E0F11] border border-white/5 rounded-3xl shadow-sm overflow-hidden flex flex-col">
               <div className="bg-[#161b22] px-6 py-4 border-b border-white/5 flex justify-between items-center">
@@ -182,14 +172,11 @@ const ClientDashboard = ({ schema }) => {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
 };
 
-// Defined at module scope so React doesn't remount it on every Home render.
-// Previously defined inside Home, which caused unnecessary unmount/remount cycles.
 const SyntaxHighlightedCode = ({ codeStr, selectedType }) => {
   if (!selectedType) return <pre className="h-full text-[12px] font-mono text-gray-400 overflow-y-auto whitespace-pre-wrap hide-scrollbar p-4">{codeStr}</pre>;
   const flutterMap = { 'Container': 'Container(', 'Card': 'Card(', 'Padding': 'Padding(', 'Center': 'Center(', 'SizedBox': 'SizedBox(', 'Divider': 'Divider(', 'Text': 'Text(', 'Button': 'ElevatedButton(', 'TextInput': 'TextField(', 'Image': 'Image.network(', 'Icon': 'Icon(', 'Shape': 'Container(', 'Row': 'Row(', 'Column': 'Column(', 'Stack': 'Stack(', 'ListView': 'ListView.builder(' };
@@ -203,7 +190,6 @@ const SyntaxHighlightedCode = ({ codeStr, selectedType }) => {
   );
 };
 
-// --- NEW: STABLE INPUT COMPONENT ---
 const PropInput = ({ label, propKey, type = "text", options = [], placeholder = "", value, onChange }) => {
   const getValidHex = (colorString) => {
     return (colorString && colorString.startsWith('#') && colorString.length >= 7) ? colorString.substring(0, 7) : '#ffffff';
@@ -231,7 +217,7 @@ const PropInput = ({ label, propKey, type = "text", options = [], placeholder = 
 function Home() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  // 1. STRICT INITIALIZATION: Force the root to be a Flexbox Column
+
   const initialPages = dummySchema?.pages?.length > 0 ? dummySchema.pages : [{
     id: 'home',
     name: 'Home',
@@ -239,26 +225,24 @@ function Home() {
       id: `root_column_${Date.now()}`,
       type: 'Column',
       props: { padding: '16px', gap: '16px', mainAxisAlignment: 'start', crossAxisAlignment: 'stretch' },
-      children: [] // Strictly initialized array, never null
+      children: [] 
     }
-
   }];
 
-  // --- TEMPLATE INJECTION STATE ---
-  const [pendingInjection, setPendingInjection] = useState(null); // Holds the template ID
-  const [injectionTarget, setInjectionTarget] = useState('current'); // 'current', 'new', or specific pageId
+  const [pendingInjection, setPendingInjection] = useState(null); 
+  const [injectionTarget, setInjectionTarget] = useState('current'); 
   const [injectionNewPageName, setInjectionNewPageName] = useState('');
 
   const [schema, setSchema] = useState({
     ...dummySchema,
-    pages: initialPages, // Overwrite with strict structure
+    pages: initialPages, 
     components: [],
     appState: [],
     apiEndpoints: [],
     permissions: { internet: true, camera: false, location: false, microphone: false, notifications: false },
     backendProvider: 'supabase',
     supabaseConfig: { url: '', anonKey: '' },
-    firebaseConfig: { apiKey: '', projectId: '', appId: '', messagingSenderId: '' }, // <-- ADD THIS
+    firebaseConfig: { apiKey: '', projectId: '', appId: '', messagingSenderId: '' },
     appConfig: {
       enableBottomNav: false,
       navBackground: '#0d1117',
@@ -275,64 +259,50 @@ function Home() {
         { id: 'tbl_users', name: 'users', columns: [{ id: 'col_1', name: 'email', type: 'text' }, { id: 'col_2', name: 'created_at', type: 'timestamp' }] },
         { id: 'tbl_products', name: 'products', columns: [{ id: 'col_3', name: 'title', type: 'text' }, { id: 'col_4', name: 'price', type: 'numeric' }] }
       ]
-
     },
     theme: { ...dummySchema.theme, globalRadius: "12px", secondary: "#EC4899", background: "#0a0a0a", primary: "#3b82f6" }
   });
 
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isPremium, setIsPremium] = useState(false); 
 
-  const [isPremium, setIsPremium] = useState(false); // <--- NEW STATE
-
-  // --- AI CONFIGURATION STATE ---
-  const [aiProvider, setAiProvider] = useState('gemini-default'); // 'gemini-default', 'claude-3-5', 'gpt-4o'
+  const [aiProvider, setAiProvider] = useState('gemini-default'); 
   const [customApiKey, setCustomApiKey] = useState('');
   const [isKeyInputOpen, setIsKeyInputOpen] = useState(true);
 
-  // --- AI MAINTENANCE STATE ---
-  const [dashboardTab, setDashboardTab] = useState('deployments'); // 'deployments' or 'maintenance'
+  const [dashboardTab, setDashboardTab] = useState('deployments'); 
   const [maintenanceTasks, setMaintenanceTasks] = useState([]);
   const [isScanningHealth, setIsScanningHealth] = useState(false);
 
-  // --- AGENCY WORKSPACE STATE ---
-  const [workspaceRole, setWorkspaceRole] = useState('admin'); // 'admin' or 'client'
+  const [workspaceRole, setWorkspaceRole] = useState('admin'); 
 
-  // --- AI AUDITOR STATE ---
   const [showAiAuditor, setShowAiAuditor] = useState(false);
   const [aiAuditLogs, setAiAuditLogs] = useState([]);
   const [isAiAuditing, setIsAiAuditing] = useState(false);
 
   const [showSqlModal, setShowSqlModal] = useState(false);
-
-
   const [elementSearch, setElementSearch] = useState("");
 
-  // --- AI CO-PILOT STATE ---
   const [themePrompt, setThemePrompt] = useState('');
   const [isGeneratingTheme, setIsGeneratingTheme] = useState(false);
-
   const [isGeneratingBackend, setIsGeneratingBackend] = useState(false);
 
-  // NEW: Element Level AI
-  // --- INTELLIGENT AI CHAT STATE ---
   const [aiChatHistory, setAiChatHistory] = useState([
     { role: 'ai', text: "Hi! I'm your AppForge AI Engineer. Select an element or tell me what you'd like to build!" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [isEditingElement, setIsEditingElement] = useState(false);
-  const [elementPrompt, setElementPrompt] = useState(''); // FIX: was missing, caused ReferenceError in handleAiElementEdit
+  const [elementPrompt, setElementPrompt] = useState(''); 
 
   const [currentPageId, setCurrentPageId] = useState(schema.app.initialPage || schema.pages[0].id);
   const [selectedId, setSelectedId] = useState(null);
   const [activeTab, setActiveTab] = useState('elements');
-  const [inspectorTab, setInspectorTab] = useState('properties'); // 'properties', 'actions', 'backend', 'animations'
+  const [inspectorTab, setInspectorTab] = useState('properties'); 
 
-  // --- LIVE PREVIEW STATE ---
   const [showLivePreview, setShowLivePreview] = useState(false);
   const [previewActivePageId, setPreviewActivePageId] = useState(null);
 
-  // COMMAND PALETTE & UI STATE
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [cmdSearch, setCmdSearch] = useState("");
   const [previewMode, setPreviewMode] = useState('iphone');
@@ -370,14 +340,10 @@ function Home() {
   const [isBuilding, setIsBuilding] = useState(false);
   const [apkUrl, setApkUrl] = useState(null);
 
-
   const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
   const [newPageName, setNewPageName] = useState("");
   const [newPageTemplate, setNewPageTemplate] = useState("blank");
 
-
-
-  // --- STORYBOARD ENGINE ---
   const handleWheel = (e) => {
     if (viewMode !== 'storyboard') return;
     if (e.ctrlKey || e.metaKey) { e.preventDefault(); setZoom(z => Math.min(Math.max(0.2, z - e.deltaY * 0.005), 3)); }
@@ -386,8 +352,12 @@ function Home() {
   const handleMouseDown = (e) => { if (viewMode === 'storyboard' && (e.button === 1 || e.button === 2 || e.altKey)) { e.preventDefault(); setIsPanning(true); } };
   const handleMouseMove = (e) => { if (isPanning) setPan(p => ({ x: p.x + e.movementX, y: p.y + e.movementY })); };
   const handleMouseUp = () => setIsPanning(false);
+  
   const [importCode, setImportCode] = useState("");
   const [isParsing, setIsParsing] = useState(false);
+
+  const [isFixing, setIsFixing] = useState(false);
+  const [repairInsights, setRepairInsights] = useState([]);
 
   const getConnections = () => {
     let connections = [];
@@ -410,134 +380,145 @@ function Home() {
 
   useEffect(() => {
     const injectKey = searchParams.get('inject');
-
-    // If a template key exists in the URL, inject it!
     if (injectKey && TEMPLATES[injectKey]) {
       const sourceObj = TEMPLATES[injectKey];
       const clonedNode = regenerateIds(JSON.parse(JSON.stringify(sourceObj)));
-
       const newSchema = JSON.parse(JSON.stringify(schema));
       const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
-
 
       if (pIndex !== -1) {
         if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
         newSchema.pages[pIndex].root.children.push(clonedNode);
-
-        // Save the update
         commitHistory(newSchema);
         setSelectedId(clonedNode.id);
-
-        // Silently clean the URL so it doesn't duplicate if they refresh the page!
         router.replace('/builder', undefined, { shallow: true });
       }
     }
   }, [searchParams]);
 
-  // --- MOBILE TOUCH DRAG & DROP ACTIVATION ---
   useEffect(() => {
-    // 1. Activate the mobile touch polyfill
     polyfill({
       dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride,
-      // Require a 250ms "hold" before dragging starts. 
-      // This prevents the screen from dragging when the user is just trying to scroll the menu!
       holdToDrag: 250,
     });
-
-    // 2. Prevent the phone screen from scrolling while a drag is actively happening
     const preventScrollWhileDragging = (e) => {
-      if (document.body.classList.contains('dnd-poly-active')) {
-        e.preventDefault();
-      }
+      if (document.body.classList.contains('dnd-poly-active')) e.preventDefault();
     };
-
-    // Use passive: false to allow e.preventDefault() to work
     window.addEventListener('touchmove', preventScrollWhileDragging, { passive: false });
     return () => window.removeEventListener('touchmove', preventScrollWhileDragging);
   }, []);
 
-  // Add this function to your Builder component
-const generateFlutterCode = async () => {
-  // Assuming 'schema' is your master JSON state containing the nodes, theme, etc.
-  try {
-    const response = await fetch('/api/generate-app', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        schema: currentSchema, // Pass your entire canvas state
-        task: "Build the main.dart UI using the AppForge patterns." 
-      })
-    });
-    
-    const data = await response.json();
-    if (data.success) {
-      console.log("Generated Dart Code:\n", data.code);
-      // Here you could open a Modal to show the code to the user, 
-      // or trigger a file download!
-    }
-  } catch (error) {
-    console.error("Failed to generate code", error);
-  }
-};
+  // NEW: Refactored AI Code Generator to avoid shadowing the synchronous generateFlutterCode
+  const fetchAIGeneratedCode = async () => {
+    setIsBuilding(true);
+    try {
+      const response = await fetch('/api/generate-app', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          schema: schema,
+          task: "Build the main.dart UI using the AppForge patterns."
+        })
+      });
 
-  // --- FIX 1: DEBOUNCED AUTO-SAVE ---
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const rawText = await response.text();
+        console.error("CRASH PREVENTED: Server returned HTML instead of JSON:", rawText);
+        alert("API Error: The server returned an HTML error page. Check your terminal!");
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        console.log("Generated Dart Code:\n", data.code);
+      } else {
+        console.error("API Error:", data.error);
+      }
+    } catch (error) {
+      console.error("Failed to generate code", error);
+    } finally {
+      setIsBuilding(false);
+    }
+  };
+
+  // NEW: Extracted Auto Repair so it is at the root component level
+  const triggerAutoRepair = async (brokenCode, terminalErrorText) => {
+    setIsFixing(true);
+    try {
+      const response = await fetch('/api/repair-app', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          schema: schema, 
+          currentCode: brokenCode,
+          errorLogs: terminalErrorText
+        })
+      });
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const rawText = await response.text();
+        console.error("CRASH PREVENTED: Server returned HTML instead of JSON:", rawText);
+        alert("Repair API Error: The server returned an HTML error page. Check your console/terminal!");
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setRepairInsights(data.insights || []);
+        console.log("Code automatically repaired!");
+      } else {
+        console.error("Repair failed at API level:", data.error);
+      }
+    } catch (error) {
+      console.error("Repair network failed:", error);
+    } finally {
+      setIsFixing(false);
+    }
+  };
+
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    // Prevent saving the dummy schema immediately on page load
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
-
-    // Only auto-save if they are logged in and the project has an ID
     if (!user || !dbProjectId) return;
-
-    // Wait 3 seconds after their last action to save
     const autoSaveTimer = setTimeout(() => {
       handleSaveProject();
     }, 3000);
-
-    return () => clearTimeout(autoSaveTimer); // Cancel timer if they keep editing
+    return () => clearTimeout(autoSaveTimer); 
   }, [schema]);
 
-  // --- THE DEPLOYMENT INTERCEPTOR ---
   useEffect(() => {
     if (isAuthLoading) return;
-
     const urlParams = new URLSearchParams(window.location.search);
     const injectKey = urlParams.get('inject');
-
     if (!injectKey) return;
-
-    // Instantly wipe the URL so it doesn't trigger again on refresh
     window.history.replaceState(null, '', window.location.pathname);
-
     if (TEMPLATES[injectKey]) {
-      setPendingInjection(injectKey); // Open the Deployment Modal!
-      setInjectionTarget('current'); // Reset default choice
+      setPendingInjection(injectKey); 
+      setInjectionTarget('current'); 
       setInjectionNewPageName('');
     }
   }, [isAuthLoading]);
 
-  // --- THE EXECUTION FUNCTION ---
   const handleExecuteInjection = () => {
     if (!pendingInjection) return;
 
-    // --- NEW: STORE PAYWALL GATEKEEPER ---
     const freeTemplates = ['hero', 'login', 'productCard', 'storyList', 'sectionTitle'];
     if (!freeTemplates.includes(pendingInjection) && !isPremium) {
       alert("✨ This is a Premium Theme from the Store! Please upgrade your workspace to deploy it.");
-      setPendingInjection(null); // Close the modal
-      handleCheckout(); // Send them to Stripe!
+      setPendingInjection(null); 
+      handleCheckout(); 
       return;
     }
-    // -------------------------------------
 
     let targetPageId = currentPageId;
     let newSchema = JSON.parse(JSON.stringify(schema));
 
-    // Handle "New Page" creation on the fly
     if (injectionTarget === 'new') {
       if (!injectionNewPageName.trim()) return alert("Please enter a name for the new page.");
       targetPageId = `page_${Date.now()}`;
@@ -547,10 +528,9 @@ const generateFlutterCode = async () => {
         root: { id: `root_column_${Date.now()}`, type: "Column", props: { padding: "0px", margin: "0px", backgroundColor: "transparent", backgroundType: "solid", mainAxisAlignment: "start", crossAxisAlignment: "stretch" }, children: [] }
       });
     } else if (injectionTarget !== 'current') {
-      targetPageId = injectionTarget; // They selected a specific existing page
+      targetPageId = injectionTarget; 
     }
 
-    // Apply defaults to prevent Canvas crashes
     const applyDefaults = (node) => {
       node.props = { ...getProDefaults(), ...node.props };
       if (['Container', 'Card', 'Padding', 'Center', 'Stack', 'Row', 'Column', 'ListView'].includes(node.type)) {
@@ -564,21 +544,17 @@ const generateFlutterCode = async () => {
     clonedNode = applyDefaults(clonedNode);
 
     const pIndex = newSchema.pages.findIndex(p => p.id === targetPageId);
-
     if (pIndex !== -1) {
       if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
       newSchema.pages[pIndex].root.children.push(clonedNode);
 
       commitHistory(newSchema);
-      setCurrentPageId(targetPageId); // Snap them to the target page!
-      setTimeout(() => setSelectedId(clonedNode.id), 50); // Select the new item
+      setCurrentPageId(targetPageId); 
+      setTimeout(() => setSelectedId(clonedNode.id), 50); 
     }
 
-    // Close the modal
     setPendingInjection(null);
   };
-
-
 
   const commitHistory = (newSchema) => {
     const newHistory = history.slice(0, historyIndex + 1);
@@ -617,7 +593,6 @@ const generateFlutterCode = async () => {
       alert("Payment Successful! Starting your cloud build now...");
       startActualCloudBuild(pid);
     }
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -631,12 +606,10 @@ const generateFlutterCode = async () => {
       });
 
       const data = await res.json();
-
       if (data.success && data.json_tree) {
         const newSchema = JSON.parse(JSON.stringify(schema));
         const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
 
-        // Ensure new nodes have proper IDs and default properties
         const applyDefaultsToTree = (node) => {
           node.id = `${node.type.toLowerCase()}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
           if (!node.props) node.props = getProDefaults();
@@ -646,7 +619,6 @@ const generateFlutterCode = async () => {
 
         const parsedNode = applyDefaultsToTree(data.json_tree);
 
-        // Inject into current canvas
         if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
         newSchema.pages[pIndex].root.children.push(parsedNode);
 
@@ -670,21 +642,18 @@ const generateFlutterCode = async () => {
 
   const loadUserProject = async (userId) => {
     try {
-      // --- NEW: FETCH PREMIUM STATUS ---
       const { data: profileData } = await supabase.from('profiles').select('is_premium').eq('id', userId).single();
       setIsPremium(profileData?.is_premium || false);
-      // ---------------------------------
 
       const { data } = await supabase.from('projects').select('*').eq('user_id', userId).limit(1).single();
       if (data) {
         const loadedSchema = {
-
           ...data.schema,
           components: data.schema.components || [],
           appState: data.schema.appState || [],
           permissions: data.schema.permissions || { internet: true, camera: false, location: false, microphone: false, notifications: false },
           supabaseConfig: data.schema.supabaseConfig || { url: '', anonKey: '' },
-          firebaseConfig: data.schema.firebaseConfig || { apiKey: '', projectId: '', appId: '', messagingSenderId: '' }, // <-- FIXED: Restores Firebase
+          firebaseConfig: data.schema.firebaseConfig || { apiKey: '', projectId: '', appId: '', messagingSenderId: '' }, 
           appConfig: data.schema.appConfig || { enableBottomNav: false },
           theme: { secondary: "#EC4899", ...data.schema.theme }
         };
@@ -706,8 +675,6 @@ const generateFlutterCode = async () => {
     }
   };
 
-
-
   const handleAssetUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !user) return;
@@ -725,7 +692,6 @@ const generateFlutterCode = async () => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Don't trigger shortcuts if user is typing in an input field
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
       const ctrlOrCmd = e.ctrlKey || e.metaKey;
 
@@ -738,11 +704,9 @@ const generateFlutterCode = async () => {
       else if (ctrlOrCmd && e.key.toLowerCase() === 'd') { e.preventDefault(); handleDuplicate(); }
       else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); handleDelete(); }
 
-      // --- NEW: PIXEL-PERFECT ARROW KEY NUDGING ---
       if (selectedId && !selectedId.includes('root') && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        e.preventDefault(); // Prevent window from scrolling
-
-        const step = e.shiftKey ? 10 : 1; // Hold Shift to move by 10px
+        e.preventDefault(); 
+        const step = e.shiftKey ? 10 : 1; 
         let dx = 0; let dy = 0;
 
         if (e.key === 'ArrowUp') dy = -step;
@@ -753,28 +717,22 @@ const generateFlutterCode = async () => {
         const newSchema = JSON.parse(JSON.stringify(schema));
         const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
 
-        // Quick local find to get the exact node
         const findN = (tree, id) => {
           if (tree.id === id) return tree;
           if (tree.children) { for (let child of tree.children) { const found = findN(child, id); if (found) return found; } }
           return null;
         };
-
         const node = findN(newSchema.pages[pIndex].root, selectedId);
 
-        // Arrow keys only nudge elements that are set to "Absolute (Free Float)"
         if (node && node.props.position === 'absolute') {
           const currentTop = parseFloat(node.props.top) || 0;
           const currentLeft = parseFloat(node.props.left) || 0;
           node.props.top = `${currentTop + dy}px`;
           node.props.left = `${currentLeft + dx}px`;
-
-          // We use setSchema directly instead of commitHistory to prevent flooding the Undo stack
           setSchema(newSchema);
         }
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [schema, selectedId, history, historyIndex, currentPageId, user, dbProjectId, isCommandOpen]);
@@ -820,27 +778,16 @@ const generateFlutterCode = async () => {
   };
 
   const handleDeletePage = (e, pageIdToDelete) => {
-    e.stopPropagation(); // Prevents the click from selecting the page behind the button
-
-    if (schema.pages.length <= 1) {
-      return alert("You must have at least one screen in your app.");
-    }
-
+    e.stopPropagation(); 
+    if (schema.pages.length <= 1) return alert("You must have at least one screen in your app.");
     if (!confirm("Are you sure you want to delete this screen? This action cannot be undone.")) return;
 
     const newSchema = JSON.parse(JSON.stringify(schema));
-
-    // Filter out the deleted page
     newSchema.pages = newSchema.pages.filter(p => p.id !== pageIdToDelete);
-
-    // If the deleted page was set as the "Start" page, reset the start page
     if (newSchema.app?.initialPage === pageIdToDelete) {
       newSchema.app.initialPage = newSchema.pages[0].id;
     }
-
     commitHistory(newSchema);
-
-    // If you are currently viewing the page you just deleted, snap back to the first page
     if (currentPageId === pageIdToDelete) {
       setCurrentPageId(newSchema.pages[0].id);
       setSelectedId(null);
@@ -855,16 +802,14 @@ const generateFlutterCode = async () => {
 
   const handleCreatePage = () => {
     if (!newPageName.trim()) return alert("Please enter a page name.");
-
     const newPageId = `page_${Date.now()}`;
     const newSchema = JSON.parse(JSON.stringify(schema));
 
     let rootProps = { padding: "16px", margin: "0px", backgroundColor: "transparent", backgroundType: "solid", mainAxisAlignment: "start", crossAxisAlignment: "stretch" };
     let rootChildren = [];
 
-    // --- TEMPLATE LOGIC INJECTION ---
     if (newPageTemplate === 'appbar') {
-      rootProps.padding = "0px"; // Remove padding so AppBar touches edges
+      rootProps.padding = "0px"; 
       rootChildren = [
         {
           id: `row_${Date.now()}_1`, type: 'Row', props: { width: '100%', padding: '16px 20px', backgroundColor: 'theme.primary', mainAxisAlignment: 'spaceBetween', crossAxisAlignment: 'center' }, children: [
@@ -885,7 +830,7 @@ const generateFlutterCode = async () => {
         regenerateIds(JSON.parse(JSON.stringify(TEMPLATES.productCard)))
       ];
     } else if (newPageTemplate === 'cart') {
-      rootProps.mainAxisAlignment = 'spaceBetween'; // Push checkout button to bottom
+      rootProps.mainAxisAlignment = 'spaceBetween'; 
       rootChildren = [
         { id: `list_${Date.now()}_1`, type: 'ListView', props: { width: '100%', gap: '16px' }, children: [regenerateIds(JSON.parse(JSON.stringify(TEMPLATES.productCard)))] },
         { id: `btn_${Date.now()}_2`, type: 'Button', props: { label: 'Secure Checkout - $120.00', width: '100%', height: '56px', backgroundColor: 'theme.primary', radiusTopLeft: '16px', radiusTopRight: '16px', radiusBottomLeft: '16px', radiusBottomRight: '16px' } }
@@ -948,13 +893,10 @@ const generateFlutterCode = async () => {
     if (!user) return alert("You must be logged in to publish to the store.");
     if (!selectedId || selectedId.includes('root')) return alert("Select an element or component to publish.");
 
-    // 1. Check if they have a Stripe Account linked!
     const { data: profile } = await supabase.from('profiles').select('stripe_account_id').eq('id', user.id).single();
-
     if (!profile?.stripe_account_id) {
       const wantsToConnect = confirm("💸 You need to connect a bank account via Stripe to get paid for your themes! Do you want to set that up now?");
       if (wantsToConnect) {
-        // --- FIXED: Actual redirect to our new Stripe API route ---
         window.location.href = `/api/stripe/connect?userId=${user.id}`;
       }
       return;
@@ -971,23 +913,19 @@ const generateFlutterCode = async () => {
     if (priceStr === null) return;
     const price = parseFloat(priceStr);
 
-    // 2. Actually push it to the Supabase database!
     const { error } = await supabase.from('marketplace_items').insert([{
       creator_id: user.id,
       title: title,
       description: "A custom community widget built in AppForge.",
       price_usd: isNaN(price) ? 0 : price,
       category: "components",
-      schema_json: nodeToSave, // The actual widget code!
+      schema_json: nodeToSave, 
       creator_stripe_account_id: profile.stripe_account_id,
-      is_verified: true // Set to true so you can see it instantly for testing
+      is_verified: true 
     }]);
 
-    if (error) {
-      alert("Failed to push to store: " + error.message);
-    } else {
-      alert(`🚀 "${title}" is now live on the AppForge Marketplace!`);
-    }
+    if (error) alert("Failed to push to store: " + error.message);
+    else alert(`🚀 "${title}" is now live on the AppForge Marketplace!`);
   };
 
   const handlePropChange = (propKey, newValue) => {
@@ -1020,7 +958,6 @@ const generateFlutterCode = async () => {
   const handleAddStateVar = () => {
     const key = prompt("Enter Variable Name (e.g. userName, counter):");
     if (!key) return;
-    // Ask for variable type
     const typeInt = prompt("Enter Type (1=String, 2=Integer, 3=Double, 4=Boolean):", "1");
     let typeStr = 'String'; let defaultVal = "''";
     if (typeInt === '2') { typeStr = 'int'; defaultVal = "0"; }
@@ -1030,6 +967,7 @@ const generateFlutterCode = async () => {
     const newSchema = { ...schema, appState: [...schema.appState, { key, type: typeStr, value: defaultVal }] };
     commitHistory(newSchema);
   };
+  
   const handleRemoveStateVar = (key) => {
     const newSchema = { ...schema, appState: schema.appState.filter(s => s.key !== key) };
     commitHistory(newSchema);
@@ -1044,7 +982,7 @@ const generateFlutterCode = async () => {
     margin: "0px", padding: "0px",
     backgroundType: "solid", backgroundColor: "transparent", gradientStart: "#4F46E5", gradientEnd: "#EC4899",
     radiusTopLeft: "0px", radiusTopRight: "0px", radiusBottomLeft: "0px", radiusBottomRight: "0px",
-    borderWidth: "0", borderColor: "transparent", opacity: "1", // <-- NEW APPEARANCE PROPS
+    borderWidth: "0", borderColor: "transparent", opacity: "1", 
     shadowColor: "transparent", shadowOffsetX: "0", shadowOffsetY: "2", shadowBlur: "4", shadowSpread: "0",
     selfAlign: "auto", position: "relative", top: "", bottom: "", left: "", right: "",
     animationType: "none", animationDuration: "0.5", animationDelay: "0",
@@ -1053,8 +991,8 @@ const generateFlutterCode = async () => {
     apiUrl: "", apiEndpoint: "",
     stateVariable: "", stateValue: "", isBound: false, boundVariable: "",
     scrollDirection: "vertical", gap: "8px",
-    fontWeight: "normal", letterSpacing: "0px", textAlign: "left", // <-- NEW TYPOGRAPHY PROPS
-    boxFit: "cover" // <-- NEW IMAGE PROPS
+    fontWeight: "normal", letterSpacing: "0px", textAlign: "left", 
+    boxFit: "cover" 
   });
 
   const handleDragStart = (e, type) => {
@@ -1095,19 +1033,16 @@ const generateFlutterCode = async () => {
       const pro = getProDefaults();
       let newNode = { id: newId, type, props: { ...pro } };
 
-      // 2. Initialize children array for structural components
       if (['Container', 'Card', 'Padding', 'Center', 'Stack', 'Row', 'Column', 'ListView'].includes(type)) {
         newNode.children = [];
       }
 
-      // 3. Apply specific styling based on the component type
       if (type === 'Container') { newNode.props.width = "200px"; newNode.props.height = "200px"; newNode.props.backgroundColor = "rgba(255, 255, 255, 0.05)"; newNode.props.radiusTopLeft = "16px"; newNode.props.radiusTopRight = "16px"; newNode.props.radiusBottomLeft = "16px"; newNode.props.radiusBottomRight = "16px"; }
       if (type === 'Card') { newNode.props.width = "100%"; newNode.props.padding = "16px"; newNode.props.backgroundColor = "#161b22"; newNode.props.radiusTopLeft = "16px"; newNode.props.radiusTopRight = "16px"; newNode.props.radiusBottomLeft = "16px"; newNode.props.radiusBottomRight = "16px"; newNode.props.shadowColor = "rgba(0,0,0,0.5)"; newNode.props.shadowBlur = "15"; newNode.props.shadowOffsetY = "8"; }
       if (type === 'Padding') { newNode.props.width = "100%"; newNode.props.padding = "16px"; newNode.props.backgroundColor = "transparent"; }
       if (type === 'Center') { newNode.props.width = "100%"; newNode.props.height = "100px"; newNode.props.backgroundColor = "transparent"; newNode.props.mainAxisAlignment = "center"; newNode.props.crossAxisAlignment = "center"; }
       if (type === 'SizedBox') { newNode.props.width = "100%"; newNode.props.height = "24px"; newNode.props.backgroundColor = "transparent"; }
       if (type === 'Divider') { newNode.props.width = "100%"; newNode.props.height = "1px"; newNode.props.backgroundColor = "rgba(255,255,255,0.1)"; newNode.props.margin = "8px 0px"; }
-
       else if (type === 'VideoPlayer') {
         newNode.props.width = "100%";
         newNode.props.height = "220px";
@@ -1130,8 +1065,6 @@ const generateFlutterCode = async () => {
         newNode.props.height = "400px";
         newNode.props.url = "https://flutter.dev";
       }
-
-
       else if (type === 'PageView') {
         newNode.props.width = "100%";
         newNode.props.height = "250px";
@@ -1140,12 +1073,12 @@ const generateFlutterCode = async () => {
       else if (type === 'Carousel') {
         newNode.props.width = "100%";
         newNode.props.height = "200px";
-        newNode.props.viewportFraction = "0.8"; // Mimics PageController(viewportFraction: 0.8)
+        newNode.props.viewportFraction = "0.8"; 
       }
       else if (type === 'ProgressBar') {
         newNode.props.width = "100%";
         newNode.props.height = "8px";
-        newNode.props.progress = "0.5"; // Value between 0.0 and 1.0
+        newNode.props.progress = "0.5"; 
         newNode.props.color = "theme.primary";
         newNode.props.backgroundColor = "#1A1B1E";
         newNode.props.radiusTopLeft = "4px";
@@ -1153,7 +1086,6 @@ const generateFlutterCode = async () => {
         newNode.props.radiusBottomLeft = "4px";
         newNode.props.radiusBottomRight = "4px";
       }
-
       else if (type === 'GridView') {
         newNode.props.width = "100%";
         newNode.props.height = "auto";
@@ -1171,7 +1103,6 @@ const generateFlutterCode = async () => {
       else if (type === 'Spacer') {
         newNode.props.flex = "1";
       }
-
       else if (type === 'ListView') {
         newNode.props.width = "100%";
         newNode.props.height = "auto";
@@ -1253,7 +1184,6 @@ const generateFlutterCode = async () => {
         newNode.props.crossAxisAlignment = "stretch";
       }
 
-
       const success = insertNodeIntoTree(targetRoot, parentId, newNode);
       if (!success) targetRoot.children.push(newNode);
 
@@ -1264,18 +1194,13 @@ const generateFlutterCode = async () => {
       let sourceObj = null;
       if (action === 'template') {
         const tKey = e.dataTransfer.getData("templateKey");
-
-        // --- NEW: PAYWALL GATEKEEPER ---
-        // Define which templates are free. Everything else triggers the paywall!
         const freeTemplates = ['hero', 'login', 'productCard', 'storyList', 'sectionTitle'];
 
         if (!freeTemplates.includes(tKey) && !isPremium) {
           alert("✨ This is a Premium Template! Please upgrade your workspace to unlock it.");
-          handleCheckout(); // Send them to Stripe!
+          handleCheckout(); 
           return;
         }
-        // -------------------------------
-
         sourceObj = TEMPLATES[tKey];
       } else {
         const cId = e.dataTransfer.getData("compId");
@@ -1284,7 +1209,6 @@ const generateFlutterCode = async () => {
 
       if (sourceObj) {
         const clonedNode = regenerateIds(JSON.parse(JSON.stringify(sourceObj)));
-
         const success = insertNodeIntoTree(targetRoot, parentId, clonedNode);
         if (!success) targetRoot.children.push(clonedNode);
         commitHistory(newSchema);
@@ -1305,14 +1229,12 @@ const generateFlutterCode = async () => {
       extractNode(targetRoot, nodeId);
 
       if (draggedNode) {
-
         const success = insertNodeIntoTree(targetRoot, parentId, draggedNode);
         if (!success) targetRoot.children.push(draggedNode);
         commitHistory(newSchema);
       }
     }
   };
-
 
   const handleMove = (direction) => {
     if (!selectedId) return;
@@ -1364,7 +1286,6 @@ const generateFlutterCode = async () => {
       if (!response.ok) throw new Error("Failed to initialize checkout");
 
       const { url } = await response.json();
-      // Redirect the user to the Stripe hosted checkout page
       window.location.href = url;
     } catch (error) {
       alert("Checkout failed. Please try again.");
@@ -1372,28 +1293,23 @@ const generateFlutterCode = async () => {
     }
   };
 
-
   const handleDeploy = async () => {
     if (!user || !dbProjectId) return alert("Please log in and Save your project before building.");
 
-    setIsBuilding(true); // Temporarily lock the button while checking database
-
+    setIsBuilding(true); 
     try {
-      // 1. Verify premium status on the USER'S PROFILE
       const { data: profileData } = await supabase
         .from('profiles')
         .select('is_premium')
         .eq('id', user.id)
         .single();
 
-      // 2. If they are NOT premium, trigger the paywall!
       if (!profileData?.is_premium) {
         setIsBuilding(false);
         handleCheckout();
         return;
       }
 
-      // 3. User is Premium! Proceed with the build dashboard.
       setShowDashboard(true);
       setBuildLogs(['Initializing AppForge Cloud Compiler...', 'Parsing JSON Schema to Dart...']);
 
@@ -1432,21 +1348,18 @@ const generateFlutterCode = async () => {
           }
           Note: "navStyle" must be exactly one of: "glass", "flat", or "floating".`
           ,
-          provider: aiProvider,        // <--- ADDED THIS
-          apiKey: customApiKey         // <--- ADDED THIS
+          provider: aiProvider,        
+          apiKey: customApiKey         
         })
       });
 
       const data = await response.json();
 
-      // NEW: If the server returns an error, stop and show it so we don't crash the app!
       if (data.error) throw new Error(data.error);
 
-      // Clean up Gemini's response to ensure valid JSON
       let cleanJson = data.reply.replace(/```json/g, '').replace(/```/g, '').trim();
       const newTheme = JSON.parse(cleanJson);
 
-      // Apply the generated theme to the AppForge Schema
       const newSchemaTheme = { ...schema.theme };
       if (newTheme.primary) newSchemaTheme.primary = newTheme.primary;
       if (newTheme.secondary) newSchemaTheme.secondary = newTheme.secondary;
@@ -1464,7 +1377,7 @@ const generateFlutterCode = async () => {
         }
       }));
 
-      setThemePrompt(''); // Clear input on success
+      setThemePrompt(''); 
 
     } catch (error) {
       console.error("Theme Gen Error:", error);
@@ -1495,24 +1408,20 @@ const generateFlutterCode = async () => {
 
       const data = await response.json();
 
-      // Parse the structured AI response
       let cleanJson = data.reply.replace(/```json/g, '').replace(/```/g, '').trim();
       const aiResponse = JSON.parse(cleanJson);
 
-      // Log the AI's thought process so you can see why it made its decisions!
       console.log("🤖 AI Co-Pilot Thought Process:", aiResponse.thought_process);
 
-      // Apply the new props to the schema
       const newSchema = JSON.parse(JSON.stringify(schema));
       const targetNode = findNode(newSchema.pages[pIndex].root, selectedId);
 
       if (targetNode && aiResponse.updated_props) {
-        // Merge AI generated props with existing props
         targetNode.props = { ...targetNode.props, ...aiResponse.updated_props };
         commitHistory(newSchema);
       }
 
-      setElementPrompt(''); // Clear input
+      setElementPrompt(''); 
 
     } catch (error) {
       console.error("AI Element Edit Error:", error);
@@ -1527,23 +1436,18 @@ const generateFlutterCode = async () => {
 
     setIsExporting(true);
     try {
-      // 1. Verify premium status in Supabase before generating the code
-      // 1. Verify premium status on the USER'S PROFILE, not the project
       const { data: profileData } = await supabase
-        .from('profiles') // Check the user's profile table
+        .from('profiles') 
         .select('is_premium')
         .eq('id', user.id)
         .single();
 
       if (!profileData?.is_premium) {
         setIsExporting(false);
-        handleCheckout(); // FIX: 'upgrade' was undefined; just call handleCheckout directly
+        handleCheckout(); 
         return;
       }
 
-      // Proceed with ZIP export...
-
-      // 2. If premium, proceed with the existing export logic
       const response = await fetch('/api/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1574,7 +1478,6 @@ const generateFlutterCode = async () => {
     setApkUrl(null);
     const expectedApkUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/apk-builds/app-release-${projectId}.apk`;
 
-    // Record the exact millisecond we clicked Deploy
     const buildStartTime = Date.now();
 
     try {
@@ -1583,22 +1486,18 @@ const generateFlutterCode = async () => {
 
       const checkInterval = setInterval(async () => {
         try {
-          // We add ?t=Date.now() to completely bypass the Browser & CDN Cache
           const checkRes = await fetch(`${expectedApkUrl}?t=${Date.now()}`, { method: 'HEAD' });
 
           if (checkRes.ok) {
             const lastModifiedStr = checkRes.headers.get('last-modified');
 
-            // Verification: Is this actually the NEW file?
             if (lastModifiedStr) {
               const fileTime = new Date(lastModifiedStr).getTime();
-              // If the file is older than our click, it's from a previous build. Keep waiting!
               if (fileTime < buildStartTime) {
                 return;
               }
             }
 
-            // If we get here, it is the brand new, successfully compiled APK!
             clearInterval(checkInterval);
             setIsBuilding(false);
             setApkUrl(expectedApkUrl);
@@ -1619,7 +1518,7 @@ const generateFlutterCode = async () => {
       const schemaString = JSON.stringify({
         pages: schema.pages.map(p => ({ name: p.name, widgetCount: p.root?.children?.length || 0 })),
         tables: schema.appConfig?.dbTables || [],
-        flutterVersion: "3.19.0" // Simulating the current generated environment
+        flutterVersion: "3.19.0" 
       });
 
       const response = await fetch('/api/audit', {
@@ -1640,7 +1539,6 @@ const generateFlutterCode = async () => {
 
       const data = await response.json();
 
-      // Clean Gemini's markdown formatting if it includes ```json
       let cleanJson = data.reply.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsedTasks = JSON.parse(cleanJson);
 
@@ -1737,7 +1635,6 @@ const generateFlutterCode = async () => {
     setAiAuditLogs([{ role: 'system', text: 'Initializing AppForge AI Auditor...' }]);
 
     try {
-      // 1. Analyze the schema to find potential issues
       const schemaString = JSON.stringify({
         pages: schema.pages.map(p => ({ name: p.name, id: p.id })),
         tables: schema.appConfig?.dbTables || [],
@@ -1747,13 +1644,12 @@ const generateFlutterCode = async () => {
 
       setAiAuditLogs(prev => [...prev, { role: 'system', text: 'Analyzing database architecture and UI bindings...' }]);
 
-      // 2. Call your existing Gemini PHP backend
       const response = await fetch('/api/audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: `Analyze this app architecture. Provide exactly 3 bullet points of proactive, highly technical advice for a Flutter/Supabase developer. Suggest specific database indexing, state management improvements, or missing API error handling based on this schema: \n\n${schemaString}`,
-          code: '', // Not modifying code this time, just analyzing
+          code: '', 
           language: 'json'
         })
       });
@@ -1762,7 +1658,6 @@ const generateFlutterCode = async () => {
 
       if (data.error) throw new Error(data.error);
 
-      // 3. Display the AI's response
       setAiAuditLogs(prev => [
         ...prev,
         { role: 'system', text: 'Audit complete. Gemini analysis generated.' },
@@ -1781,15 +1676,13 @@ const generateFlutterCode = async () => {
     if (!chatInput.trim()) return;
 
     const userMessage = chatInput;
-    setChatInput(''); // Clear input instantly for good UX
+    setChatInput(''); 
 
-    // Add user message to history
     const newHistory = [...aiChatHistory, { role: 'user', text: userMessage }];
     setAiChatHistory(newHistory);
     setIsAiThinking(true);
 
     try {
-      // Grab context of what they are currently looking at
       const pIndex = schema.pages.findIndex(p => p.id === currentPageId);
       const activeNode = selectedId ? findNode(schema.pages[pIndex].root, selectedId) : null;
 
@@ -1798,7 +1691,6 @@ const generateFlutterCode = async () => {
         globalTheme: schema.theme
       };
 
-      // --- STRICT INSTRUCTIONS: Force AI to act as a Canvas Engine Controller ---
       const systemInstruction = `You are the AppForge AI Builder. You MUST return ONLY a raw JSON object. Do NOT wrap it in markdown formatting like \`\`\`json.
       Your JSON MUST match this exact schema:
       {
@@ -1817,7 +1709,6 @@ const generateFlutterCode = async () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          // Send the strict instructions + context + user message
           prompt: `${systemInstruction}\n\nContext:\n${JSON.stringify(contextData)}\n\nUser Message: ${userMessage}`,
           provider: aiProvider,
           apiKey: customApiKey
@@ -1831,13 +1722,11 @@ const generateFlutterCode = async () => {
       let cleanJson = data.reply.replace(/```json/g, '').replace(/```/g, '').trim();
       const aiResponse = JSON.parse(cleanJson);
 
-      // 1. Add AI's text response to the chat window
       setAiChatHistory(prev => [...prev, { role: 'ai', text: aiResponse.chat_reply }]);
 
       const newSchema = JSON.parse(JSON.stringify(schema));
       const targetRoot = newSchema.pages[pIndex].root;
 
-      // 2. AI ACTION: Add a Full Template to Canvas
       if (aiResponse.action === 'add_template' && aiResponse.template_key) {
         const sourceObj = TEMPLATES[aiResponse.template_key];
         if (sourceObj) {
@@ -1849,7 +1738,6 @@ const generateFlutterCode = async () => {
         }
       }
 
-      // 3. AI ACTION: Update Properties of selected element
       else if (aiResponse.action === 'update' && aiResponse.target_id) {
         const targetNode = findNode(targetRoot, aiResponse.target_id);
         if (targetNode && aiResponse.updated_props) {
@@ -1868,7 +1756,7 @@ const generateFlutterCode = async () => {
 
   const pageIndex = schema.pages.findIndex(p => p.id === currentPageId);
   const activePage = schema.pages[pageIndex] || schema.pages[0];
-  const code = generateFlutterCode(schema);
+  const code = generateFlutterCode(schema); // Now safely references the imported synchronous function!
   const selectedNode = findNode(activePage?.root, selectedId);
 
   let canMoveUp = false; let canMoveDown = false;
@@ -1882,15 +1770,6 @@ const generateFlutterCode = async () => {
     };
     checkMoveStatus(activePage.root);
   }
-
-
-
-  // SyntaxHighlightedCode is defined at module scope above Home.
-
-  // AI model config UI is rendered inside the AI chat panel in the right sidebar (rightTab === 'ai').
-  // The duplicate block that was here has been removed — it was floating outside any return statement
-  // and caused a syntax error that prevented the app from compiling.
-
 
   const renderPropertyGroups = () => {
     if (!selectedNode) {
@@ -2000,8 +1879,6 @@ const generateFlutterCode = async () => {
 
     return (
       <div className="flex flex-col h-full overflow-hidden bg-[#0a0a0a]">
-
-        {/* FLUTTERFLOW STYLE SUB-NAVIGATION */}
         <div className="flex items-center justify-around p-2 bg-[#0E0F11] border-b border-white/5 shrink-0 z-10 shadow-md">
           {[
             { id: 'properties', icon: 'SlidersHorizontal', label: 'Props' },
@@ -2024,16 +1901,9 @@ const generateFlutterCode = async () => {
           })}
         </div>
 
-        {/* SCROLLABLE PROPERTY CONTENT */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-5 pb-24">
-
-          {/* ============================================================ */}
-          {/* TAB 1: PROPERTIES & STYLING                                  */}
-          {/* ============================================================ */}
           {inspectorTab === 'properties' && (
             <div className="space-y-6 animate-in fade-in duration-200">
-
-              {/* 1. POSITIONING (Applies to all) */}
               <div className="border-b border-white/5 pb-6">
                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Monitor size={14} /> Positioning</h4>
                 <PropInput label="Layout Flow" propKey="position" type="select" options={[{ label: 'Relative (Normal)', value: 'relative' }, { label: 'Absolute (Free Float)', value: 'absolute' }]} value={props.position} onChange={handlePropChange} />
@@ -2047,7 +1917,6 @@ const generateFlutterCode = async () => {
                 )}
               </div>
 
-              {/* 2. SIZE AND SPACING (Applies to all) */}
               <div className="border-b border-white/5 pb-6">
                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Grid size={14} /> Size & Spacing</h4>
                 <div className="grid grid-cols-2 gap-3">
@@ -2072,7 +1941,6 @@ const generateFlutterCode = async () => {
                 )}
               </div>
 
-              {/* CUSTOM CODE SPECIFIC SETTINGS */}
               {selectedNode.type === 'CustomCode' && (
                 <div className="border-b border-white/5 pb-6">
                   <h4 className="text-[10px] font-bold text-emerald-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.TerminalSquare size={14} /> Raw Dart Integration</h4>
@@ -2095,7 +1963,6 @@ const generateFlutterCode = async () => {
                 </div>
               )}
 
-              {/* 3. TYPOGRAPHY (Text Elements Only) */}
               {(selectedNode.type === 'Text' || selectedNode.type === 'Button' || selectedNode.type === 'TextInput') && (
                 <div className="border-b border-white/5 pb-6">
                   <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Type size={14} /> Typography</h4>
@@ -2117,7 +1984,6 @@ const generateFlutterCode = async () => {
                 </div>
               )}
 
-              {/* 4. APPEARANCE (Backgrounds, Opacity, Borders - Applies to all) */}
               <div className="border-b border-white/5 pb-6">
                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Layers size={14} /> Appearance</h4>
 
@@ -2145,7 +2011,6 @@ const generateFlutterCode = async () => {
                   </div>
                 </div>
 
-                {/* NEW BORDER SECTION */}
                 <div className="mt-4 pt-4 border-t border-white/5">
                   <label className="text-[9px] font-bold text-gray-500 mb-2 uppercase tracking-widest block">Borders & Strokes</label>
                   <div className="grid grid-cols-2 gap-3">
@@ -2155,7 +2020,6 @@ const generateFlutterCode = async () => {
                 </div>
               </div>
 
-              {/* 5. SHADOWS (Applies to all) */}
               <div className="border-b border-white/5 pb-6">
                 <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.BoxSelect size={14} /> Shadows</h4>
                 <PropInput label="Shadow Color" propKey="shadowColor" type="color" value={props.shadowColor} onChange={handlePropChange} />
@@ -2167,7 +2031,6 @@ const generateFlutterCode = async () => {
                 </div>
               </div>
 
-              {/* 6. IMAGE SPECIFIC (Source and Fitting) */}
               {selectedNode.type === 'Image' && (
                 <div className="border-b border-white/5 pb-6">
                   <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Image size={14} /> Image Source</h4>
@@ -2181,7 +2044,6 @@ const generateFlutterCode = async () => {
                 </div>
               )}
 
-              {/* ICON SPECIFIC */}
               {selectedNode.type === 'Icon' && (
                 <div className="border-b border-white/5 pb-6">
                   <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest">⭐ Icon Settings</h4>
@@ -2195,9 +2057,6 @@ const generateFlutterCode = async () => {
             </div>
           )}
 
-          {/* ============================================================ */}
-          {/* TAB 2: ACTIONS & LOGIC                                       */}
-          {/* ============================================================ */}
           {inspectorTab === 'actions' && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div className="bg-gradient-to-b from-purple-500/10 to-transparent p-5 rounded-2xl border border-purple-500/20 shadow-inner">
@@ -2224,9 +2083,6 @@ const generateFlutterCode = async () => {
           )}
 
 
-          {/* ============================================================ */}
-          {/* TAB 3: BACKEND & DATA QUERY                                  */}
-          {/* ============================================================ */}
           {inspectorTab === 'backend' && (
             <div className="space-y-6 animate-in fade-in duration-200">
               {selectedNode.type === 'ListView' ? (
@@ -2280,9 +2136,6 @@ const generateFlutterCode = async () => {
             </div>
           )}
 
-          {/* ============================================================ */}
-          {/* TAB 4: ANIMATIONS (Massively Expanded)                       */}
-          {/* ============================================================ */}
           {inspectorTab === 'animations' && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div className="border border-white/5 pb-6 bg-[#161b22] p-5 rounded-2xl shadow-sm">
@@ -2324,72 +2177,6 @@ const generateFlutterCode = async () => {
     const isSelected = node.id === selectedId || (isRoot && selectedId === null);
     const canHaveChildren = ['Container', 'Card', 'Padding', 'Center', 'Stack', 'Row', 'Column', 'ListView', 'GridView', 'Wrap', 'PageView', 'Carousel'].includes(node.type);
 
-{
-
-  isImportModalOpen && (
-
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-
-      <div className="bg-[#1A1A1A] border border-gray-800 rounded-xl w-[600px] p-6 shadow-2xl">
-
-        <h2 className="text-xl text-white font-bold mb-2">Import Dart Code</h2>
-
-        <p className="text-gray-400 text-sm mb-4">Paste your Flutter code below. AppForge's AST Engine will parse it into visual blocks.</p>
-
-
-
-        <textarea
-
-          value={importCode}
-
-          onChange={(e) => setImportCode(e.target.value)}
-
-          className="w-full h-64 bg-[#0D0D0D] text-green-400 font-mono text-sm p-4 rounded-lg border border-gray-800 focus:border-blue-500 focus:outline-none resize-none"
-
-          placeholder="Container(width: 100, child: Text('Hello'))"
-
-        />
-
-
-
-        <div className="flex justify-end gap-3 mt-4">
-
-          <button
-
-            onClick={() => setIsImportModalOpen(false)}
-
-            className="px-4 py-2 text-gray-400 hover:text-white transition"
-
-          >
-
-            Cancel
-
-          </button>
-
-          <button
-
-            onClick={handleImportDartCode}
-
-            disabled={isParsing || !importCode}
-
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg disabled:opacity-50 transition flex items-center gap-2"
-
-          >
-
-            {isParsing ? 'Parsing AST...' : 'Parse & Import'}
-
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  )
-
-}
-
     return (
       <div className="w-full">
         <div
@@ -2409,9 +2196,8 @@ const generateFlutterCode = async () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Simulate a drop event to add a new Container inside this specific node
                 handleDropToNode({ dataTransfer: { getData: (k) => k === 'action' ? 'new' : 'Container' } }, node.id);
-                setIsCommandOpen(true); // Open palette to let them search/change it easily
+                setIsCommandOpen(true); 
               }}
               className="opacity-0 group-hover:opacity-100 p-1 bg-white/10 rounded hover:bg-blue-500 transition-all"
               title="Add Child"
@@ -2458,7 +2244,6 @@ const generateFlutterCode = async () => {
             </motion.div>
           </motion.div>
         )}
-
 
         {/* SQL DEPLOYMENT MODAL */}
         {showSqlModal && (
@@ -2512,9 +2297,7 @@ const generateFlutterCode = async () => {
           </motion.div>
         )}
 
-
-
-        {/* ACTION FLOW EDITOR MODAL (RESTORED) */}
+        {/* ACTION FLOW EDITOR MODAL */}
         {isLogicModalOpen && editingLogicId && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[120] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-10">
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-4xl h-[85vh] bg-[#0E0F11] border border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-x-auto overflow-y-hidden custom-scrollbar relative shadow-purple-500/10">
@@ -2603,7 +2386,6 @@ const generateFlutterCode = async () => {
                             </>
                           )}
 
-                          {/* FIXED SUPABASE AND STATE UI */}
                           {action.type === 'supabase' && (
                             <>
                               <div className="flex flex-col gap-1.5"><label className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Target Table</label>
@@ -2655,8 +2437,6 @@ const generateFlutterCode = async () => {
         {/* FULL SCREEN LIVE PREVIEW */}
         {showLivePreview && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed inset-0 z-[300] bg-[#0a0a0a] flex flex-col font-sans">
-
-            {/* Topbar */}
             <div className="h-16 bg-[#161b22] border-b border-white/5 flex justify-between items-center px-6 shrink-0 shadow-md">
               <div className="flex items-center gap-6">
                 <button onClick={() => setShowLivePreview(false)} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors bg-white/5 px-4 py-2 rounded-xl">
@@ -2671,13 +2451,10 @@ const generateFlutterCode = async () => {
               </div>
 
               <div className="flex items-center gap-4">
-                {/* Device Switcher */}
                 <div className="flex bg-[#0a0a0a] rounded-xl p-1 border border-white/5 shadow-inner">
                   <button onClick={() => setPreviewMode('iphone')} className={`p-2 rounded-lg transition-all ${previewMode === 'iphone' ? 'bg-[#1A1B1E] text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}><LucideIcons.Smartphone size={16} /></button>
                   <button onClick={() => setPreviewMode('tablet')} className={`p-2 rounded-lg transition-all ${previewMode === 'tablet' ? 'bg-[#1A1B1E] text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}><LucideIcons.Tablet size={16} /></button>
                 </div>
-
-                {/* Page Selector */}
                 <div className="flex items-center gap-2 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-1.5 shadow-inner">
                   <LucideIcons.Layout size={14} className="text-gray-500" />
                   <select
@@ -2695,14 +2472,11 @@ const generateFlutterCode = async () => {
               </div>
             </div>
 
-            {/* Playable Canvas Area */}
             <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center justify-start bg-[#050505] py-16 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed" style={{ backgroundBlendMode: 'overlay' }}>
-
               <div className="mb-8 shrink-0 flex items-center gap-3 bg-[#161b22] px-5 py-2.5 rounded-full border border-white/5 shadow-xl">
                 <LucideIcons.Info size={14} className="text-gray-500" />
                 <span className="text-[10px] text-gray-400 tracking-wide">Buttons with <b>Action Chains</b> will trigger real navigation events in this mode.</span>
               </div>
-
               <ErrorBoundary>
                 <Canvas
                   schema={schema}
@@ -2720,7 +2494,6 @@ const generateFlutterCode = async () => {
         )}
 
         {/* EXTERNAL APPFORGE DASHBOARD COMPONENT */}
-        {/* EXTERNAL APPFORGE DASHBOARD COMPONENT */}
         {showDashboard && (
           <AppForgeDashboard
             schema={schema}
@@ -2730,17 +2503,14 @@ const generateFlutterCode = async () => {
             setBuildLogs={setBuildLogs}
             onClose={() => setShowDashboard(false)}
             onSetSchema={setSchema}
-            onTriggerBuild={handleDeploy} // <--- THIS IS THE ONLY LINE YOU NEED TO CHANGE!
+            onTriggerBuild={handleDeploy} 
           />
         )}
-
-
 
         {/* IMPORT CODE MODAL */}
         {isImportModalOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[250] bg-black/80 backdrop-blur-md flex items-center justify-center p-10">
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-2xl bg-[#0E0F11] border border-white/10 rounded-3xl shadow-[0_0_50px_rgba(16,185,129,0.15)] flex flex-col overflow-hidden">
-
               <div className="flex justify-between items-center p-6 border-b border-white/5 bg-[#161b22]">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-600/20 flex items-center justify-center border border-emerald-500/30">
@@ -2792,7 +2562,6 @@ const generateFlutterCode = async () => {
               </div>
 
               <div className="flex-1 p-6 bg-[#050505] overflow-y-auto custom-scrollbar flex flex-col gap-4 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed" style={{ backgroundBlendMode: 'overlay' }}>
-
                 {aiAuditLogs.map((log, idx) => (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={idx} className={`p-4 rounded-2xl border ${log.role === 'ai' ? 'bg-purple-900/20 border-purple-500/30 text-purple-100' : log.role === 'error' ? 'bg-red-900/20 border-red-500/30 text-red-400' : 'bg-[#1A1B1E] border-white/5 text-gray-400 font-mono text-xs'}`}>
                     {log.role === 'ai' && <div className="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-2 flex items-center gap-2"><LucideIcons.Sparkles size={12} /> Analysis Result</div>}
@@ -2824,7 +2593,6 @@ const generateFlutterCode = async () => {
       {pendingInjection && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[250] bg-black/80 backdrop-blur-md flex items-center justify-center p-10">
           <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-md bg-[#0E0F11] border border-white/10 rounded-3xl shadow-[0_0_50px_rgba(37,99,235,0.15)] flex flex-col overflow-hidden">
-
             <div className="flex justify-between items-center p-6 border-b border-white/5 bg-[#161b22]">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-600/20 flex items-center justify-center border border-blue-500/30">
@@ -2840,8 +2608,6 @@ const generateFlutterCode = async () => {
 
             <div className="p-6 bg-[#050505] flex flex-col gap-5">
               <p className="text-xs text-gray-400 leading-relaxed">Where would you like to place this template?</p>
-
-              {/* Radio Selection */}
               <div className="flex flex-col gap-3">
                 <label className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${injectionTarget === 'current' ? 'bg-blue-600/10 border-blue-500/50' : 'bg-[#1A1B1E] border-white/5 hover:border-white/20'}`}>
                   <input type="radio" name="deployTarget" checked={injectionTarget === 'current'} onChange={() => setInjectionTarget('current')} className="accent-blue-500" />
@@ -2859,7 +2625,6 @@ const generateFlutterCode = async () => {
                   </div>
                 </label>
 
-                {/* If 'new' is selected, show the name input */}
                 {injectionTarget === 'new' && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-1">
                     <input
@@ -2887,7 +2652,6 @@ const generateFlutterCode = async () => {
                   )}
                 </label>
               </div>
-
             </div>
 
             <div className="p-5 border-t border-white/5 bg-[#161b22] flex justify-end gap-3 shrink-0">
@@ -2904,7 +2668,6 @@ const generateFlutterCode = async () => {
       {isAddPageModalOpen && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-10">
           <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="w-full max-w-3xl bg-[#0E0F11] border border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-hidden shadow-blue-500/10">
-
             <div className="flex justify-between items-center p-6 border-b border-white/5 bg-[#161b22]">
               <h2 className="text-lg font-bold text-white tracking-wide flex items-center gap-3">
                 <div className="p-2 bg-blue-600/20 rounded-lg"><LucideIcons.LayoutTemplate size={20} className="text-blue-400" /></div> Create New Screen
@@ -3010,9 +2773,7 @@ const generateFlutterCode = async () => {
       )}
 
       {/* TOP NAVBAR */}
-      {/* CRITICAL FIX: Removed 'overflow-x-auto hide-scrollbar' so the dropdown doesn't get cut off! Added relative z-[100] */}
       <div className="h-14 bg-[#0a0a0a] border-b border-white/10 flex items-center justify-between px-4 shrink-0 relative z-[100] gap-4">
-
         {/* Left Side: Logo & Command */}
         <div className="flex items-center gap-6 shrink-0 min-w-max">
           <div className="flex items-center gap-2">
@@ -3028,7 +2789,6 @@ const generateFlutterCode = async () => {
 
         {/* Right Side: Tools & Actions */}
         <div className="flex items-center gap-2 shrink-0">
-
           <button onClick={() => setShowGrid(!showGrid)} className={`hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold rounded-lg transition-all ${showGrid ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20' : 'bg-transparent text-gray-500 hover:bg-white/5 hover:text-white border border-transparent'}`}>
             <Grid size={12} /> Grid
           </button>
@@ -3074,26 +2834,18 @@ const generateFlutterCode = async () => {
             {isBuilding ? 'Building...' : <><LucideIcons.Rocket size={12} fill="white" /> Deploy</>}
           </button>
 
-          {/* THE USER MENU - Absolute far right! */}
+          {/* THE USER MENU */}
           <div className="ml-1 pl-3 border-l border-white/10 relative">
             <UserMenu />
           </div>
-
         </div>
       </div>
 
       {workspaceRole === 'client' ? (
-
-        /* Render the safe Client CMS if in Client Mode */
         <ClientDashboard schema={schema} />
-
       ) : (
-
-        /* Render the complex AppForge Builder if in Admin Mode */
         <div className="flex-1 flex overflow-x-auto overflow-y-hidden custom-scrollbar relative">
-
-          {/* LEFT SIDEBAR */}
-          {/* NEW: VERTICAL ICON RAIL */}
+          {/* LEFT SIDEBAR VERTICAL ICON RAIL */}
           <div className="w-[72px] bg-[#050505] border-r border-white/5 flex flex-col items-center py-4 gap-2 z-20 shrink-0 shadow-2xl">
             {[
               { id: 'pages', icon: 'Layout', label: 'Pages' },
@@ -3115,8 +2867,6 @@ const generateFlutterCode = async () => {
                 >
                   <IconComp size={22} strokeWidth={isActive ? 2.5 : 2} className={`mb-1 ${isActive ? 'drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]' : ''}`} />
                   <span className={`text-[8px] font-bold tracking-widest uppercase transition-opacity ${isActive ? 'opacity-100' : 'opacity-50 group-hover:opacity-100'}`}>{tab.label}</span>
-
-                  {/* Active Indicator Line */}
                   {isActive && <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>}
                 </button>
               );
@@ -3125,8 +2875,6 @@ const generateFlutterCode = async () => {
 
           {/* LEFT SIDEBAR CONTENT PANEL */}
           <div className="w-[280px] bg-[#0d0d0d] border-r border-white/10 flex flex-col overflow-hidden z-10 shrink-0 shadow-xl">
-
-            {/* Dynamic Header */}
             <div className="h-[64px] flex items-center px-5 border-b border-white/5 bg-[#0E0F11] shrink-0">
               <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest flex items-center gap-2">
                 {activeTab === 'templates' ? '✨ Magic Templates' : activeTab}
@@ -3194,7 +2942,6 @@ const generateFlutterCode = async () => {
                             <LucideIcons.Smartphone size={14} className={currentPageId === p.id ? "text-blue-400" : "text-gray-500"} />
                             <h4 className="text-xs font-medium tracking-wide">{p.name}</h4>
                           </div>
-
                           <button
                             onClick={(e) => handleDeletePage(e, p.id)}
                             className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all"
@@ -3210,8 +2957,6 @@ const generateFlutterCode = async () => {
 
                 {activeTab === 'elements' && (
                   <div className="flex flex-col h-full overflow-hidden">
-
-                    {/* Sticky Search Bar */}
                     <div className="px-1 mb-5 shrink-0">
                       <div className="bg-[#0E0F11] border border-white/10 rounded-xl flex items-center px-3 py-2.5 focus-within:border-blue-500 transition-colors shadow-inner">
                         <Search size={14} className="text-gray-500 mr-2 shrink-0" />
@@ -3232,12 +2977,9 @@ const generateFlutterCode = async () => {
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-6 pb-10">
                       {WIDGET_CATEGORIES.map((category, catIdx) => {
-                        // Filter elements dynamically based on user search
                         const filteredItems = category.items.filter(item =>
                           item.type.toLowerCase().includes(elementSearch.toLowerCase())
                         );
-
-                        // Hide category entirely if no widgets match the search
                         if (filteredItems.length === 0) return null;
 
                         return (
@@ -3245,7 +2987,6 @@ const generateFlutterCode = async () => {
                             <h3 className="text-[10px] font-bold text-gray-500 mb-3 uppercase tracking-widest px-1 flex items-center gap-2">
                               {category.name}
                             </h3>
-                            {/* 3-Column Grid matching FlutterFlow style */}
                             <div className="grid grid-cols-3 gap-2.5">
                               {filteredItems.map(item => {
                                 const IconComp = LucideIcons[item.icon] || LucideIcons.Box;
@@ -3268,7 +3009,6 @@ const generateFlutterCode = async () => {
                         );
                       })}
 
-                      {/* Saved Custom Components */}
                       {schema.components && schema.components.length > 0 && (
                         <div className="border-t border-white/5 pt-6 mt-2">
                           <h3 className="text-[10px] font-bold text-indigo-400 mb-4 uppercase tracking-widest px-1 flex items-center gap-2">
@@ -3297,8 +3037,6 @@ const generateFlutterCode = async () => {
                   <div>
                     <h3 className="text-[10px] font-bold text-pink-500 mb-4 uppercase tracking-widest px-1">✨ Magic Templates</h3>
                     <p className="text-[10px] text-gray-500 px-1 mb-4 leading-relaxed">Drag entire pre-built sections directly onto your screen.</p>
-
-                    {/* --- NEW TEMPLATE STORE BUTTON IN SIDEBAR --- */}
                     <button
                       onClick={() => window.open('/store', '_blank')}
                       className="w-full mb-5 py-3 bg-pink-500/10 border border-pink-500/30 text-pink-400 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-pink-500/20 hover:border-pink-500/50 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(236,72,153,0.15)]"
@@ -3321,7 +3059,7 @@ const generateFlutterCode = async () => {
                         <div className="h-24 bg-gray-500/10 flex items-center justify-center border-b border-white/5 px-6 py-2"><div className="w-full h-full bg-[#1A1B1E] rounded flex flex-col overflow-hidden"><div className="h-8 bg-white/5"></div><div className="flex-1 p-1"><div className="w-8 h-1 bg-white/20 rounded mb-1"></div><div className="w-full h-2 bg-white/10 rounded"></div></div></div></div>
                         <div className="p-4"><h4 className="text-[11px] font-bold text-gray-200">Product Card</h4><p className="text-[9px] text-gray-500 mt-1">E-Commerce Item layout</p></div>
                       </div>
-                      {/* NEW STORY LIST CARD */}
+                      
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "storyList"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-pink-500/50 transition-all">
                         <div className="h-20 bg-[#1A1B1E] flex items-center justify-center border-b border-white/5 gap-3 overflow-hidden px-4">
                           <div className="w-10 h-10 rounded-full border-2 border-pink-500/80 border-dashed opacity-70 group-hover:opacity-100 transition-opacity"></div>
@@ -3331,7 +3069,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">Story List</h4><p className="text-[9px] text-gray-500 mt-1">Horizontal scrollable avatars</p></div>
                       </div>
 
-                      {/* NEW SECTION TITLE CARD */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "sectionTitle"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-pink-500/50 transition-all">
                         <div className="h-16 bg-gray-500/10 flex items-center justify-between px-6 border-b border-white/5">
                           <div className="w-16 h-2 bg-white/20 rounded"></div>
@@ -3340,7 +3077,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">Section Title</h4><p className="text-[9px] text-gray-500 mt-1">Header with 'See All' link</p></div>
                       </div>
 
-                      {/* NEW: USER PROFILE HEADER */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "userProfile"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-pink-500/50 transition-all">
                         <div className="h-24 bg-gray-500/10 flex items-center justify-center border-b border-white/5 flex-col gap-2">
                           <div className="w-10 h-10 rounded-full bg-blue-500/50 border border-blue-400/30"></div>
@@ -3349,7 +3085,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">User Profile</h4><p className="text-[9px] text-gray-500 mt-1">Avatar, Info & Action Btn</p></div>
                       </div>
 
-                      {/* NEW: STATS & ANALYTICS CARD */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "statCard"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-pink-500/50 transition-all">
                         <div className="h-24 bg-[#1A1B1E] flex items-center justify-center border-b border-white/5 p-4">
                           <div className="w-full h-full border border-white/10 rounded-xl flex flex-col justify-between p-3 bg-[#161b22]">
@@ -3361,7 +3096,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">Metric Card</h4><p className="text-[9px] text-gray-500 mt-1">KPI Dashboard element</p></div>
                       </div>
 
-                      {/* NEW: SETTINGS LIST */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "settingsList"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-pink-500/50 transition-all">
                         <div className="h-24 bg-[#1A1B1E] flex flex-col justify-center border-b border-white/5 p-4 gap-2">
                           <div className="flex justify-between items-center w-full"><div className="w-20 h-2 bg-white/40 rounded"></div><div className="w-2 h-2 bg-white/20 rounded-full"></div></div>
@@ -3371,7 +3105,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">Settings Menu</h4><p className="text-[9px] text-gray-500 mt-1">Icon list with dividers</p></div>
                       </div>
 
-                      {/* 1. AI Prompt Bar */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "aiPromptBar"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-purple-500/50 transition-all">
                         <div className="h-16 bg-[#1A1B1E] flex items-center justify-center border-b border-white/5 p-4">
                           <div className="w-full h-8 bg-[#161b22] border border-purple-500/30 rounded-full flex items-center px-3 gap-2">
@@ -3382,7 +3115,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">AI Prompt</h4><p className="text-[9px] text-gray-500 mt-1">Smart text input field</p></div>
                       </div>
 
-                      {/* 2. Crypto Wallet */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "cryptoWallet"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-amber-500/50 transition-all">
                         <div className="h-20 bg-[#1A1B1E] flex flex-col items-center justify-center border-b border-white/5 p-4 gap-2">
                           <div className="w-24 h-4 bg-amber-500/80 rounded"></div>
@@ -3391,7 +3123,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">DeFi Wallet</h4><p className="text-[9px] text-gray-500 mt-1">Crypto balance & actions</p></div>
                       </div>
 
-                      {/* 3. Smart Home Hub */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "smartHomeHub"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-blue-500/50 transition-all">
                         <div className="h-24 bg-[#1A1B1E] flex items-center justify-center border-b border-white/5 gap-2 p-4">
                           <div className="w-1/2 h-full bg-[#161b22] rounded-lg border border-amber-500/20"></div>
@@ -3400,7 +3131,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">IoT Hub</h4><p className="text-[9px] text-gray-500 mt-1">Smart home device cards</p></div>
                       </div>
 
-                      {/* 4. Biometric Auth */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "biometricAuth"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-blue-500/50 transition-all">
                         <div className="h-24 bg-blue-500/5 flex items-center justify-center border-b border-white/5">
                           <div className="w-12 h-12 rounded-full border-2 border-blue-500/50 border-dashed animate-pulse"></div>
@@ -3408,7 +3138,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">Face / Touch ID</h4><p className="text-[9px] text-gray-500 mt-1">Biometric security gate</p></div>
                       </div>
 
-                      {/* 5. AR Navigation */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "arNavigation"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-pink-500/50 transition-all">
                         <div className="h-24 bg-[#1A1B1E] flex flex-col items-center justify-center border-b border-white/5 p-4 gap-2">
                           <div className="flex items-center gap-2 w-full"><div className="w-6 h-6 bg-pink-500/50 rounded"></div><div className="w-20 h-2 bg-white/50 rounded"></div></div>
@@ -3417,7 +3146,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">AR Navigation</h4><p className="text-[9px] text-gray-500 mt-1">Spatial route module</p></div>
                       </div>
 
-                      {/* 6. Holographic Media Player */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "mediaPlayer"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-purple-500/50 transition-all">
                         <div className="h-24 bg-[#1A1B1E] flex flex-col items-center justify-center border-b border-white/5 px-4 py-2 gap-2">
                           <div className="w-full h-12 bg-purple-500/20 rounded-lg"></div>
@@ -3426,7 +3154,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">Media Player</h4><p className="text-[9px] text-gray-500 mt-1">Immersive audio controls</p></div>
                       </div>
 
-                      {/* 7. Health Metrics */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "healthMetrics"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-red-500/50 transition-all">
                         <div className="h-20 bg-[#1A1B1E] flex items-center justify-center border-b border-white/5 gap-2 p-3">
                           <div className="w-8 h-12 bg-red-500/20 rounded-lg"></div><div className="w-8 h-12 bg-blue-500/20 rounded-lg"></div><div className="w-8 h-12 bg-purple-500/20 rounded-lg"></div>
@@ -3434,7 +3161,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">Health Tracker</h4><p className="text-[9px] text-gray-500 mt-1">Vitals & Biosensors</p></div>
                       </div>
 
-                      {/* 8. AI Chat Bubble */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "aiChatBubble"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-blue-500/50 transition-all">
                         <div className="h-20 bg-[#1A1B1E] flex items-start justify-start border-b border-white/5 p-4 gap-2">
                           <div className="w-6 h-6 bg-blue-500/50 rounded-full shrink-0"></div>
@@ -3443,7 +3169,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">AI Chat Bubble</h4><p className="text-[9px] text-gray-500 mt-1">Assistant conversation</p></div>
                       </div>
 
-                      {/* 9. Premium Pro Paywall */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "proPaywall"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-pink-500/50 transition-all">
                         <div className="h-24 bg-gradient-to-br from-[#1A1B1E] to-pink-500/10 flex flex-col items-center justify-center border-b border-white/5 p-4 gap-2">
                           <div className="w-8 h-8 bg-pink-500/80 rounded-full mb-1"></div>
@@ -3452,7 +3177,6 @@ const generateFlutterCode = async () => {
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">Pro Paywall</h4><p className="text-[9px] text-gray-500 mt-1">Subscription upgrade UI</p></div>
                       </div>
 
-                      {/* 10. Task Overview */}
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "taskOverview"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-emerald-500/50 transition-all">
                         <div className="h-24 bg-[#1A1B1E] flex flex-col items-start justify-center border-b border-white/5 p-4 gap-3">
                           <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-emerald-500/50"></div><div className="w-16 h-2 bg-white/50 rounded"></div></div>
@@ -3460,7 +3184,6 @@ const generateFlutterCode = async () => {
                         </div>
                         <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">Workflows</h4><p className="text-[9px] text-gray-500 mt-1">Automated task list</p></div>
                       </div>
-
 
                     </div>
                   </div>
@@ -3475,10 +3198,7 @@ const generateFlutterCode = async () => {
 
                 {activeTab === 'data' && (
                   <div className="flex-1 flex flex-col gap-6 pb-10">
-
-                    {/* 1. CLOUD BACKEND SETTINGS */}
                     <div className="bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex flex-col gap-5">
-
                       <div className="flex items-center gap-3 border-b border-white/5 pb-4">
                         <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                           <LucideIcons.Cloud size={16} className="text-emerald-400" />
@@ -3489,13 +3209,11 @@ const generateFlutterCode = async () => {
                         </div>
                       </div>
 
-                      {/* Segmented Toggle Control */}
                       <div className="flex p-1 bg-[#1A1B1E] rounded-lg border border-white/5 shadow-inner">
                         <button onClick={() => { const newSchema = { ...schema, backendProvider: 'supabase' }; commitHistory(newSchema); }} className={`flex-1 py-2 text-[10px] font-bold rounded-md transition-all ${(!schema.backendProvider || schema.backendProvider === 'supabase') ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}>Supabase</button>
                         <button onClick={() => { const newSchema = { ...schema, backendProvider: 'firebase' }; commitHistory(newSchema); }} className={`flex-1 py-2 text-[10px] font-bold rounded-md transition-all ${schema.backendProvider === 'firebase' ? 'bg-amber-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}>Firebase</button>
                       </div>
 
-                      {/* Dynamic Inputs */}
                       {(!schema.backendProvider || schema.backendProvider === 'supabase') ? (
                         <div className="flex flex-col gap-4 animate-in fade-in duration-200">
                           <div className="flex flex-col gap-1.5">
@@ -3531,11 +3249,7 @@ const generateFlutterCode = async () => {
                       )}
                     </div>
 
-
-                    {/* 2. ADVANCED DATABASE SCHEMA & RLS BUILDER */}
                     <div className="bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex flex-col gap-4">
-
-                      {/* FIXED: Changed to flex-col so the title and buttons stack cleanly */}
                       <div className="flex flex-col gap-4 border-b border-white/5 pb-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shrink-0">
@@ -3547,7 +3261,6 @@ const generateFlutterCode = async () => {
                           </div>
                         </div>
 
-                        {/* FIXED: Added flex-wrap and shortened labels so buttons fit beautifully */}
                         <div className="flex flex-wrap gap-2">
                           <button onClick={() => setShowSqlModal(true)} className="flex-1 justify-center bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Code2 size={12} /> SQL</button>
 
@@ -3569,8 +3282,6 @@ const generateFlutterCode = async () => {
                       <div className="space-y-4">
                         {(schema.appConfig.dbTables || []).map((table, tIdx) => (
                           <div key={table.id} className="bg-[#161b22] border border-white/5 rounded-xl overflow-hidden shadow-sm">
-
-                            {/* TABLE HEADER - FIXED: min-w-0 on input, shrink-0 on trash */}
                             <div className="bg-[#1A1B1E] p-3 border-b border-white/5 flex justify-between items-center">
                               <div className="flex items-center gap-2 w-full pr-2">
                                 <LucideIcons.Table2 size={14} className="text-gray-500 shrink-0" />
@@ -3586,7 +3297,6 @@ const generateFlutterCode = async () => {
                               }} className="text-gray-600 hover:text-red-500 transition-colors shrink-0"><LucideIcons.Trash size={14} /></button>
                             </div>
 
-                            {/* RLS SECURITY SETTINGS - FIXED: Changed to flex-col so labels don't get crushed */}
                             <div className="bg-purple-500/5 px-3 py-3 border-b border-white/5 flex flex-col gap-3">
                               <div className="flex items-center gap-2">
                                 <LucideIcons.ShieldAlert size={12} className={table.rlsEnabled ? "text-emerald-500 shrink-0" : "text-red-500 shrink-0"} />
@@ -3614,7 +3324,6 @@ const generateFlutterCode = async () => {
                               </div>
                             </div>
 
-                            {/* COLUMNS - FIXED: added flex-1 and min-w-0 to prevent input pushing */}
                             <div className="p-3 space-y-2">
                               <div className="text-[9px] text-gray-600 font-mono mb-2">id (UUID) & created_at (TIMESTAMP) auto-generated</div>
                               {table.columns.map((col, cIdx) => (
@@ -3654,7 +3363,6 @@ const generateFlutterCode = async () => {
                       </div>
                     </div>
 
-                    {/* 3. APP STATE VARIABLES */}
                     <div className="bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex flex-col gap-4">
                       <div className="flex justify-between items-center border-b border-white/5 pb-4">
                         <div className="flex items-center gap-3">
@@ -3686,7 +3394,6 @@ const generateFlutterCode = async () => {
                       )}
                     </div>
 
-                    {/* 4. PERMISSIONS */}
                     <div className="bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex flex-col gap-4">
                       <div className="flex items-center gap-3 border-b border-white/5 pb-4">
                         <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
@@ -3709,7 +3416,6 @@ const generateFlutterCode = async () => {
                         ))}
                       </div>
                     </div>
-
                   </div>
                 )}
 
@@ -3720,8 +3426,6 @@ const generateFlutterCode = async () => {
                         <h3 className="text-[10px] font-bold text-orange-400 uppercase tracking-widest">🌐 API Connections</h3>
                         <button onClick={() => {
                           const newEndpoints = [...(schema.apiEndpoints || []), { id: `api_${Date.now()}`, name: 'New API', method: 'GET', url: '' }];
-                          // FIX: handleGlobalChange('apiEndpoints','',val) set schema.apiEndpoints['']= val, not schema.apiEndpoints.
-                          // Use commitHistory directly so the change is undoable.
                           commitHistory({ ...schema, apiEndpoints: newEndpoints });
                         }} className="bg-orange-500/10 text-orange-400 border border-orange-500/20 text-[9px] font-bold px-2.5 py-1.5 rounded-lg hover:bg-orange-500/20 transition-colors">+ Add API</button>
                       </div>
@@ -3809,7 +3513,6 @@ const generateFlutterCode = async () => {
                   <Canvas schema={schema} rootNode={activePage?.root} selectedId={selectedId} onSelect={(id) => {
                     setSelectedId(id);
                     setIsRightPanelOpen(true);
-                    // NEW: Only auto-switch to the inspector if we aren't using the AI or Code tabs
                     setRightTab(currentTab => (currentTab === 'ai' || currentTab === 'code') ? currentTab : 'inspector');
                   }}
                     onDropToNode={handleDropToNode} onResize={handleResize} onDragNodeStart={handleDragNodeStart} previewMode={previewMode} showGrid={showGrid} />
@@ -3818,7 +3521,7 @@ const generateFlutterCode = async () => {
             ) : (
               <div className="absolute inset-0 pt-24 overflow-hidden pointer-events-none">
                 <div className="w-full h-full transform-gpu origin-center transition-transform duration-75 ease-out flex gap-32 items-start p-32 pointer-events-auto" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, cursor: isPanning ? 'grabbing' : 'grab' }}>
-
+                  
                   {/* SVG CONNECTIONS */}
                   <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ overflow: 'visible' }}>
                     <defs>
@@ -3899,7 +3602,7 @@ const generateFlutterCode = async () => {
                           <button onClick={handleDelete} className="px-5 py-3 bg-red-500/10 text-red-500 rounded-xl text-[11px] font-bold border border-red-500/20 hover:bg-red-500/20 transition-colors">🗑️</button>
                         </div>
 
-                        {/* NEW: THE PUSH TO STORE BUTTON */}
+                        {/* THE PUSH TO STORE BUTTON */}
                         <button onClick={handlePushToStore} className="w-full py-3 bg-green-600/10 text-green-400 rounded-xl text-[11px] font-bold border border-green-500/30 hover:bg-green-600 hover:text-white transition-all uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.15)]">
                           <LucideIcons.UploadCloud size={14} /> Push to Store
                         </button>
@@ -4054,7 +3757,6 @@ const generateFlutterCode = async () => {
     </div>
   );
 }
-
 
 export default function BuilderPage() {
   return (
