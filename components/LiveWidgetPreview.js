@@ -1,8 +1,9 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 
-// The JSON to HTML engine (Kept for your backward compatibility)
+// The JSON to HTML engine (Kept for backward compatibility)
 const renderNode = (node) => {
+  // ... (Keep your existing renderNode logic exactly as it is) ...
   if (!node) return null;
   const { type, props = {}, styles = {}, children = [] } = node;
 
@@ -41,53 +42,82 @@ const renderNode = (node) => {
   }
 };
 
-export default function LiveWidgetPreview({ schema, dartCode, colors }) {
-  
-  // ─── NEW: IF IT IS PURE DART CODE, SHOW A BEAUTIFUL IDE WINDOW ───
+// ADDED: assetId prop
+export default function LiveWidgetPreview({ schema, dartCode, colors, assetId }) {
+  // ADDED: State to toggle between the live iframe and the code view
+  const [viewMode, setViewMode] = useState('preview'); // 'preview' or 'code'
+
+  // ─── IF IT IS PURE DART CODE, SHOW EITHER THE IFRAME OR THE IDE ───
   if (dartCode) {
+    const isLive = viewMode === 'preview' && assetId;
+    
+    // Construct the GitHub Pages URL based on your specific repo
+    const iframeUrl = `https://suraj140602.github.io/appforge_preview_engine/${assetId}/`;
+
     return (
-      <div className="w-full h-full p-4 flex items-center justify-center relative overflow-hidden bg-[#050505]">
+      <div className="w-full h-full p-4 flex items-center justify-center relative overflow-hidden bg-[#050505] group/preview">
+        
+        {/* View Toggle Button (Appears on hover) */}
+        <div className="absolute top-2 right-2 z-50 opacity-0 group-hover/preview:opacity-100 transition-opacity">
+          <button 
+            onClick={(e) => { e.stopPropagation(); setViewMode(isLive ? 'code' : 'preview'); }}
+            className="bg-black/60 backdrop-blur border border-white/10 text-white text-[10px] font-bold px-3 py-1.5 rounded-full hover:bg-white/10 transition"
+          >
+            {isLive ? '</> View Code' : '▶ Live Preview'}
+          </button>
+        </div>
+
         {/* Subtle background glow based on the theme colors */}
         <div 
           className="absolute inset-0 opacity-20 blur-2xl" 
           style={{ background: `linear-gradient(135deg, ${colors?.[0] || '#3b82f6'}, ${colors?.[1] || '#8b5cf6'})` }} 
         />
         
-        {/* The Mac-style IDE Window */}
-        <div className="w-[90%] h-[95%] bg-[#1e1e1e] rounded-xl border border-white/10 shadow-2xl flex flex-col overflow-hidden relative z-10">
-          
-          {/* Mac window header */}
-          <div className="h-7 bg-[#2d2d2d] flex items-center px-3 gap-1.5 border-b border-black/50 shrink-0 shadow-sm">
-             <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
-             <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
-             <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-             <span className="ml-3 text-[10px] text-gray-400 font-mono font-medium tracking-wider">widget.dart</span>
+        {isLive ? (
+          // ─── THE ACTUAL LIVE ENGINE CONNECTION ───
+          <div className="w-[90%] h-[95%] bg-black rounded-xl border border-white/10 shadow-2xl overflow-hidden relative z-10 flex items-center justify-center">
+            {/* Fallback loading state while iframe connects */}
+            <div className="absolute inset-0 flex items-center justify-center text-white/30 text-xs">Loading Engine...</div>
+            <iframe 
+              src={iframeUrl} 
+              className="w-full h-full relative z-10 border-none bg-transparent"
+              title={`Preview of ${assetId}`}
+              sandbox="allow-scripts allow-same-origin"
+            />
           </div>
-          
-          {/* Scrolling Code Body */}
-          <div className="p-3 overflow-y-auto custom-scrollbar flex-1 text-left">
-             <pre className="font-mono text-[8.5px] leading-[1.6] text-[#d4d4d4] whitespace-pre-wrap">
-               {/* Extremely simple syntax highlighting simulation */}
-               {dartCode.split('\n').map((line, i) => {
-                 let coloredLine = line
-                  .replace(/(class|extends|return|const|final|final|if|else|Widget|String|int|double|bool|void)/g, '<span style="color: #569cd6">$1</span>') // Keywords
-                  .replace(/(@override)/g, '<span style="color: #c586c0">$1</span>') // Decorators
-                  .replace(/('[^']*')/g, '<span style="color: #ce9178">$1</span>') // Strings
-                  .replace(/(Scaffold|Container|Text|Column|Row|SizedBox|Padding|Icon|ElevatedButton|Colors)/g, '<span style="color: #4ec9b0">$1</span>'); // Classes
-                 
-                 return <div key={i} dangerouslySetInnerHTML={{ __html: coloredLine }} />;
-               })}
-             </pre>
+        ) : (
+          // ─── THE MAC-STYLE IDE WINDOW ───
+          <div className="w-[90%] h-[95%] bg-[#1e1e1e] rounded-xl border border-white/10 shadow-2xl flex flex-col overflow-hidden relative z-10">
+            {/* Mac window header */}
+            <div className="h-7 bg-[#2d2d2d] flex items-center px-3 gap-1.5 border-b border-black/50 shrink-0 shadow-sm">
+               <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+               <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+               <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+               <span className="ml-3 text-[10px] text-gray-400 font-mono font-medium tracking-wider">widget.dart</span>
+            </div>
+            
+            {/* Scrolling Code Body */}
+            <div className="p-3 overflow-y-auto custom-scrollbar flex-1 text-left">
+               <pre className="font-mono text-[8.5px] leading-[1.6] text-[#d4d4d4] whitespace-pre-wrap">
+                 {dartCode.split('\n').map((line, i) => {
+                   let coloredLine = line
+                    .replace(/(class|extends|return|const|final|if|else|Widget|String|int|double|bool|void)/g, '<span style="color: #569cd6">$1</span>')
+                    .replace(/(@override)/g, '<span style="color: #c586c0">$1</span>')
+                    .replace(/('[^']*')/g, '<span style="color: #ce9178">$1</span>')
+                    .replace(/(Scaffold|Container|Text|Column|Row|SizedBox|Padding|Icon|ElevatedButton|Colors)/g, '<span style="color: #4ec9b0">$1</span>');
+                   
+                   return <div key={i} dangerouslySetInnerHTML={{ __html: coloredLine }} />;
+                 })}
+               </pre>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#1e1e1e] to-transparent pointer-events-none" />
           </div>
-
-          {/* Fade out effect at the bottom so it looks clean */}
-          <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#1e1e1e] to-transparent pointer-events-none" />
-        </div>
+        )}
       </div>
     );
   }
 
-  // ─── EXISTING LOGIC: IF NO DART CODE, USE JSON SCHEMA TO RENDER VISUALS ───
+  // ─── EXISTING LOGIC: IF NO DART CODE, USE JSON SCHEMA ───
   if (!schema) {
     return <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs font-mono bg-white/5 rounded-t-xl">No preview data</div>;
   }

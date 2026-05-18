@@ -1274,7 +1274,12 @@
         {/* ── TOP HALF: CONDITIONAL PREVIEW ── */}
         <div style={{ height: 280, position: 'relative', background: '#050505', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {item.dartCode || item.dbSchema ? (
-            <LiveWidgetPreview dartCode={item.dartCode} schema={item.dbSchema} />
+            <LiveWidgetPreview 
+              dartCode={item.dartCode} 
+              schema={item.dbSchema} 
+              colors={item.colors} 
+              assetId={item.id}  // <--- ADD THIS LINE
+            />
           ) : (
             <div style={{
               width: '100%', height: '100%',
@@ -1593,7 +1598,6 @@
               <option>Free Assets</option>
               <option>Premium Only</option>
             </select>
-            <button onClick={handleSeedDatabase} className="bg-red-500 text-white px-4 py-2 rounded">UPLOAD TO DB</button>
             <button className="px-4 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold rounded-lg flex items-center gap-2 hover:scale-105 transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)]">
               + Go Pro
             </button>
