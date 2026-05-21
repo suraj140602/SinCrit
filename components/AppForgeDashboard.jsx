@@ -19,16 +19,15 @@ import * as LucideIcons from "lucide-react";
 
 /** Call the AI via Next.js Backend to avoid CORS and hide API keys */
 const callClaude = async (systemPrompt, userMessage, maxTokens = 1200) => {
-  const res = await fetch("/api/audit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      // Combine system and user prompt for your backend
-      prompt: `${systemPrompt}\n\nUser Request: ${userMessage}`,
-      // Optionally pass maxTokens if your backend supports it
-      maxTokens: maxTokens 
-    }),
-  });
+  const res = await fetch("/api/auto-repair", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    schema: schema,
+    errorLogs: buildLogs.filter(l => l.includes("Error") || l.includes("FAILED")).join("\n"),
+    currentCode: currentCode,
+  }),
+});
   
   const data = await res.json();
   if (data.error) throw new Error(data.error);

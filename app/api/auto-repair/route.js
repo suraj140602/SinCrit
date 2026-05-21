@@ -1,4 +1,4 @@
-cat > ~/app-forge/app/api/auto-repair/route.js << 'ENDOFFILE'
+
 import { NextResponse } from 'next/server';
 import { analyzeLog } from '@/utils/flutterRepair';
 
@@ -83,4 +83,3 @@ export async function POST(request) {
 export async function GET() {
   return NextResponse.json({ error: 'Use POST' }, { status: 405 });
 }
-ENDOFFILE

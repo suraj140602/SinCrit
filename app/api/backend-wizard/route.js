@@ -1,4 +1,3 @@
-cat > ~/app-forge/app/api/backend-wizard/route.js << 'ENDOFFILE'
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { generateSupabaseSQL } from '@/utils/sqlGenerator';
@@ -90,4 +89,3 @@ export async function POST(request) {
 export async function GET() {
   return NextResponse.json({ error: 'Use POST' }, { status: 405 });
 }
-ENDOFFILE

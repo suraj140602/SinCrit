@@ -1,4 +1,3 @@
-cat > ~/app-forge/app/api/memory-bank/route.js << 'ENDOFFILE'
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -138,4 +137,3 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-ENDOFFILE
