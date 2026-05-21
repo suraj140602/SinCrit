@@ -1985,6 +1985,15 @@ function Home() {
     const userMessage = chatInput;
     setChatInput(''); 
 
+    let ragContext = null;
+try {
+  const ragRes = await fetch(`/api/memory-bank?query=${encodeURIComponent(userMessage)}&limit=3`);
+  const ragData = await ragRes.json();
+  if (ragData.patterns?.length > 0) {
+    ragContext = ragData.patterns;
+  }
+} catch (e) { /* non-fatal, continue without RAG */ }
+
     const newHistory = [...aiChatHistory, { role: 'user', text: userMessage }];
     setAiChatHistory(newHistory);
     setIsAiThinking(true);
