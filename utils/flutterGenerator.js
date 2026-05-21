@@ -23,6 +23,8 @@ const parseColor = (val, schemaTheme) => {
     if (val === 'theme.primary') return `Color(0xFF${schemaTheme.primary.replace('#', '')})`;
     if (val === 'theme.secondary') return `Color(0xFF${(schemaTheme.secondary || 'EC4899').replace('#', '')})`;
     if (val === 'theme.background') return `Color(0xFF${schemaTheme.background.replace('#', '')})`;
+    if (val === 'theme.surface') return `Color(0xFF${(schemaTheme.surface || '161B22').replace('#', '')})`;
+    if (val === 'theme.text') return `Color(0xFF${(schemaTheme.text || 'F8FAFC').replace('#', '')})`;
     if (val.startsWith('#')) return `Color(0xFF${val.replace('#', '')})`;
     return 'Colors.transparent';
 };
@@ -678,7 +680,41 @@ ${stateMutators}
                   },
                 )`;
 
-                if (props.apiEndpointId) {
+                if (props.dataSource === 'supabase' && props.supabaseTable && supabase.active) {
+                    const displayColumn = props.displayColumn || 'title';
+                    const subtitleColumn = props.subtitleColumn || '';
+                    const pageSize = parseInt(props.pageSize || '25', 10) || 25;
+                    const orderColumn = props.orderColumn || 'created_at';
+                    const orderClause = orderColumn ? `.order('${orderColumn}', ascending: false)` : '';
+                    widgetCode = `FutureBuilder<List<dynamic>>(
+                      future: Supabase.instance.client.from('${props.supabaseTable}').select()${orderClause}.limit(${pageSize}),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) return const SizedBox.shrink();
+                        if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+                        final rows = snapshot.data ?? <dynamic>[];
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const ClampingScrollPhysics(),
+                          scrollDirection: ${isHorizontal ? 'Axis.horizontal' : 'Axis.vertical'},
+                          padding: ${parseEdgeInsets(props.padding)},
+                          itemCount: rows.length,
+                          itemBuilder: (context, index) {
+                            final row = rows[index] as Map<String, dynamic>;
+                            return Padding(
+                              padding: EdgeInsets.only(${gapDir}: ${parseSize(props.gap || '8px', true)}),
+                              child: Card(
+                                color: ${parseColor('theme.surface', schema.theme)},
+                                child: ListTile(
+                                  title: Text("\${row['${displayColumn}'] ?? ''}", style: TextStyle(color: ${parseColor('theme.text', schema.theme)})),
+                                  ${subtitleColumn ? `subtitle: Text("\${row['${subtitleColumn}'] ?? ''}"),` : ''}
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }
+                    )`;
+                } else if (props.apiEndpointId) {
                     const apiDef = schema.apiEndpoints?.find(a => a.id === props.apiEndpointId);
                     if (apiDef && apiDef.url) {
                         let apiHeaderCode = `null`;

@@ -309,7 +309,7 @@ export default function AuthPage() {
 
                   <div>
                     <h3 className="text-white font-bold text-base mb-1">Reset password</h3>
-                    <p className="text-gray-500 text-sm">We'll send a reset link to your email.</p>
+                    <p className="text-gray-500 text-sm">We&apos;ll send a reset link to your email.</p>
                   </div>
 
                   <InputField label="Email" type="email" value={email} onChange={setEmail}

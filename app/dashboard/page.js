@@ -183,15 +183,35 @@ function DashboardInner() {
   }, []);
 
   useEffect(() => {
-    if (user && profile) {
-      fetchProjects();
-      fetchTasks();
-      fetchMembers();
-    }
+    if (!user || !profile) return;
+
+    let cancelled = false;
+    const loadWorkspace = async () => {
+      if (cancelled) return;
+      await Promise.all([fetchProjects(), fetchTasks(), fetchMembers()]);
+    };
+
+    loadWorkspace();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, profile, fetchProjects, fetchTasks, fetchMembers]);
 
   useEffect(() => {
-    if (selectedProject) fetchProjectTasks(selectedProject.id);
+    if (!selectedProject) return;
+
+    let cancelled = false;
+    const loadProjectTasks = async () => {
+      if (cancelled) return;
+      await fetchProjectTasks(selectedProject.id);
+    };
+
+    loadProjectTasks();
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedProject, fetchProjectTasks]);
 
   // ── Create project (BULLETPROOF) ──
@@ -471,7 +491,7 @@ function DashboardInner() {
                 
                 <div className="mt-2 sm:mt-0">
                   <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}, {profile?.full_name?.split(" ")[0] || "there"} 👋</h2>
-                  <p className="text-gray-500 text-sm mt-1">Here's what's happening across your workspace.</p>
+                  <p className="text-gray-500 text-sm mt-1">Here&apos;s what&apos;s happening across your workspace.</p>
                 </div>
 
                 {/* Metrics */}
@@ -643,7 +663,7 @@ function DashboardInner() {
                   <div className="bg-[#0d1017] border border-dashed border-white/10 rounded-2xl p-12 sm:p-16 text-center">
                     <div className="text-4xl mb-4">✅</div>
                     <div className="text-white font-bold mb-2 text-lg">No tasks assigned</div>
-                    <div className="text-gray-500 text-sm">You're all caught up! Enjoy the free time.</div>
+                    <div className="text-gray-500 text-sm">You&apos;re all caught up! Enjoy the free time.</div>
                   </div>
                 )}
               </motion.div>

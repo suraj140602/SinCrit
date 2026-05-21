@@ -179,7 +179,7 @@ export default function LandingPage() {
               transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
             >
               <span className="font-bold text-lg sm:text-xl tracking-tighter hover:text-white cursor-pointer">CapitalOne</span>
-              <span className="font-serif italic text-xl sm:text-2xl font-bold hover:text-white cursor-pointer">Wendy's</span>
+              <span className="font-serif italic text-xl sm:text-2xl font-bold hover:text-white cursor-pointer">Wendy&apos;s</span>
               <span className="font-black text-xl sm:text-2xl tracking-widest hover:text-white cursor-pointer">IBM</span>
               <span className="font-bold text-xl sm:text-2xl flex items-center gap-1 hover:text-white cursor-pointer"><LayoutTemplate size={20} className="sm:w-6 sm:h-6" /> Microsoft</span>
               <span className="font-bold text-lg sm:text-xl tracking-tight hover:text-white cursor-pointer">amazon</span>

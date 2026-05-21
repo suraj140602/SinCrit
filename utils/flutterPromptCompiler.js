@@ -1144,6 +1144,57 @@ const STORE_THEMES = {
         usedIn: ['dashboard', 'builder', 'account pages', 'admin panel'],
     },
 
+    lightSaas: {
+        name: 'Light SaaS / Productivity',
+        mode: 'light',
+        background: '#f8fafc',
+        surface: '#ffffff',
+        surfaceAlt: '#eef2ff',
+        primary: '#2563eb',
+        secondary: '#14b8a6',
+        accent: '#6366f1',
+        text: '#0f172a',
+        textMuted: '#64748b',
+        border: '#dbeafe',
+        fontFamily: 'Inter',
+        radius: '12px',
+        usedIn: ['CRM', 'team dashboard', 'project management', 'B2B SaaS'],
+    },
+
+    lightEditorial: {
+        name: 'Light Editorial / Premium Shop',
+        mode: 'light',
+        background: '#fff7ed',
+        surface: '#ffffff',
+        surfaceAlt: '#ffedd5',
+        primary: '#db2777',
+        secondary: '#f59e0b',
+        accent: '#7c3aed',
+        text: '#111827',
+        textMuted: '#6b7280',
+        border: '#fed7aa',
+        fontFamily: 'Playfair Display',
+        radius: '18px',
+        usedIn: ['fashion commerce', 'magazine app', 'boutique marketplace'],
+    },
+
+    lightWellness: {
+        name: 'Light Wellness / Calm',
+        mode: 'light',
+        background: '#f0fdfa',
+        surface: '#ffffff',
+        surfaceAlt: '#ccfbf1',
+        primary: '#059669',
+        secondary: '#38bdf8',
+        accent: '#a7f3d0',
+        text: '#134e4a',
+        textMuted: '#64748b',
+        border: '#99f6e4',
+        fontFamily: 'Poppins',
+        radius: '20px',
+        usedIn: ['wellness tracker', 'therapy booking', 'habit app', 'meditation'],
+    },
+
     crypto: {
         name: 'Crypto / DeFi',
         background: '#000000',
@@ -1769,7 +1820,10 @@ const matchTheme = (schema) => {
     const isDark = bg.startsWith('#0') || bg.startsWith('#1') || bg === '#000000';
     const isWhite = bg === '#ffffff' || bg.startsWith('#f');
 
-    if (primary.includes('1db954') || primary.includes('10b981')) return STORE_THEMES.music;
+    if (isWhite && primary.includes('2563eb')) return STORE_THEMES.lightSaas;
+    if (isWhite && primary.includes('db2777')) return STORE_THEMES.lightEditorial;
+    if (isWhite && primary.includes('059669')) return STORE_THEMES.lightWellness;
+    if (primary.includes('1db954') || primary.includes('10b981')) return isWhite ? STORE_THEMES.lightWellness : STORE_THEMES.music;
     if (primary.includes('f97316') || primary.includes('ef4444')) return STORE_THEMES.foodDelivery;
     if (primary.includes('ec4899') && isWhite) return STORE_THEMES.ecommerce;
     if (primary.includes('06b6d4') && isWhite) return STORE_THEMES.healthcare;
@@ -1777,7 +1831,7 @@ const matchTheme = (schema) => {
     if (primary.includes('facc15')) return STORE_THEMES.brutalist;
     if (primary.includes('38bdf8') || primary.includes('0ea5e9')) return STORE_THEMES.aiSaas;
     if (primary.includes('f59e0b') && isWhite) return STORE_THEMES.travel;
-    if (primary.includes('2563eb') && isWhite) return STORE_THEMES.education;
+    if (primary.includes('2563eb') && isWhite) return STORE_THEMES.lightSaas;
     if (isDark && primary.includes('10b981')) return STORE_THEMES.fitness;
     if (isWhite) return STORE_THEMES.ecommerce;
 
@@ -1838,15 +1892,17 @@ APP CONTEXT:
   Uses WebView:   ${scan.usesWebView}
   Uses Video:     ${scan.usesVideo}
   Active theme:   ${matchedTheme.name}
+  Theme mode:     ${schema.theme?.mode || matchedTheme.mode || 'dark'}
 
 THEME TOKENS (use EXACTLY these values):
   Background:   ${schema.theme?.background}
   Primary:      ${schema.theme?.primary}
   Secondary:    ${schema.theme?.secondary || matchedTheme.secondary}
-  Surface:      ${matchedTheme.surface}
-  Text:         ${matchedTheme.text}
+  Surface:      ${schema.theme?.surface || matchedTheme.surface}
+  Text:         ${schema.theme?.text || matchedTheme.text}
   Text muted:   ${matchedTheme.textMuted}
   Font:         ${schema.theme?.fontFamily || matchedTheme.fontFamily || 'Inter'}
+  Custom fonts: ${(schema.theme?.customFonts || []).map(font => font.name).join(', ') || 'none'}
   Radius:       ${schema.theme?.globalRadius || matchedTheme.radius || '12px'}`;
 
     // 4. Supabase config (if applicable)

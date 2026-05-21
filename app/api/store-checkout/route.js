@@ -14,6 +14,11 @@ const supabaseAdmin = createClient(
 export async function POST(req) {
   try {
     const { themeId, buyerId } = await req.json();
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_URL;
+
+    if (!baseUrl) {
+      return NextResponse.json({ error: 'App URL is not configured' }, { status: 500 });
+    }
 
     // 1. Fetch the Theme from Supabase
     const { data: theme, error: themeError } = await supabaseAdmin
@@ -62,8 +67,8 @@ export async function POST(req) {
         themeId: theme.id,
         buyerId: buyerId
       },
-      success_url: `${process.env.NEXT_PUBLIC_URL}/store?success=true&themeId=${theme.id}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/store?canceled=true`,
+      success_url: `${baseUrl}/store?success=true&themeId=${theme.id}`,
+      cancel_url: `${baseUrl}/store?canceled=true`,
     });
 
     return NextResponse.json({ url: session.url });

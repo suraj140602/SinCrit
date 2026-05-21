@@ -483,6 +483,7 @@ const Canvas = ({ schema, rootNode, selectedId, onSelect, onDropToNode, onResize
       case 'ListView':
         const isHorizontal = node.props.scrollDirection === 'horizontal';
         const hasApi = !!node.props.apiEndpoint;
+        const hasSupabaseBinding = !!node.props.supabaseTable;
         return (
           <motion.div
             key={node.id}
@@ -502,6 +503,7 @@ const Canvas = ({ schema, rootNode, selectedId, onSelect, onDropToNode, onResize
             className={`${commonProps.className} ${isHorizontal ? 'hide-scrollbar' : 'custom-scrollbar'}`}
           >
             {hasApi && <div className="absolute top-2 right-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm backdrop-blur-sm z-50 flex items-center gap-1"><LucideIcons.Database size={10} /> API BOUND</div>}
+            {hasSupabaseBinding && <div className="absolute top-2 left-2 bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm backdrop-blur-sm z-50 flex items-center gap-1"><LucideIcons.DatabaseZap size={10} /> {node.props.supabaseTable}</div>}
             {node.children?.length === 0 && <div className="m-auto p-6 text-[10px] text-gray-400/50 border border-dashed border-gray-400/30 rounded-xl text-center pointer-events-none tracking-widest uppercase">Drop Item Here</div>}
             {node.children?.map(renderNode)}
 

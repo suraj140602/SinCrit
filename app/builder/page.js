@@ -214,6 +214,53 @@ const PropInput = ({ label, propKey, type = "text", options = [], placeholder = 
   );
 };
 
+const LIGHT_THEME_PRESETS = [
+  {
+    id: 'morningSaas',
+    name: 'Morning SaaS',
+    primary: '#2563EB',
+    secondary: '#14B8A6',
+    background: '#F8FAFC',
+    surface: '#FFFFFF',
+    text: '#0F172A',
+    mode: 'light',
+    fontFamily: 'Inter',
+    navBackground: '#FFFFFF'
+  },
+  {
+    id: 'editorialShop',
+    name: 'Editorial Shop',
+    primary: '#DB2777',
+    secondary: '#F59E0B',
+    background: '#FFF7ED',
+    surface: '#FFFFFF',
+    text: '#111827',
+    mode: 'light',
+    fontFamily: 'Playfair Display',
+    navBackground: '#FFFFFF'
+  },
+  {
+    id: 'cleanWellness',
+    name: 'Clean Wellness',
+    primary: '#059669',
+    secondary: '#38BDF8',
+    background: '#F0FDFA',
+    surface: '#FFFFFF',
+    text: '#134E4A',
+    mode: 'light',
+    fontFamily: 'Poppins',
+    navBackground: '#FFFFFF'
+  }
+];
+
+const deriveSupabaseProjectRef = (url = '') => {
+  try {
+    return new URL(url).hostname.split('.')[0] || '';
+  } catch {
+    return '';
+  }
+};
+
 function Home() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -241,7 +288,7 @@ function Home() {
     apiEndpoints: [],
     permissions: { internet: true, camera: false, location: false, microphone: false, notifications: false },
     backendProvider: 'supabase',
-    supabaseConfig: { url: '', anonKey: '' },
+    supabaseConfig: { url: '', anonKey: '', projectRef: '' },
     firebaseConfig: { apiKey: '', projectId: '', appId: '', messagingSenderId: '' },
     appConfig: {
       enableBottomNav: false,
@@ -260,7 +307,7 @@ function Home() {
         { id: 'tbl_products', name: 'products', columns: [{ id: 'col_3', name: 'title', type: 'text' }, { id: 'col_4', name: 'price', type: 'numeric' }] }
       ]
     },
-    theme: { ...dummySchema.theme, globalRadius: "12px", secondary: "#EC4899", background: "#0a0a0a", primary: "#3b82f6" }
+    theme: { ...dummySchema.theme, globalRadius: "12px", secondary: "#EC4899", background: "#0a0a0a", surface: "#161b22", text: "#f8fafc", primary: "#3b82f6", mode: "dark", customFonts: [] }
   });
 
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -282,6 +329,13 @@ function Home() {
 
   const [showSqlModal, setShowSqlModal] = useState(false);
   const [elementSearch, setElementSearch] = useState("");
+  const [backendWizardStep, setBackendWizardStep] = useState(1);
+  const [supabaseConnectionStatus, setSupabaseConnectionStatus] = useState({ state: 'idle', message: 'Not connected yet.' });
+  const [supabaseManagementToken, setSupabaseManagementToken] = useState('');
+  const [isTestingSupabase, setIsTestingSupabase] = useState(false);
+  const [isExecutingSql, setIsExecutingSql] = useState(false);
+  const [sqlExecutionResult, setSqlExecutionResult] = useState(null);
+  const [bindingGuideActive, setBindingGuideActive] = useState(false);
 
   const [themePrompt, setThemePrompt] = useState('');
   const [isGeneratingTheme, setIsGeneratingTheme] = useState(false);
@@ -407,6 +461,19 @@ function Home() {
     window.addEventListener('touchmove', preventScrollWhileDragging, { passive: false });
     return () => window.removeEventListener('touchmove', preventScrollWhileDragging);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('FontFace' in window)) return;
+
+    const customFonts = schema.theme?.customFonts || [];
+    customFonts.forEach(font => {
+      if (!font?.name || !font?.dataUrl || document.fonts.check(`12px "${font.name}"`)) return;
+      const face = new FontFace(font.name, `url(${font.dataUrl})`);
+      face.load()
+        .then(loadedFace => document.fonts.add(loadedFace))
+        .catch(() => {});
+    });
+  }, [schema.theme?.customFonts]);
 
   // NEW: Refactored AI Code Generator to avoid shadowing the synchronous generateFlutterCode
   const fetchAIGeneratedCode = async () => {
@@ -953,6 +1020,54 @@ function Home() {
   const handleThemeChange = (key, value) => {
     const newSchema = { ...schema, theme: { ...schema.theme, [key]: value } };
     commitHistory(newSchema);
+  };
+
+  const handleApplyThemePreset = (preset) => {
+    const newSchema = {
+      ...schema,
+      theme: {
+        ...schema.theme,
+        primary: preset.primary,
+        secondary: preset.secondary,
+        background: preset.background,
+        surface: preset.surface,
+        text: preset.text,
+        mode: preset.mode,
+        fontFamily: preset.fontFamily
+      },
+      appConfig: {
+        ...schema.appConfig,
+        navBackground: preset.navBackground,
+        navActiveColor: preset.primary
+      }
+    };
+    commitHistory(newSchema);
+  };
+
+  const handleCustomFontUpload = (file) => {
+    if (!file) return;
+    const fontName = file.name.replace(/\.(ttf|otf|woff2?|TTF|OTF|WOFF2?)$/, '').replace(/[^a-zA-Z0-9 _-]/g, '').trim();
+    if (!fontName) return alert('Choose a valid font file.');
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const customFonts = schema.theme?.customFonts || [];
+      const nextFonts = [
+        ...customFonts.filter(font => font.name !== fontName),
+        { id: `font_${Date.now()}`, name: fontName, fileName: file.name, dataUrl: reader.result }
+      ];
+
+      commitHistory({
+        ...schema,
+        theme: {
+          ...schema.theme,
+          customFonts: nextFonts,
+          fontFamily: fontName
+        }
+      });
+    };
+    reader.onerror = () => alert('Could not read that font file.');
+    reader.readAsDataURL(file);
   };
 
   const handleAddStateVar = () => {
@@ -1552,6 +1667,181 @@ function Home() {
     }
   };
 
+  const getTableByName = (tableName) => (schema.appConfig?.dbTables || []).find(table => table.name === tableName);
+
+  const getReadableColumns = (table) => (table?.columns || []).filter(col => ['text', 'numeric', 'timestamp'].includes(col.type));
+
+  const buildInsertPayload = (table) => {
+    const pairs = (table?.columns || [])
+      .filter(col => !['id', 'created_at'].includes(col.name))
+      .slice(0, 6)
+      .map(col => {
+        const stateKey = `${table.name}_${col.name}`.replace(/[^a-zA-Z0-9_]/g, '_');
+        return `"${col.name}": AppState.instance.${stateKey}`;
+      });
+
+    return `{${pairs.join(', ')}}`;
+  };
+
+  const ensureStateVarsForTable = (draftSchema, table) => {
+    const existingKeys = new Set((draftSchema.appState || []).map(item => item.key));
+    const nextState = [...(draftSchema.appState || [])];
+
+    (table?.columns || []).forEach(col => {
+      if (['id', 'created_at'].includes(col.name)) return;
+      const key = `${table.name}_${col.name}`.replace(/[^a-zA-Z0-9_]/g, '_');
+      if (existingKeys.has(key)) return;
+
+      let type = 'String';
+      let value = "''";
+      if (col.type === 'numeric') { type = 'double'; value = '0.0'; }
+      if (col.type === 'boolean') { type = 'bool'; value = 'false'; }
+
+      nextState.push({ key, type, value });
+      existingKeys.add(key);
+    });
+
+    draftSchema.appState = nextState;
+  };
+
+  const handleBindSelectedNodeToTable = (tableName) => {
+    if (!selectedId) return alert('Select a ListView, TextInput, Button, or Text element on the canvas first.');
+    const table = getTableByName(tableName);
+    if (!table) return alert('Choose a valid table to bind.');
+
+    const newSchema = JSON.parse(JSON.stringify(schema));
+    const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
+    const targetNode = findNode(newSchema.pages[pIndex]?.root, selectedId);
+    if (!targetNode) return;
+
+    const readableColumns = getReadableColumns(table);
+    const primaryDisplayColumn = readableColumns[0]?.name || table.columns?.[0]?.name || 'id';
+    const secondaryDisplayColumn = readableColumns[1]?.name || '';
+
+    if (targetNode.type === 'ListView') {
+      targetNode.props.dataSource = 'supabase';
+      targetNode.props.supabaseTable = table.name;
+      targetNode.props.displayColumn = primaryDisplayColumn;
+      targetNode.props.subtitleColumn = secondaryDisplayColumn;
+      targetNode.props.orderColumn = table.columns?.some(col => col.name === 'created_at') ? 'created_at' : '';
+      targetNode.props.pageSize = targetNode.props.pageSize || '25';
+    } else if (targetNode.type === 'Text' || targetNode.type === 'Image') {
+      targetNode.props.dataSource = 'supabase';
+      targetNode.props.supabaseTable = table.name;
+      targetNode.props.boundColumn = primaryDisplayColumn;
+      targetNode.props.content = targetNode.type === 'Text' ? `{{${table.name}.${primaryDisplayColumn}}}` : targetNode.props.content;
+    } else if (targetNode.type === 'TextInput') {
+      ensureStateVarsForTable(newSchema, table);
+      targetNode.props.boundTable = table.name;
+      targetNode.props.boundColumn = primaryDisplayColumn;
+      targetNode.props.isBound = true;
+      targetNode.props.boundVariable = `${table.name}_${primaryDisplayColumn}`.replace(/[^a-zA-Z0-9_]/g, '_');
+    } else if (targetNode.type === 'Button') {
+      ensureStateVarsForTable(newSchema, table);
+      targetNode.props.actionChain = [
+        ...(targetNode.props.actionChain || []),
+        {
+          id: `act_${Date.now()}`,
+          type: 'supabase',
+          table: table.name,
+          payload: buildInsertPayload(table)
+        },
+        {
+          id: `act_${Date.now()}_toast`,
+          type: 'toast',
+          message: `${table.name} saved`
+        }
+      ];
+    } else {
+      return alert('This element is not bindable yet. Select a ListView, TextInput, Text, Image, or Button.');
+    }
+
+    commitHistory(newSchema);
+    setInspectorTab('backend');
+    setBackendWizardStep(3);
+    setBindingGuideActive(false);
+  };
+
+  const handleValidateSupabaseConnection = async () => {
+    const config = schema.supabaseConfig || {};
+    if (!config.url || !config.anonKey) {
+      setSupabaseConnectionStatus({ state: 'error', message: 'Add a Supabase Project URL and anon public key first.' });
+      return;
+    }
+
+    setIsTestingSupabase(true);
+    setSupabaseConnectionStatus({ state: 'loading', message: 'Checking Supabase REST access...' });
+
+    try {
+      const projectRef = config.projectRef || deriveSupabaseProjectRef(config.url);
+      const response = await fetch('/api/supabase-schema', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'validate',
+          url: config.url,
+          anonKey: config.anonKey,
+          projectRef,
+          managementToken: supabaseManagementToken
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Connection failed');
+
+      setSupabaseConnectionStatus({
+        state: 'success',
+        message: data.managementReady
+          ? 'Connected. Runtime access and Management API access are ready.'
+          : 'Connected for app runtime. Add a Management API token to enable automatic SQL execution.'
+      });
+
+      if (!config.projectRef && projectRef) {
+        handleGlobalChange('supabaseConfig', 'projectRef', projectRef);
+      }
+    } catch (err) {
+      setSupabaseConnectionStatus({ state: 'error', message: err.message || 'Could not validate Supabase.' });
+    } finally {
+      setIsTestingSupabase(false);
+    }
+  };
+
+  const handleExecuteSupabaseSQL = async () => {
+    const config = schema.supabaseConfig || {};
+    const projectRef = config.projectRef || deriveSupabaseProjectRef(config.url);
+    const sql = generateSupabaseSQL(schema.appConfig?.dbTables || []);
+    if (!sql || sql === '-- No tables defined') return alert('No tables to deploy. Use AI Generate or add tables manually first.');
+    if (!projectRef || !supabaseManagementToken) {
+      setSqlExecutionResult({ state: 'error', message: 'Automatic SQL execution needs a Supabase project ref and Management API token.' });
+      setShowSqlModal(true);
+      return;
+    }
+
+    setIsExecutingSql(true);
+    setSqlExecutionResult({ state: 'loading', message: 'Executing schema migration in Supabase...' });
+
+    try {
+      const response = await fetch('/api/supabase-schema', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'execute',
+          projectRef,
+          managementToken: supabaseManagementToken,
+          sql
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'SQL execution failed');
+
+      setSqlExecutionResult({ state: 'success', message: `Created/updated ${schema.appConfig?.dbTables?.length || 0} table(s) in Supabase.` });
+      setBackendWizardStep(3);
+    } catch (err) {
+      setSqlExecutionResult({ state: 'error', message: err.message || 'Could not execute SQL automatically.' });
+    } finally {
+      setIsExecutingSql(false);
+    }
+  };
+
   const handleAiGenerateBackend = async () => {
     setIsGeneratingBackend(true);
     try {
@@ -1579,15 +1869,17 @@ function Home() {
           prompt: `You are a database architect for a mobile app builder. Analyze this Flutter app schema and return the MINIMUM set of database tables needed.
           Rules:
           - Each table needs id (uuid) and created_at (timestamp) — do NOT include these in columns.
-          - Only add tables the app actually needs based on widget types (ListView = data to list, TextInput = form to save, etc.)
-          - Column types must be one of: text, numeric, boolean, uuid, timestamp
-          - Enable RLS on all tables. Tables with user data need rlsAuthOnly: true.
-          - Return ONLY valid JSON, no markdown.
-          
-          Schema: ${JSON.stringify(appSummary)}
-          
-          Return this exact format:
-          [ { "id": "tbl_unique_id", "name": "table_name", "rlsEnabled": true, "rlsAuthOnly": true, "columns": [ { "id": "col_unique_id", "name": "col_name", "type": "text" } ] } ]`,
+	          - Only add tables the app actually needs based on widget types (ListView = data to list, TextInput = form to save, etc.)
+	          - Column types must be one of: text, numeric, boolean, uuid, timestamp
+	          - Enable RLS on all tables. Tables with user data need rlsAuthOnly: true.
+	          - Detect likely relationships. Use relationships for foreign keys, e.g. workouts.user_id references profiles.id.
+	          - Suggest indexes for columns used for filtering, foreign keys, owner/user columns, and created_at sorting.
+	          - Return ONLY valid JSON, no markdown.
+	          
+	          Schema: ${JSON.stringify(appSummary)}
+	          
+	          Return this exact format:
+	          [ { "id": "tbl_unique_id", "name": "table_name", "rlsEnabled": true, "rlsAuthOnly": true, "columns": [ { "id": "col_unique_id", "name": "col_name", "type": "text" } ], "relationships": [ { "column": "user_id", "referencesTable": "profiles", "referencesColumn": "id", "onDelete": "cascade" } ], "indexes": [ { "columns": ["user_id"], "unique": false }, { "columns": ["created_at"], "unique": false } ] } ]`,
           provider: aiProvider,
           apiKey: customApiKey
         })
@@ -1597,7 +1889,19 @@ function Home() {
       if (data.error) throw new Error(data.error);
 
       let cleanJson = data.reply.replace(/```json/g, '').replace(/```/g, '').trim();
-      const generatedTables = JSON.parse(cleanJson);
+	      const generatedTables = JSON.parse(cleanJson).map((table, index) => ({
+	        id: table.id || `tbl_ai_${Date.now()}_${index}`,
+	        name: table.name,
+	        rlsEnabled: table.rlsEnabled !== false,
+	        rlsAuthOnly: table.rlsAuthOnly !== false,
+	        columns: (table.columns || []).map((col, colIndex) => ({
+	          id: col.id || `col_ai_${Date.now()}_${index}_${colIndex}`,
+	          name: col.name,
+	          type: ['text', 'numeric', 'boolean', 'uuid', 'timestamp'].includes(col.type) ? col.type : 'text'
+	        })),
+	        relationships: table.relationships || [],
+	        indexes: table.indexes || []
+	      }));
 
       const existingNames = new Set((schema.appConfig?.dbTables || []).map(t => t.name));
       const newTables = generatedTables.filter(t => !existingNames.has(t.name));
@@ -1605,7 +1909,9 @@ function Home() {
       const updatedTables = [...(schema.appConfig?.dbTables || []), ...newTables];
       handleGlobalChange('appConfig', 'dbTables', updatedTables);
 
-      alert(`✓ AI created ${newTables.length} new table(s): ${newTables.map(t => t.name).join(', ')}\n\nReview them in the Data tab, then click "View SQL" to deploy.`);
+	      setBackendWizardStep(2);
+	      setActiveTab('data');
+	      alert(`✓ AI created ${newTables.length} new table(s): ${newTables.map(t => t.name).join(', ')}\n\nStep 2 is ready: review the schema, indexes, and relationships, then click "Execute SQL".`);
     } catch (err) {
       console.error('AI Backend Gen Error:', err);
       alert('AI failed to generate backend. Try again or create tables manually.');
@@ -1622,12 +1928,13 @@ function Home() {
     const sql = generateSupabaseSQL(schema.appConfig?.dbTables || []);
     if (!sql || sql === '-- No tables defined') return alert('No tables to deploy. Use AI Generate or add tables manually first.');
 
-    try {
-      const encoded = encodeURIComponent(sql);
-      window.open(`${url.replace('https://', 'https://app.supabase.com/project/').replace('.supabase.co', '')}/sql?content=${encoded}`, '_blank');
-    } catch (err) {
-      alert('Could not open Supabase. Copy the SQL manually from "View SQL".');
+    if ((schema.supabaseConfig?.projectRef || deriveSupabaseProjectRef(schema.supabaseConfig?.url)) && supabaseManagementToken) {
+      await handleExecuteSupabaseSQL();
+      return;
     }
+
+    setShowSqlModal(true);
+    setSqlExecutionResult({ state: 'error', message: 'Add a Supabase Management API token to run SQL automatically, or copy this SQL into Supabase.' });
   };
 
   const handleRunAiAudit = async () => {
@@ -1782,7 +2089,7 @@ function Home() {
               <LucideIcons.Sparkles size={16} className="text-purple-400" />
               <h3 className="text-[11px] font-bold text-purple-300 uppercase tracking-widest">AI Magic Theme</h3>
             </div>
-            <p className="text-xs text-gray-400 mb-3 leading-relaxed">Describe your app's vibe. Gemini will generate a complete color palette and UI style instantly.</p>
+            <p className="text-xs text-gray-400 mb-3 leading-relaxed">Describe your app&apos;s vibe. Gemini will generate a complete color palette and UI style instantly.</p>
 
             <div className="flex flex-col gap-2">
               <input
@@ -1865,11 +2172,48 @@ function Home() {
 
           <div className="border-b border-transparent pb-4">
             <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Layers size={14} /> Brand Colors</h4>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {LIGHT_THEME_PRESETS.map(preset => (
+                <button key={preset.id} onClick={() => handleApplyThemePreset(preset)} className="bg-[#161b22] border border-white/5 hover:border-blue-400/40 rounded-xl p-3 text-left transition-all">
+                  <div className="flex gap-1 mb-2">
+                    {[preset.primary, preset.secondary, preset.background].map(color => <span key={color} className="w-4 h-4 rounded-full border border-black/10" style={{ backgroundColor: color }} />)}
+                  </div>
+                  <div className="text-[9px] font-bold text-gray-200 leading-tight">{preset.name}</div>
+                </button>
+              ))}
+            </div>
             <div className="flex flex-col gap-3">
+              <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">Theme Mode</span><select value={schema.theme.mode || 'dark'} onChange={(e) => handleThemeChange("mode", e.target.value)} className="bg-[#0E0F11] border border-white/10 rounded-lg px-2 py-1.5 text-[10px] text-gray-200 outline-none"><option value="dark">Dark</option><option value="light">Light</option></select></div>
               <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">Primary Color</span><input type="color" value={schema.theme.primary} onChange={(e) => handleThemeChange("primary", e.target.value)} className="w-7 h-7 rounded-md border-0 p-0 cursor-pointer bg-transparent" /></div>
               <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">Secondary Color</span><input type="color" value={schema.theme.secondary || '#EC4899'} onChange={(e) => handleThemeChange("secondary", e.target.value)} className="w-7 h-7 rounded-md border-0 p-0 cursor-pointer bg-transparent" /></div>
               <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">App Background</span><input type="color" value={schema.theme.background} onChange={(e) => handleThemeChange("background", e.target.value)} className="w-7 h-7 rounded-md border-0 p-0 cursor-pointer bg-transparent" /></div>
+              <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">Surface Color</span><input type="color" value={schema.theme.surface || '#161b22'} onChange={(e) => handleThemeChange("surface", e.target.value)} className="w-7 h-7 rounded-md border-0 p-0 cursor-pointer bg-transparent" /></div>
+              <div className="flex justify-between items-center bg-[#161b22] p-4 rounded-xl border border-white/5 shadow-sm"><span className="text-xs font-bold text-gray-300">Text Color</span><input type="color" value={schema.theme.text || '#f8fafc'} onChange={(e) => handleThemeChange("text", e.target.value)} className="w-7 h-7 rounded-md border-0 p-0 cursor-pointer bg-transparent" /></div>
             </div>
+            <div className="mt-4 rounded-2xl border border-white/10 overflow-hidden shadow-inner" style={{ backgroundColor: schema.theme.background }}>
+              <div className="p-4" style={{ color: schema.theme.text || '#f8fafc' }}>
+                <div className="text-[9px] font-bold uppercase tracking-widest opacity-70 mb-2">Live Theme Preview</div>
+                <div className="rounded-xl p-4 border" style={{ backgroundColor: schema.theme.surface || '#161b22', borderColor: schema.theme.primary }}>
+                  <div className="text-sm font-bold" style={{ fontFamily: schema.theme.fontFamily || 'Inter' }}>{schema.app?.name || 'AppForge App'}</div>
+                  <div className="text-[10px] opacity-70 mt-1">Primary actions and canvas tokens update immediately.</div>
+                  <div className="mt-3 h-2 rounded-full" style={{ background: `linear-gradient(90deg, ${schema.theme.primary}, ${schema.theme.secondary || '#EC4899'})` }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-b border-transparent pb-4">
+            <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Type size={14} /> Fonts</h4>
+            <select value={schema.theme.fontFamily || 'Inter'} onChange={(e) => handleThemeChange("fontFamily", e.target.value)} className="w-full bg-[#161b22] border border-white/10 rounded-xl p-3 text-xs text-gray-200 outline-none mb-3">
+              {['Inter', 'Roboto', 'Poppins', 'Montserrat', 'Playfair Display', 'monospace', ...(schema.theme.customFonts || []).map(font => font.name)].map(font => <option key={font} value={font}>{font}</option>)}
+            </select>
+            <label className="w-full flex items-center justify-center gap-2 border border-dashed border-white/10 rounded-xl py-3 text-[10px] font-bold text-gray-500 hover:text-blue-400 hover:border-blue-500/30 cursor-pointer transition-colors">
+              <LucideIcons.Upload size={14} /> Upload TTF / OTF / WOFF
+              <input type="file" accept=".ttf,.otf,.woff,.woff2" className="hidden" onChange={(e) => handleCustomFontUpload(e.target.files?.[0])} />
+            </label>
+            {(schema.theme.customFonts || []).length > 0 && (
+              <div className="mt-3 text-[9px] text-gray-500">Custom: {(schema.theme.customFonts || []).map(font => font.name).join(', ')}</div>
+            )}
           </div>
         </div>
       );
@@ -1968,7 +2312,7 @@ function Home() {
                   <h4 className="text-[10px] font-bold text-gray-500 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Type size={14} /> Typography</h4>
                   <PropInput label="Static Text Content" propKey={selectedNode.type === 'Text' ? 'content' : selectedNode.type === 'Button' ? 'label' : 'placeholder'} value={props[selectedNode.type === 'Text' ? 'content' : selectedNode.type === 'Button' ? 'label' : 'placeholder']} onChange={handlePropChange} />
                   <div className="grid grid-cols-2 gap-3 mb-3">
-                    <PropInput label="Font Family" propKey="fontFamily" type="select" options={[{ label: 'Inter', value: 'Inter' }, { label: 'Roboto', value: 'Roboto' }, { label: 'Poppins', value: 'Poppins' }, { label: 'Montserrat', value: 'Montserrat' }, { label: 'Playfair', value: 'Playfair Display' }, { label: 'Monospace', value: 'monospace' }]} value={props.fontFamily} onChange={handlePropChange} />
+                    <PropInput label="Font Family" propKey="fontFamily" type="select" options={[{ label: 'Inter', value: 'Inter' }, { label: 'Roboto', value: 'Roboto' }, { label: 'Poppins', value: 'Poppins' }, { label: 'Montserrat', value: 'Montserrat' }, { label: 'Playfair', value: 'Playfair Display' }, { label: 'Monospace', value: 'monospace' }, ...(schema.theme.customFonts || []).map(font => ({ label: font.name, value: font.name }))]} value={props.fontFamily} onChange={handlePropChange} />
                     <PropInput label="Font Size" propKey="fontSize" value={props.fontSize} onChange={handlePropChange} />
                   </div>
                   <div className="grid grid-cols-2 gap-3 mb-3">
@@ -2088,8 +2432,8 @@ function Home() {
               {selectedNode.type === 'ListView' ? (
                 <div className="bg-gradient-to-b from-emerald-500/10 to-transparent p-5 rounded-2xl border border-emerald-500/20 shadow-inner">
                   <h4 className="text-[10px] font-bold text-emerald-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Database size={14} /> Live API Query</h4>
-                  <div className="flex flex-col gap-2 mb-4">
-                    <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Live API Source</label>
+	                  <div className="flex flex-col gap-2 mb-4">
+	                    <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Live API Source</label>
                     <select
                       value={props.apiEndpointId || ''}
                       onChange={(e) => handlePropChange('apiEndpointId', e.target.value)}
@@ -2102,10 +2446,33 @@ function Home() {
                     </select>
                     {(schema.apiEndpoints || []).length === 0 && (
                       <div className="text-[9px] text-emerald-500/70 italic mt-1">No API endpoints saved yet. Go to the API tab in the left sidebar to add one.</div>
-                    )}
-                  </div>
-                  <p className="text-[9px] text-gray-500 mb-4 leading-relaxed mt-[-8px]">If provided, this ListView will automatically fetch and loop through the JSON array response.</p>
-                </div>
+	                    )}
+	                  </div>
+	                  <div className="border-t border-white/5 pt-4 mt-4">
+	                    <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Supabase Table Binding</label>
+	                    <select
+	                      value={props.supabaseTable || ''}
+	                      onChange={(e) => e.target.value && handleBindSelectedNodeToTable(e.target.value)}
+	                      className="w-full mt-2 border border-white/10 p-2.5 rounded-lg text-xs bg-[#0E0F11] text-gray-200 outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+	                    >
+	                      <option value="">Choose table...</option>
+	                      {(schema.appConfig?.dbTables || []).map(table => <option key={table.id} value={table.name}>{table.name}</option>)}
+	                    </select>
+	                    {props.supabaseTable && (
+	                      <div className="grid grid-cols-2 gap-2 mt-3">
+	                        <select value={props.displayColumn || ''} onChange={(e) => handlePropChange('displayColumn', e.target.value)} className="bg-[#0E0F11] border border-white/10 rounded-lg p-2 text-[10px] text-gray-300 outline-none">
+	                          <option value="">Title column</option>
+	                          {(getTableByName(props.supabaseTable)?.columns || []).map(col => <option key={col.id} value={col.name}>{col.name}</option>)}
+	                        </select>
+	                        <select value={props.subtitleColumn || ''} onChange={(e) => handlePropChange('subtitleColumn', e.target.value)} className="bg-[#0E0F11] border border-white/10 rounded-lg p-2 text-[10px] text-gray-300 outline-none">
+	                          <option value="">Subtitle column</option>
+	                          {(getTableByName(props.supabaseTable)?.columns || []).map(col => <option key={col.id} value={col.name}>{col.name}</option>)}
+	                        </select>
+	                      </div>
+	                    )}
+	                  </div>
+	                  <p className="text-[9px] text-gray-500 mb-4 leading-relaxed mt-[-8px]">If provided, this ListView will automatically fetch and loop through the JSON array response.</p>
+	                </div>
               ) : (selectedNode.type === 'Text' || selectedNode.type === 'Button' || selectedNode.type === 'TextInput' || selectedNode.type === 'Image') ? (
                 <div className="bg-gradient-to-b from-indigo-500/10 to-transparent p-5 rounded-2xl border border-indigo-500/20 shadow-inner">
                   <h4 className="text-[10px] font-bold text-indigo-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Variable size={14} /> State Binding</h4>
@@ -2125,10 +2492,24 @@ function Home() {
                       </select>
                     ) : (
                       <div className="text-[10px] text-gray-500 text-center py-4 border border-dashed border-white/10 rounded-lg">State binding is off. Content is static.</div>
-                    )}
-                  </div>
-                </div>
-              ) : (
+	                    )}
+	                  </div>
+	                  <div className="border-t border-white/5 pt-4">
+	                    <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Bind to Supabase Table</label>
+	                    <select
+	                      value={props.boundTable || props.supabaseTable || ''}
+	                      onChange={(e) => e.target.value && handleBindSelectedNodeToTable(e.target.value)}
+	                      className="w-full mt-2 border border-white/10 p-2.5 rounded-lg text-xs bg-[#0E0F11] text-gray-200 outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+	                    >
+	                      <option value="">Choose table...</option>
+	                      {(schema.appConfig?.dbTables || []).map(table => <option key={table.id} value={table.name}>{table.name}</option>)}
+	                    </select>
+	                    {(props.boundColumn || props.displayColumn) && (
+	                      <div className="text-[9px] text-indigo-300 mt-2">Column: {props.boundColumn || props.displayColumn}</div>
+	                    )}
+	                  </div>
+	                </div>
+	              ) : (
                 <div className="text-center text-[10px] text-gray-600 py-8 border border-dashed border-white/10 rounded-2xl bg-[#1A1B1E]">
                   This element type does not support backend queries or state binding.
                 </div>
@@ -2264,17 +2645,22 @@ function Home() {
               </div>
 
               <div className="flex-1 flex flex-col p-6 bg-[#050505]">
-                <div className="flex justify-between items-center mb-2 px-1">
-                  <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">schema.sql</span>
-                  <button onClick={() => {
-                    import('../../utils/sqlGenerator').then(mod => {
-                      navigator.clipboard.writeText(mod.generateSupabaseSQL(schema.appConfig.dbTables));
-                      alert("SQL Copied to Clipboard!");
-                    });
-                  }} className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-                    <LucideIcons.Copy size={14} /> Copy to Clipboard
-                  </button>
-                </div>
+	                <div className="flex justify-between items-center mb-2 px-1">
+	                  <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">schema.sql</span>
+	                  <div className="flex gap-2">
+	                    <button onClick={handleExecuteSupabaseSQL} disabled={isExecutingSql} className="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
+	                      <LucideIcons.DatabaseZap size={14} /> {isExecutingSql ? 'Running...' : 'Execute SQL'}
+	                    </button>
+	                    <button onClick={() => {
+	                      import('../../utils/sqlGenerator').then(mod => {
+	                        navigator.clipboard.writeText(mod.generateSupabaseSQL(schema.appConfig.dbTables));
+	                        alert("SQL Copied to Clipboard!");
+	                      });
+	                    }} className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+	                      <LucideIcons.Copy size={14} /> Copy
+	                    </button>
+	                  </div>
+	                </div>
 
                 <div className="flex-1 border border-white/10 rounded-xl bg-[#1A1B1E] overflow-auto custom-scrollbar p-4 relative">
                   <pre className="text-xs font-mono text-emerald-400 leading-relaxed">
@@ -2282,14 +2668,20 @@ function Home() {
                   </pre>
                 </div>
 
-                <div className="mt-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 flex gap-4 items-center">
+	                {sqlExecutionResult && (
+	                  <div className={`mt-4 rounded-xl border p-3 text-xs ${sqlExecutionResult.state === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' : sqlExecutionResult.state === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-300' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+	                    {sqlExecutionResult.message}
+	                  </div>
+	                )}
+
+	                <div className="mt-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 flex gap-4 items-center">
                   <div className="w-10 h-10 rounded-full bg-indigo-600/20 flex items-center justify-center shrink-0">
                     <LucideIcons.Info size={20} className="text-indigo-400" />
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-white mb-1">How to Sync</h4>
-                    <p className="text-xs text-gray-400 leading-relaxed">To magically link your AppForge frontend to your backend, copy the SQL above, open your <a href="https://supabase.com/dashboard/project/_/sql" target="_blank" className="text-indigo-400 hover:underline">Supabase SQL Editor</a>, and run it. Your tables, columns, and security policies will be created instantly.</p>
-                  </div>
+	                    <p className="text-xs text-gray-400 leading-relaxed">Use Execute SQL when a Supabase Management API token is configured, or copy the SQL and run it in your <a href="https://supabase.com/dashboard/project/_/sql" target="_blank" className="text-indigo-400 hover:underline">Supabase SQL Editor</a>.</p>
+	                  </div>
                 </div>
               </div>
 
@@ -3046,7 +3438,7 @@ function Home() {
 
                     <div className="flex flex-col gap-4">
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "hero"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-pink-500/50 transition-all">
-                        <div className="h-24 bg-[#1A1B1E] flex items-center justify-center border-b border-white/5"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&q=80" className="w-full h-full object-cover opacity-30 group-hover:opacity-60 transition-opacity" /></div>
+                        <div className="h-24 bg-[#1A1B1E] flex items-center justify-center border-b border-white/5"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&q=80" alt="" className="w-full h-full object-cover opacity-30 group-hover:opacity-60 transition-opacity" /></div>
                         <div className="p-4"><h4 className="text-[11px] font-bold text-gray-200">Hero Section</h4><p className="text-[9px] text-gray-500 mt-1">Image, Title, CTA</p></div>
                       </div>
 
@@ -3074,7 +3466,7 @@ function Home() {
                           <div className="w-16 h-2 bg-white/20 rounded"></div>
                           <div className="w-8 h-2 bg-blue-500/50 rounded"></div>
                         </div>
-                        <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">Section Title</h4><p className="text-[9px] text-gray-500 mt-1">Header with 'See All' link</p></div>
+                        <div className="p-3"><h4 className="text-[11px] font-bold text-gray-200">Section Title</h4><p className="text-[9px] text-gray-500 mt-1">Header with &apos;See All&apos; link</p></div>
                       </div>
 
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "userProfile"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-pink-500/50 transition-all">
@@ -3198,7 +3590,28 @@ function Home() {
 
                 {activeTab === 'data' && (
                   <div className="flex-1 flex flex-col gap-6 pb-10">
-                    <div className="bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex flex-col gap-5">
+                    <div className="bg-[#0E0F11] border border-white/5 p-4 rounded-2xl shadow-sm">
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: 1, label: 'Connect', icon: 'PlugZap' },
+                          { id: 2, label: 'Create Tables', icon: 'DatabaseZap' },
+                          { id: 3, label: 'Bind UI', icon: 'MousePointerClick' }
+                        ].map(step => {
+                          const StepIcon = LucideIcons[step.icon] || LucideIcons.Circle;
+                          const isActive = backendWizardStep === step.id;
+                          return (
+                            <button key={step.id} onClick={() => setBackendWizardStep(step.id)} className={`flex items-center justify-center gap-2 rounded-xl py-3 text-[10px] font-bold uppercase tracking-widest border transition-all ${isActive ? 'bg-emerald-600 text-white border-emerald-400/40 shadow-[0_0_20px_rgba(16,185,129,0.2)]' : 'bg-[#161b22] text-gray-500 border-white/5 hover:text-gray-300'}`}>
+                              <StepIcon size={13} /> {step.id}. {step.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className={`mt-3 rounded-xl border px-3 py-2 text-[10px] font-medium ${supabaseConnectionStatus.state === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : supabaseConnectionStatus.state === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-300' : 'border-white/10 bg-[#161b22] text-gray-500'}`}>
+                        {supabaseConnectionStatus.message}
+                      </div>
+                    </div>
+
+	                    <div className={`${backendWizardStep === 1 ? 'flex' : 'hidden'} bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex-col gap-5`}>
                       <div className="flex items-center gap-3 border-b border-white/5 pb-4">
                         <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                           <LucideIcons.Cloud size={16} className="text-emerald-400" />
@@ -3220,11 +3633,28 @@ function Home() {
                             <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Project URL</label>
                             <input type="text" value={schema.supabaseConfig?.url || ''} onChange={(e) => handleGlobalChange('supabaseConfig', 'url', e.target.value)} placeholder="https://your-project.supabase.co" className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
                           </div>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Anon Public Key</label>
-                            <input type="password" value={schema.supabaseConfig?.anonKey || ''} onChange={(e) => handleGlobalChange('supabaseConfig', 'anonKey', e.target.value)} placeholder="eyJhbGciOiJIUzI1NiIsIn..." className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
-                          </div>
-                        </div>
+	                          <div className="flex flex-col gap-1.5">
+	                            <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Anon Public Key</label>
+	                            <input type="password" value={schema.supabaseConfig?.anonKey || ''} onChange={(e) => handleGlobalChange('supabaseConfig', 'anonKey', e.target.value)} placeholder="eyJhbGciOiJIUzI1NiIsIn..." className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
+	                          </div>
+	                          <div className="grid grid-cols-2 gap-3">
+	                            <div className="flex flex-col gap-1.5">
+	                              <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Project Ref</label>
+	                              <input type="text" value={schema.supabaseConfig?.projectRef || deriveSupabaseProjectRef(schema.supabaseConfig?.url)} onChange={(e) => handleGlobalChange('supabaseConfig', 'projectRef', e.target.value)} placeholder="abcdefghijklmno" className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
+	                            </div>
+	                            <div className="flex flex-col gap-1.5">
+	                              <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Management Token</label>
+	                              <input type="password" value={supabaseManagementToken} onChange={(e) => setSupabaseManagementToken(e.target.value)} placeholder="sbp_... for auto SQL" className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
+	                            </div>
+	                          </div>
+	                          <div className="flex gap-2">
+	                            <button onClick={handleValidateSupabaseConnection} disabled={isTestingSupabase} className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-500 disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
+	                              <LucideIcons.PlugZap size={13} /> {isTestingSupabase ? 'Checking...' : 'Connect to Supabase'}
+	                            </button>
+	                            <button onClick={() => setBackendWizardStep(2)} className="px-4 py-2.5 rounded-xl bg-white/5 text-gray-300 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all">Next</button>
+	                          </div>
+	                          <p className="text-[9px] text-gray-500 leading-relaxed">Anon key powers the generated app. Management token is optional, session-only, and required only when AppForge executes CREATE TABLE SQL automatically.</p>
+	                        </div>
                       ) : (
                         <div className="flex flex-col gap-4 animate-in fade-in duration-200">
                           <div className="flex flex-col gap-1.5">
@@ -3247,9 +3677,43 @@ function Home() {
                           </div>
                         </div>
                       )}
-                    </div>
+	                    </div>
 
-                    <div className="bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex flex-col gap-4">
+		                    <div className={`${backendWizardStep === 3 ? 'flex' : 'hidden'} bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex-col gap-4`}>
+	                      <div className="flex justify-between items-start border-b border-white/5 pb-4 gap-3">
+	                        <div className="flex items-center gap-3">
+	                          <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center border border-pink-500/20 shrink-0">
+	                            <LucideIcons.MousePointerClick size={16} className="text-pink-400" />
+	                          </div>
+	                          <div>
+	                            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest">3. Binding Wizard</h3>
+	                            <p className="text-[9px] text-gray-500 mt-0.5">Click any ListView, TextInput, Text, Image, or Button, then choose its table.</p>
+	                          </div>
+	                        </div>
+	                        <button onClick={() => { setBindingGuideActive(true); setBackendWizardStep(3); setRightTab('inspector'); setIsRightPanelOpen(true); }} className="bg-pink-500/10 text-pink-400 hover:bg-pink-600 hover:text-white border border-pink-500/20 text-[9px] font-bold px-3 py-1.5 rounded-lg transition-all">Start</button>
+	                      </div>
+
+	                      <div className={`rounded-xl border p-4 ${bindingGuideActive ? 'border-pink-500/40 bg-pink-500/10' : 'border-white/5 bg-[#161b22]'}`}>
+	                        <div className="text-[10px] font-bold text-gray-300 mb-2">
+	                          {selectedNode ? `Selected: ${selectedNode.type}` : 'No element selected'}
+	                        </div>
+	                        <p className="text-[9px] text-gray-500 leading-relaxed mb-3">
+	                          {selectedNode
+	                            ? 'Choose a table below to write binding props into this element. ListViews fetch rows; Buttons create insert actions; TextInputs attach state variables.'
+	                            : 'Click a list or form element on the canvas. The inspector will stay open and show table binding controls.'}
+	                        </p>
+	                        <div className="grid grid-cols-2 gap-2">
+	                          {(schema.appConfig?.dbTables || []).map(table => (
+	                            <button key={table.id} disabled={!selectedNode} onClick={() => handleBindSelectedNodeToTable(table.name)} className="text-left rounded-xl border border-white/5 bg-[#0E0F11] p-3 hover:border-pink-500/40 disabled:opacity-40 transition-all">
+	                              <div className="text-[10px] font-bold text-pink-300 font-mono">{table.name}</div>
+	                              <div className="text-[8px] text-gray-500 mt-1">{table.columns?.length || 0} columns</div>
+	                            </button>
+	                          ))}
+	                        </div>
+	                      </div>
+	                    </div>
+
+		                    <div className={`${backendWizardStep === 2 ? 'flex' : 'hidden'} bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex-col gap-4`}>
                       <div className="flex flex-col gap-4 border-b border-white/5 pb-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shrink-0">
@@ -3262,11 +3726,13 @@ function Home() {
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-                          <button onClick={() => setShowSqlModal(true)} className="flex-1 justify-center bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Code2 size={12} /> SQL</button>
+	                          <button onClick={() => setShowSqlModal(true)} className="flex-1 justify-center bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Code2 size={12} /> SQL</button>
 
-                          <button onClick={handleDeploy} disabled={isBuilding} className="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-xl hover:bg-blue-500 transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] disabled:opacity-50 flex items-center gap-1.5 ml-1">
-                            {isBuilding ? 'Building...' : <><LucideIcons.Rocket size={12} fill="white" /> Deploy</>}
-                          </button>
+	                          <button onClick={handleExecuteSupabaseSQL} disabled={isExecutingSql} className="flex-1 justify-center bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1 disabled:opacity-50"><LucideIcons.DatabaseZap size={12} /> {isExecutingSql ? 'Running...' : 'Execute SQL'}</button>
+
+	                          <button onClick={handleDeploy} disabled={isBuilding} className="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-xl hover:bg-blue-500 transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] disabled:opacity-50 flex items-center gap-1.5 ml-1">
+	                            {isBuilding ? 'Building...' : <><LucideIcons.Rocket size={12} fill="white" /> Deploy</>}
+	                          </button>
 
                           <button onClick={handleAiGenerateBackend} disabled={isGeneratingBackend} className="flex-1 justify-center bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white border border-purple-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1 disabled:opacity-50">
                             <LucideIcons.Bot size={12} /> {isGeneratingBackend ? 'Wait...' : 'AI Gen'}
@@ -3276,8 +3742,13 @@ function Home() {
                             const tables = schema.appConfig.dbTables || [];
                             handleGlobalChange('appConfig', 'dbTables', [...tables, { id: `tbl_${Date.now()}`, name: 'new_table', columns: [], rlsEnabled: true, rlsAuthOnly: true }]);
                           }} className="flex-1 justify-center bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-500/20 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all">+ Table</button>
-                        </div>
-                      </div>
+	                        </div>
+	                        {sqlExecutionResult && (
+	                          <div className={`rounded-xl border px-3 py-2 text-[10px] ${sqlExecutionResult.state === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : sqlExecutionResult.state === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-300' : 'border-white/10 bg-[#161b22] text-gray-400'}`}>
+	                            {sqlExecutionResult.message}
+	                          </div>
+	                        )}
+	                      </div>
 
                       <div className="space-y-4">
                         {(schema.appConfig.dbTables || []).map((table, tIdx) => (
@@ -3322,9 +3793,48 @@ function Home() {
                                   </label>
                                 )}
                               </div>
-                            </div>
+	                            </div>
 
-                            <div className="p-3 space-y-2">
+	                            <div className="bg-cyan-500/5 px-3 py-3 border-b border-white/5 space-y-3">
+	                              <div className="flex items-center justify-between">
+	                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><LucideIcons.GitBranch size={12} className="text-cyan-400" /> Relationships</span>
+	                                <button onClick={() => {
+	                                  const newTables = [...schema.appConfig.dbTables];
+	                                  if (!newTables[tIdx].relationships) newTables[tIdx].relationships = [];
+	                                  newTables[tIdx].relationships.push({ column: 'user_id', referencesTable: 'users', referencesColumn: 'id', onDelete: 'cascade' });
+	                                  handleGlobalChange('appConfig', 'dbTables', newTables);
+	                                }} className="text-[9px] text-cyan-400 font-bold">+ FK</button>
+	                              </div>
+	                              {(table.relationships || []).map((rel, rIdx) => (
+	                                <div key={`${table.id}_rel_${rIdx}`} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-1.5">
+	                                  <input value={rel.column || ''} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships[rIdx].column = e.target.value.toLowerCase().replace(/\s+/g, '_'); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="user_id" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
+	                                  <input value={rel.referencesTable || ''} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships[rIdx].referencesTable = e.target.value.toLowerCase().replace(/\s+/g, '_'); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="users" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
+	                                  <input value={rel.referencesColumn || 'id'} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships[rIdx].referencesColumn = e.target.value.toLowerCase().replace(/\s+/g, '_'); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="id" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
+	                                  <button onClick={() => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships.splice(rIdx, 1); handleGlobalChange('appConfig', 'dbTables', newTables); }} className="text-gray-600 hover:text-red-500 px-1"><LucideIcons.X size={12} /></button>
+	                                </div>
+	                              ))}
+	                            </div>
+
+	                            <div className="bg-amber-500/5 px-3 py-3 border-b border-white/5 space-y-3">
+	                              <div className="flex items-center justify-between">
+	                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><LucideIcons.Gauge size={12} className="text-amber-400" /> Indexes</span>
+	                                <button onClick={() => {
+	                                  const newTables = [...schema.appConfig.dbTables];
+	                                  if (!newTables[tIdx].indexes) newTables[tIdx].indexes = [];
+	                                  newTables[tIdx].indexes.push({ columns: ['created_at'], unique: false });
+	                                  handleGlobalChange('appConfig', 'dbTables', newTables);
+	                                }} className="text-[9px] text-amber-400 font-bold">+ Index</button>
+	                              </div>
+	                              {(table.indexes || []).map((idxDef, iIdx) => (
+	                                <div key={`${table.id}_idx_${iIdx}`} className="grid grid-cols-[1fr_auto_auto] gap-1.5 items-center">
+	                                  <input value={(idxDef.columns || []).join(', ')} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].indexes[iIdx].columns = e.target.value.split(',').map(v => v.trim().toLowerCase().replace(/\s+/g, '_')).filter(Boolean); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="user_id, created_at" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
+	                                  <label className="flex items-center gap-1 text-[9px] text-gray-500"><input type="checkbox" checked={!!idxDef.unique} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].indexes[iIdx].unique = e.target.checked; handleGlobalChange('appConfig', 'dbTables', newTables); }} className="accent-amber-500" /> Unique</label>
+	                                  <button onClick={() => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].indexes.splice(iIdx, 1); handleGlobalChange('appConfig', 'dbTables', newTables); }} className="text-gray-600 hover:text-red-500 px-1"><LucideIcons.X size={12} /></button>
+	                                </div>
+	                              ))}
+	                            </div>
+
+	                            <div className="p-3 space-y-2">
                               <div className="text-[9px] text-gray-600 font-mono mb-2">id (UUID) & created_at (TIMESTAMP) auto-generated</div>
                               {table.columns.map((col, cIdx) => (
                                 <div key={col.id} className="flex items-center gap-1.5">
@@ -3385,7 +3895,7 @@ function Home() {
                             <div key={idx} className="flex items-center justify-between bg-[#1A1B1E] border border-white/5 p-3 rounded-xl">
                               <div className="flex flex-col">
                                 <span className="text-xs font-bold text-gray-200 font-mono">{state.key}</span>
-                                <span className="text-[9px] text-gray-500 mt-0.5">Default: "{state.value}"</span>
+                                <span className="text-[9px] text-gray-500 mt-0.5">Default: &quot;{state.value}&quot;</span>
                               </div>
                               <button onClick={() => handleRemoveStateVar(state.key)} className="text-gray-600 hover:text-red-500 hover:bg-red-500/10 p-2 rounded-lg transition-colors"><LucideIcons.Trash size={14} /></button>
                             </div>
@@ -3475,8 +3985,9 @@ function Home() {
           </div>
 
           {/* CANVAS AREA WITH STORYBOARD CONTROLS */}
-          <div
-            className="flex-1 min-w-[600px] relative overflow-hidden flex flex-col items-center cursor-crosshair bg-[#050505] shadow-inner"
+	          <div
+	            className="flex-1 min-w-[600px] relative overflow-hidden flex flex-col items-center cursor-crosshair shadow-inner"
+	            style={{ backgroundColor: schema.theme?.background || '#050505' }}
             onWheel={handleWheel} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
             onContextMenu={(e) => { if (viewMode === 'storyboard') e.preventDefault(); }}
             onClick={() => { if (viewMode === 'single') { setSelectedId(null); setRightTab('inspector'); setIsRightPanelOpen(true); } }}
@@ -3510,11 +4021,15 @@ function Home() {
             {viewMode === 'single' ? (
               <div className="flex-1 w-full flex justify-center pb-20 overflow-y-auto hide-scrollbar">
                 <ErrorBoundary>
-                  <Canvas schema={schema} rootNode={activePage?.root} selectedId={selectedId} onSelect={(id) => {
-                    setSelectedId(id);
-                    setIsRightPanelOpen(true);
-                    setRightTab(currentTab => (currentTab === 'ai' || currentTab === 'code') ? currentTab : 'inspector');
-                  }}
+	                  <Canvas schema={schema} rootNode={activePage?.root} selectedId={selectedId} onSelect={(id) => {
+	                    setSelectedId(id);
+	                    setIsRightPanelOpen(true);
+	                    setRightTab(currentTab => (bindingGuideActive || currentTab !== 'ai' && currentTab !== 'code') ? 'inspector' : currentTab);
+	                    if (bindingGuideActive) {
+	                      setInspectorTab('backend');
+	                      setBackendWizardStep(3);
+	                    }
+	                  }}
                     onDropToNode={handleDropToNode} onResize={handleResize} onDragNodeStart={handleDragNodeStart} previewMode={previewMode} showGrid={showGrid} />
                 </ErrorBoundary>
               </div>
@@ -3546,7 +4061,7 @@ function Home() {
                       </div>
                       <div onClick={() => setCurrentPageId(page.id)} className={`transition-all duration-300 rounded-[44px] bg-black ${currentPageId === page.id ? 'ring-4 ring-purple-500 ring-offset-8 ring-offset-[#050505] shadow-[0_0_50px_rgba(168,85,247,0.3)]' : 'hover:ring-2 hover:ring-white/20 hover:ring-offset-8 hover:ring-offset-[#050505] opacity-80 hover:opacity-100'}`}>
                         <ErrorBoundary>
-                          <Canvas schema={schema} rootNode={page.root} selectedId={selectedId} onSelect={(id) => { setSelectedId(id); setCurrentPageId(page.id); setRightTab('inspector'); setIsRightPanelOpen(true); }} onDropToNode={handleDropToNode} onResize={handleResize} onDragNodeStart={handleDragNodeStart} previewMode="iphone" showGrid={false} />
+	                          <Canvas schema={schema} rootNode={page.root} selectedId={selectedId} onSelect={(id) => { setSelectedId(id); setCurrentPageId(page.id); setRightTab('inspector'); setIsRightPanelOpen(true); if (bindingGuideActive) { setInspectorTab('backend'); setBackendWizardStep(3); } }} onDropToNode={handleDropToNode} onResize={handleResize} onDragNodeStart={handleDragNodeStart} previewMode="iphone" showGrid={false} />
                         </ErrorBoundary>
                       </div>
                     </div>

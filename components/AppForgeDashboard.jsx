@@ -724,11 +724,19 @@ Return only the JSON array, no fences.`;
 
   useEffect(() => {
 
-    if (tab === "maintenance" && !hasScanned && !isScanning) {
+    if (tab !== "maintenance" || hasScanned || isScanning) return;
 
-      handleHealthScan();
+    let cancelled = false;
+    const scan = async () => {
+      if (cancelled) return;
+      await handleHealthScan();
+    };
 
-    }
+    scan();
+
+    return () => {
+      cancelled = true;
+    };
 
   }, [tab, hasScanned, isScanning, handleHealthScan]);
 
@@ -1512,7 +1520,7 @@ Respond as JSON: { "plain": "...", "schemaFix": "...", "action": "..." }. No fen
 
                       <LucideIcons.ShieldCheck size={28} />
 
-                      <p className="text-xs">Click "Re-run Scan" to start.</p>
+                      <p className="text-xs">Click &quot;Re-run Scan&quot; to start.</p>
 
                     </div>
 
