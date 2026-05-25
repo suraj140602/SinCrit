@@ -918,6 +918,7 @@ export default function AppForgeLanding() {
       </motion.header>
 
       {/* ── HERO ────────────────────────────────────────────────────────────── */}
+      
       <section className="relative max-w-[1400px] mx-auto"
         style={{paddingLeft:"clamp(16px,4vw,32px)",paddingRight:"clamp(16px,4vw,32px)",
           paddingTop:"clamp(48px,8vw,96px)",paddingBottom:"clamp(48px,8vw,96px)"}}>
@@ -999,6 +1000,8 @@ export default function AppForgeLanding() {
             </motion.div>
           </div>
         </div>
+
+<a href="https://tools.launchllama.co?utm_source=badge&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://speaktechenglish.com/wp-content/uploads/2026/04/Screenshot_2026-04-09_at_17.40.44-removebg-preview.png" alt="Featured on Launch Llama" width="200" height="50" /></a>
 
         {/* Scroll hint */}
         <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.1}}
