@@ -554,6 +554,19 @@ function Home() {
 
   const isFirstRender = useRef(true);
 
+  const schemaStructureKey = JSON.stringify({
+  pages: schema.pages,
+  appConfig: schema.appConfig,
+  theme: schema.theme,
+  apiEndpoints: schema.apiEndpoints,
+  appState: schema.appState,
+  permissions: schema.permissions,
+  backendProvider: schema.backendProvider,
+  supabaseConfig: schema.supabaseConfig,
+  firebaseConfig: schema.firebaseConfig,
+});
+
+
   useEffect(() => {
   if (isFirstRender.current) {
     isFirstRender.current = false;
