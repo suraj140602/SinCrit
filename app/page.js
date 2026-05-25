@@ -919,7 +919,7 @@ export default function AppForgeLanding() {
 
       {/* ── HERO ────────────────────────────────────────────────────────────── */}
       
-      <section className="relative max-w-[1400px] mx-auto"
+      <section className="relative max-w-[1500px] mx-auto"
         style={{paddingLeft:"clamp(16px,4vw,32px)",paddingRight:"clamp(16px,4vw,32px)",
           paddingTop:"clamp(48px,8vw,96px)",paddingBottom:"clamp(48px,8vw,96px)"}}>
 
@@ -947,7 +947,7 @@ export default function AppForgeLanding() {
             <motion.h1 initial={{opacity:0,y:32,filter:"blur(16px)"}} animate={{opacity:1,y:0,filter:"blur(0px)"}}
               transition={{delay:0.18,duration:0.9,ease:[0.16,1,0.3,1]}}
               className="mt-6 font-black leading-[0.9] tracking-[-0.05em]"
-              style={{fontSize:"clamp(38px,9vw,110px)"}}>
+              style={{fontSize:"clamp(38px,9vw,100px)"}}>
               Ship apps<br/><Prism>ten times</Prism><br/><span className="text-white">faster.</span>
             </motion.h1>
 
