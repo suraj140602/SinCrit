@@ -8,7 +8,7 @@ import ErrorBoundary from "../../components/ErrorBoundary";
 import { dummySchema } from "../../data/dummySchema";
 import { generateFlutterCode } from "../../utils/flutterGenerator"; // Synchronous generator
 import { supabase } from "../../utils/supabase";
-import { generateSupabaseSQL } from "../../utils/sqlGenerator"; 
+import { generateSupabaseSQL } from "../../utils/sqlGenerator";
 import * as LucideIcons from "lucide-react";
 import {
   Search, Plus, Grid, Save, Trash, Layers, Database, Zap,
@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { polyfill } from "mobile-drag-drop";
 import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
-import "mobile-drag-drop/default.css"; 
+import "mobile-drag-drop/default.css";
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 export const dynamic = 'force-dynamic';
@@ -55,7 +55,7 @@ const WIDGET_CATEGORIES = [
       { type: 'Icon', icon: 'Star' },
       { type: 'Card', icon: 'CreditCard' },
       { type: 'Divider', icon: 'Minus' },
-      { type: 'CustomCode', icon: 'TerminalSquare' } 
+      { type: 'CustomCode', icon: 'TerminalSquare' }
     ]
   },
   {
@@ -272,17 +272,17 @@ function Home() {
       id: `root_column_${Date.now()}`,
       type: 'Column',
       props: { padding: '16px', gap: '16px', mainAxisAlignment: 'start', crossAxisAlignment: 'stretch' },
-      children: [] 
+      children: []
     }
   }];
 
-  const [pendingInjection, setPendingInjection] = useState(null); 
-  const [injectionTarget, setInjectionTarget] = useState('current'); 
+  const [pendingInjection, setPendingInjection] = useState(null);
+  const [injectionTarget, setInjectionTarget] = useState('current');
   const [injectionNewPageName, setInjectionNewPageName] = useState('');
 
   const [schema, setSchema] = useState({
     ...dummySchema,
-    pages: initialPages, 
+    pages: initialPages,
     components: [],
     appState: [],
     apiEndpoints: [],
@@ -311,17 +311,17 @@ function Home() {
   });
 
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isPremium, setIsPremium] = useState(false); 
+  const [isPremium, setIsPremium] = useState(false);
 
-  const [aiProvider, setAiProvider] = useState('gemini-default'); 
+  const [aiProvider, setAiProvider] = useState('gemini-default');
   const [customApiKey, setCustomApiKey] = useState('');
   const [isKeyInputOpen, setIsKeyInputOpen] = useState(true);
 
-  const [dashboardTab, setDashboardTab] = useState('deployments'); 
+  const [dashboardTab, setDashboardTab] = useState('deployments');
   const [maintenanceTasks, setMaintenanceTasks] = useState([]);
   const [isScanningHealth, setIsScanningHealth] = useState(false);
 
-  const [workspaceRole, setWorkspaceRole] = useState('admin'); 
+  const [workspaceRole, setWorkspaceRole] = useState('admin');
 
   const [showAiAuditor, setShowAiAuditor] = useState(false);
   const [aiAuditLogs, setAiAuditLogs] = useState([]);
@@ -342,22 +342,22 @@ function Home() {
   const [isGeneratingBackend, setIsGeneratingBackend] = useState(false);
 
   const [aiChatHistory, setAiChatHistory] = useState(() => {
-  // FIX: restore chat history from sessionStorage on mount (clears on tab close)
-  try {
-    const saved = sessionStorage.getItem('af_chat_history');
-    if (saved) return JSON.parse(saved);
-  } catch {}
-  return [{ role: 'ai', text: "Hi! I'm your AppForge AI Engineer. Select an element or tell me what you'd like to build!" }];
-});
+    // FIX: restore chat history from sessionStorage on mount (clears on tab close)
+    try {
+      const saved = sessionStorage.getItem('af_chat_history');
+      if (saved) return JSON.parse(saved);
+    } catch { }
+    return [{ role: 'ai', text: "Hi! I'm your AppForge AI Engineer. Select an element or tell me what you'd like to build!" }];
+  });
   const [chatInput, setChatInput] = useState('');
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [isEditingElement, setIsEditingElement] = useState(false);
-  const [elementPrompt, setElementPrompt] = useState(''); 
+  const [elementPrompt, setElementPrompt] = useState('');
 
   const [currentPageId, setCurrentPageId] = useState(schema.app.initialPage || schema.pages[0].id);
   const [selectedId, setSelectedId] = useState(null);
   const [activeTab, setActiveTab] = useState('elements');
-  const [inspectorTab, setInspectorTab] = useState('properties'); 
+  const [inspectorTab, setInspectorTab] = useState('properties');
 
   const [showLivePreview, setShowLivePreview] = useState(false);
   const [previewActivePageId, setPreviewActivePageId] = useState(null);
@@ -411,7 +411,7 @@ function Home() {
   const handleMouseDown = (e) => { if (viewMode === 'storyboard' && (e.button === 1 || e.button === 2 || e.altKey)) { e.preventDefault(); setIsPanning(true); } };
   const handleMouseMove = (e) => { if (isPanning) setPan(p => ({ x: p.x + e.movementX, y: p.y + e.movementY })); };
   const handleMouseUp = () => setIsPanning(false);
-  
+
   const [importCode, setImportCode] = useState("");
   const [isParsing, setIsParsing] = useState(false);
 
@@ -438,24 +438,24 @@ function Home() {
   };
 
   useEffect(() => {
-  const injectKey = searchParams.get('inject');
-  if (!injectKey || !TEMPLATES[injectKey]) return;
-  if (hasInjected.current) return; // FIX: guard against double fire
-  hasInjected.current = true;
+    const injectKey = searchParams.get('inject');
+    if (!injectKey || !TEMPLATES[injectKey]) return;
+    if (hasInjected.current) return; // FIX: guard against double fire
+    hasInjected.current = true;
 
-  const sourceObj = TEMPLATES[injectKey];
-  const clonedNode = regenerateIds(structuredClone(sourceObj));
-  const newSchema = structuredClone(schema);
-  const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
+    const sourceObj = TEMPLATES[injectKey];
+    const clonedNode = regenerateIds(structuredClone(sourceObj));
+    const newSchema = structuredClone(schema);
+    const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
 
-  if (pIndex !== -1) {
-    if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
-    newSchema.pages[pIndex].root.children.push(clonedNode);
-    commitHistory(newSchema);
-    setSelectedId(clonedNode.id);
-    router.replace('/builder', undefined, { shallow: true });
-  }
-}, [searchParams]);
+    if (pIndex !== -1) {
+      if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
+      newSchema.pages[pIndex].root.children.push(clonedNode);
+      commitHistory(newSchema);
+      setSelectedId(clonedNode.id);
+      router.replace('/builder', undefined, { shallow: true });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     polyfill({
@@ -478,7 +478,7 @@ function Home() {
       const face = new FontFace(font.name, `url(${font.dataUrl})`);
       face.load()
         .then(loadedFace => document.fonts.add(loadedFace))
-        .catch(() => {});
+        .catch(() => { });
     });
   }, [schema.theme?.customFonts]);
 
@@ -524,7 +524,7 @@ function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          schema: schema, 
+          schema: schema,
           currentCode: brokenCode,
           errorLogs: terminalErrorText
         })
@@ -555,44 +555,44 @@ function Home() {
   const isFirstRender = useRef(true);
 
   const schemaStructureKey = JSON.stringify({
-  pages: schema.pages,
-  appConfig: schema.appConfig,
-  theme: schema.theme,
-  apiEndpoints: schema.apiEndpoints,
-  appState: schema.appState,
-  permissions: schema.permissions,
-  backendProvider: schema.backendProvider,
-  supabaseConfig: schema.supabaseConfig,
-  firebaseConfig: schema.firebaseConfig,
-});
+    pages: schema.pages,
+    appConfig: schema.appConfig,
+    theme: schema.theme,
+    apiEndpoints: schema.apiEndpoints,
+    appState: schema.appState,
+    permissions: schema.permissions,
+    backendProvider: schema.backendProvider,
+    supabaseConfig: schema.supabaseConfig,
+    firebaseConfig: schema.firebaseConfig,
+  });
 
 
   useEffect(() => {
-  if (isFirstRender.current) {
-    isFirstRender.current = false;
-    return;
-  }
-  if (!user || !dbProjectId) return; // FIX: never auto-save without a project row to update
-  const autoSaveTimer = setTimeout(() => {
-    handleSaveProject();
-  }, 3000);
-  return () => clearTimeout(autoSaveTimer);
-}, [schemaStructureKey]); 
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (!user || !dbProjectId) return; // FIX: never auto-save without a project row to update
+    const autoSaveTimer = setTimeout(() => {
+      handleSaveProject();
+    }, 3000);
+    return () => clearTimeout(autoSaveTimer);
+  }, [schemaStructureKey]);
 
   useEffect(() => {
-  if (isAuthLoading) return;
-  if (hasInjected.current) return; // FIX: prevent double injection
-  const urlParams = new URLSearchParams(window.location.search);
-  const injectKey = urlParams.get('inject');
-  if (!injectKey) return;
-  hasInjected.current = true; // FIX: mark as handled
-  window.history.replaceState(null, '', window.location.pathname);
-  if (TEMPLATES[injectKey]) {
-    setPendingInjection(injectKey);
-    setInjectionTarget('current');
-    setInjectionNewPageName('');
-  }
-}, [isAuthLoading]);
+    if (isAuthLoading) return;
+    if (hasInjected.current) return; // FIX: prevent double injection
+    const urlParams = new URLSearchParams(window.location.search);
+    const injectKey = urlParams.get('inject');
+    if (!injectKey) return;
+    hasInjected.current = true; // FIX: mark as handled
+    window.history.replaceState(null, '', window.location.pathname);
+    if (TEMPLATES[injectKey]) {
+      setPendingInjection(injectKey);
+      setInjectionTarget('current');
+      setInjectionNewPageName('');
+    }
+  }, [isAuthLoading]);
 
   const handleExecuteInjection = () => {
     if (!pendingInjection) return;
@@ -600,8 +600,8 @@ function Home() {
     const freeTemplates = ['hero', 'login', 'productCard', 'storyList', 'sectionTitle'];
     if (!freeTemplates.includes(pendingInjection) && !isPremium) {
       alert("✨ This is a Premium Theme from the Store! Please upgrade your workspace to deploy it.");
-      setPendingInjection(null); 
-      handleCheckout(); 
+      setPendingInjection(null);
+      handleCheckout();
       return;
     }
 
@@ -617,7 +617,7 @@ function Home() {
         root: { id: `root_column_${Date.now()}`, type: "Column", props: { padding: "0px", margin: "0px", backgroundColor: "transparent", backgroundType: "solid", mainAxisAlignment: "start", crossAxisAlignment: "stretch" }, children: [] }
       });
     } else if (injectionTarget !== 'current') {
-      targetPageId = injectionTarget; 
+      targetPageId = injectionTarget;
     }
 
     const applyDefaults = (node) => {
@@ -638,8 +638,8 @@ function Home() {
       newSchema.pages[pIndex].root.children.push(clonedNode);
 
       commitHistory(newSchema);
-      setCurrentPageId(targetPageId); 
-      setTimeout(() => setSelectedId(clonedNode.id), 50); 
+      setCurrentPageId(targetPageId);
+      setTimeout(() => setSelectedId(clonedNode.id), 50);
     }
 
     setPendingInjection(null);
@@ -655,13 +655,13 @@ function Home() {
   };
 
   // FIX: keep chat history across page refreshes (session-scoped)
-useEffect(() => {
-  try {
-    // Cap at 40 messages to avoid sessionStorage quota issues
-    const trimmed = aiChatHistory.slice(-40);
-    sessionStorage.setItem('af_chat_history', JSON.stringify(trimmed));
-  } catch {}
-}, [aiChatHistory]);
+  useEffect(() => {
+    try {
+      // Cap at 40 messages to avoid sessionStorage quota issues
+      const trimmed = aiChatHistory.slice(-40);
+      sessionStorage.setItem('af_chat_history', JSON.stringify(trimmed));
+    } catch { }
+  }, [aiChatHistory]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -751,7 +751,7 @@ useEffect(() => {
           appState: data.schema.appState || [],
           permissions: data.schema.permissions || { internet: true, camera: false, location: false, microphone: false, notifications: false },
           supabaseConfig: data.schema.supabaseConfig || { url: '', anonKey: '' },
-          firebaseConfig: data.schema.firebaseConfig || { apiKey: '', projectId: '', appId: '', messagingSenderId: '' }, 
+          firebaseConfig: data.schema.firebaseConfig || { apiKey: '', projectId: '', appId: '', messagingSenderId: '' },
           appConfig: data.schema.appConfig || { enableBottomNav: false },
           theme: { secondary: "#EC4899", ...data.schema.theme }
         };
@@ -789,14 +789,14 @@ useEffect(() => {
   const selectAsset = (url) => { handlePropChange('url', url); setShowAssetModal(false); };
 
   useEffect(() => {
-   const handleKeyDown = (e) => {
-  // FIX: also block when focus is inside a contentEditable region (e.g. rich text, modal divs)
-  if (
-    e.target.tagName === 'INPUT' ||
-    e.target.tagName === 'TEXTAREA' ||
-    e.target.tagName === 'SELECT' ||
-    e.target.isContentEditable
-  ) return;
+    const handleKeyDown = (e) => {
+      // FIX: also block when focus is inside a contentEditable region (e.g. rich text, modal divs)
+      if (
+        e.target.tagName === 'INPUT' ||
+        e.target.tagName === 'TEXTAREA' ||
+        e.target.tagName === 'SELECT' ||
+        e.target.isContentEditable
+      ) return;
       const ctrlOrCmd = e.ctrlKey || e.metaKey;
 
       if (ctrlOrCmd && e.key.toLowerCase() === 'k') { e.preventDefault(); setIsCommandOpen(prev => !prev); }
@@ -809,8 +809,8 @@ useEffect(() => {
       else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); handleDelete(); }
 
       if (selectedId && !selectedId.includes('root') && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        e.preventDefault(); 
-        const step = e.shiftKey ? 10 : 1; 
+        e.preventDefault();
+        const step = e.shiftKey ? 10 : 1;
         let dx = 0; let dy = 0;
 
         if (e.key === 'ArrowUp') dy = -step;
@@ -882,7 +882,7 @@ useEffect(() => {
   };
 
   const handleDeletePage = (e, pageIdToDelete) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     if (schema.pages.length <= 1) return alert("You must have at least one screen in your app.");
     if (!confirm("Are you sure you want to delete this screen? This action cannot be undone.")) return;
 
@@ -913,7 +913,7 @@ useEffect(() => {
     let rootChildren = [];
 
     if (newPageTemplate === 'appbar') {
-      rootProps.padding = "0px"; 
+      rootProps.padding = "0px";
       rootChildren = [
         {
           id: `row_${Date.now()}_1`, type: 'Row', props: { width: '100%', padding: '16px 20px', backgroundColor: 'theme.primary', mainAxisAlignment: 'spaceBetween', crossAxisAlignment: 'center' }, children: [
@@ -934,7 +934,7 @@ useEffect(() => {
         regenerateIds(JSON.parse(JSON.stringify(TEMPLATES.productCard)))
       ];
     } else if (newPageTemplate === 'cart') {
-      rootProps.mainAxisAlignment = 'spaceBetween'; 
+      rootProps.mainAxisAlignment = 'spaceBetween';
       rootChildren = [
         { id: `list_${Date.now()}_1`, type: 'ListView', props: { width: '100%', gap: '16px' }, children: [regenerateIds(JSON.parse(JSON.stringify(TEMPLATES.productCard)))] },
         { id: `btn_${Date.now()}_2`, type: 'Button', props: { label: 'Secure Checkout - $120.00', width: '100%', height: '56px', backgroundColor: 'theme.primary', radiusTopLeft: '16px', radiusTopRight: '16px', radiusBottomLeft: '16px', radiusBottomRight: '16px' } }
@@ -1023,9 +1023,9 @@ useEffect(() => {
       description: "A custom community widget built in AppForge.",
       price_usd: isNaN(price) ? 0 : price,
       category: "components",
-      schema_json: nodeToSave, 
+      schema_json: nodeToSave,
       creator_stripe_account_id: profile.stripe_account_id,
-      is_verified: true 
+      is_verified: true
     }]);
 
     if (error) alert("Failed to push to store: " + error.message);
@@ -1119,7 +1119,7 @@ useEffect(() => {
     const newSchema = { ...schema, appState: [...schema.appState, { key, type: typeStr, value: defaultVal }] };
     commitHistory(newSchema);
   };
-  
+
   const handleRemoveStateVar = (key) => {
     const newSchema = { ...schema, appState: schema.appState.filter(s => s.key !== key) };
     commitHistory(newSchema);
@@ -1134,7 +1134,7 @@ useEffect(() => {
     margin: "0px", padding: "0px",
     backgroundType: "solid", backgroundColor: "transparent", gradientStart: "#4F46E5", gradientEnd: "#EC4899",
     radiusTopLeft: "0px", radiusTopRight: "0px", radiusBottomLeft: "0px", radiusBottomRight: "0px",
-    borderWidth: "0", borderColor: "transparent", opacity: "1", 
+    borderWidth: "0", borderColor: "transparent", opacity: "1",
     shadowColor: "transparent", shadowOffsetX: "0", shadowOffsetY: "2", shadowBlur: "4", shadowSpread: "0",
     selfAlign: "auto", position: "relative", top: "", bottom: "", left: "", right: "",
     animationType: "none", animationDuration: "0.5", animationDelay: "0",
@@ -1143,8 +1143,8 @@ useEffect(() => {
     apiUrl: "", apiEndpoint: "",
     stateVariable: "", stateValue: "", isBound: false, boundVariable: "",
     scrollDirection: "vertical", gap: "8px",
-    fontWeight: "normal", letterSpacing: "0px", textAlign: "left", 
-    boxFit: "cover" 
+    fontWeight: "normal", letterSpacing: "0px", textAlign: "left",
+    boxFit: "cover"
   });
 
   const handleDragStart = (e, type) => {
@@ -1225,12 +1225,12 @@ useEffect(() => {
       else if (type === 'Carousel') {
         newNode.props.width = "100%";
         newNode.props.height = "200px";
-        newNode.props.viewportFraction = "0.8"; 
+        newNode.props.viewportFraction = "0.8";
       }
       else if (type === 'ProgressBar') {
         newNode.props.width = "100%";
         newNode.props.height = "8px";
-        newNode.props.progress = "0.5"; 
+        newNode.props.progress = "0.5";
         newNode.props.color = "theme.primary";
         newNode.props.backgroundColor = "#1A1B1E";
         newNode.props.radiusTopLeft = "4px";
@@ -1350,7 +1350,7 @@ useEffect(() => {
 
         if (!freeTemplates.includes(tKey) && !isPremium) {
           alert("✨ This is a Premium Template! Please upgrade your workspace to unlock it.");
-          handleCheckout(); 
+          handleCheckout();
           return;
         }
         sourceObj = TEMPLATES[tKey];
@@ -1408,27 +1408,27 @@ useEffect(() => {
   };
 
   const handleSaveProject = async () => {
-  if (!user) return alert("Must be logged in to save.");
-  setIsSaved(true);
+    if (!user) return alert("Must be logged in to save.");
+    setIsSaved(true);
 
-  // FIX: never persist credentials inside the schema blob
-  const safeSchema = {
-    ...schema,
-    supabaseConfig: {
-      url: schema.supabaseConfig?.url || '',
-      projectRef: schema.supabaseConfig?.projectRef || '',
-      anonKey: '', // stripped — stored separately or re-entered each session
-    },
-    firebaseConfig: {
-      projectId: schema.firebaseConfig?.projectId || '',
-      appId: schema.firebaseConfig?.appId || '',
-      apiKey: '',           // stripped
-      messagingSenderId: '',// stripped
-    },
-  };
+    // FIX: never persist credentials inside the schema blob
+    const safeSchema = {
+      ...schema,
+      supabaseConfig: {
+        url: schema.supabaseConfig?.url || '',
+        projectRef: schema.supabaseConfig?.projectRef || '',
+        anonKey: '', // stripped — stored separately or re-entered each session
+      },
+      firebaseConfig: {
+        projectId: schema.firebaseConfig?.projectId || '',
+        appId: schema.firebaseConfig?.appId || '',
+        apiKey: '',           // stripped
+        messagingSenderId: '',// stripped
+      },
+    };
 
-  const projectData = { user_id: user.id, name: schema.app?.name || "AppForge Project", schema: safeSchema };
-  if (dbProjectId) await supabase.from('projects').update(projectData).eq('id', dbProjectId);
+    const projectData = { user_id: user.id, name: schema.app?.name || "AppForge Project", schema: safeSchema };
+    if (dbProjectId) await supabase.from('projects').update(projectData).eq('id', dbProjectId);
     else { const { data } = await supabase.from('projects').insert([projectData]).select(); if (data && data[0]) setDbProjectId(data[0].id); }
     setTimeout(() => setIsSaved(false), 2000);
   };
@@ -1438,21 +1438,21 @@ useEffect(() => {
   const handleLogout = async () => { await supabase.auth.signOut(); setSchema(dummySchema); setHistory([dummySchema]); setHistoryIndex(0); setDbProjectId(null); };
 
   const handleCheckout = async () => {
-  if (!user) return alert("Please log in to upgrade your workspace.");
+    if (!user) return alert("Please log in to upgrade your workspace.");
 
-  // FIX: auto-save if no project row exists yet, then proceed
-  let projectId = dbProjectId;
-  if (!projectId) {
-    try {
-      const projectData = { user_id: user.id, name: "AppForge Project", schema };
-      const { data } = await supabase.from('projects').insert([projectData]).select();
-      if (!data?.[0]) return alert("Could not save your project. Please try again.");
-      projectId = data[0].id;
-      setDbProjectId(projectId);
-    } catch {
-      return alert("Could not save your project. Please try again.");
+    // FIX: auto-save if no project row exists yet, then proceed
+    let projectId = dbProjectId;
+    if (!projectId) {
+      try {
+        const projectData = { user_id: user.id, name: "AppForge Project", schema };
+        const { data } = await supabase.from('projects').insert([projectData]).select();
+        if (!data?.[0]) return alert("Could not save your project. Please try again.");
+        projectId = data[0].id;
+        setDbProjectId(projectId);
+      } catch {
+        return alert("Could not save your project. Please try again.");
+      }
     }
-  }
 
     setIsBuilding(true);
     try {
@@ -1460,9 +1460,9 @@ useEffect(() => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-        projectId,        // FIX: use the resolved local var, not the potentially-null state
-        userId: user.id
-      })
+          projectId,        // FIX: use the resolved local var, not the potentially-null state
+          userId: user.id
+        })
       });
 
       if (!response.ok) throw new Error("Failed to initialize checkout");
@@ -1478,7 +1478,7 @@ useEffect(() => {
   const handleDeploy = async () => {
     if (!user || !dbProjectId) return alert("Please log in and Save your project before building.");
 
-    setIsBuilding(true); 
+    setIsBuilding(true);
     try {
       const { data: profileData } = await supabase
         .from('profiles')
@@ -1530,8 +1530,8 @@ useEffect(() => {
           }
           Note: "navStyle" must be exactly one of: "glass", "flat", or "floating".`
           ,
-          provider: aiProvider,        
-          apiKey: customApiKey         
+          provider: aiProvider,
+          apiKey: customApiKey
         })
       });
 
@@ -1559,7 +1559,7 @@ useEffect(() => {
         }
       }));
 
-      setThemePrompt(''); 
+      setThemePrompt('');
 
     } catch (error) {
       console.error("Theme Gen Error:", error);
@@ -1603,7 +1603,7 @@ useEffect(() => {
         commitHistory(newSchema);
       }
 
-      setElementPrompt(''); 
+      setElementPrompt('');
 
     } catch (error) {
       console.error("AI Element Edit Error:", error);
@@ -1613,31 +1613,31 @@ useEffect(() => {
     }
   };
 
- const handleExport = async () => {
-  if (!user) return alert("Please log in to export code.");
+  const handleExport = async () => {
+    if (!user) return alert("Please log in to export code.");
 
-  setIsExporting(true);
-  try {
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('is_premium')
-      .eq('id', user.id)
-      .single();
+    setIsExporting(true);
+    try {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('is_premium')
+        .eq('id', user.id)
+        .single();
 
-    if (!profileData?.is_premium) {
-      setIsExporting(false);
-      handleCheckout();
-      return;
-    }
+      if (!profileData?.is_premium) {
+        setIsExporting(false);
+        handleCheckout();
+        return;
+      }
 
-    // FIX: generate code inside the handler, not from render scope
-    const dartCode = generateFlutterCode(schema);
+      // FIX: generate code inside the handler, not from render scope
+      const dartCode = generateFlutterCode(schema);
 
-    const response = await fetch('/api/export', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dartCode, appName: schema.app?.name || "AppForge Project" })
-    });
+      const response = await fetch('/api/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dartCode, appName: schema.app?.name || "AppForge Project" })
+      });
 
       if (!response.ok) throw new Error("Export failed");
 
@@ -1703,7 +1703,7 @@ useEffect(() => {
       const schemaString = JSON.stringify({
         pages: schema.pages.map(p => ({ name: p.name, widgetCount: p.root?.children?.length || 0 })),
         tables: schema.appConfig?.dbTables || [],
-        flutterVersion: "3.19.0" 
+        flutterVersion: "3.19.0"
       });
 
       const response = await fetch('/api/audit', {
@@ -1959,19 +1959,19 @@ useEffect(() => {
       if (data.error) throw new Error(data.error);
 
       let cleanJson = data.reply.replace(/```json/g, '').replace(/```/g, '').trim();
-	      const generatedTables = JSON.parse(cleanJson).map((table, index) => ({
-	        id: table.id || `tbl_ai_${Date.now()}_${index}`,
-	        name: table.name,
-	        rlsEnabled: table.rlsEnabled !== false,
-	        rlsAuthOnly: table.rlsAuthOnly !== false,
-	        columns: (table.columns || []).map((col, colIndex) => ({
-	          id: col.id || `col_ai_${Date.now()}_${index}_${colIndex}`,
-	          name: col.name,
-	          type: ['text', 'numeric', 'boolean', 'uuid', 'timestamp'].includes(col.type) ? col.type : 'text'
-	        })),
-	        relationships: table.relationships || [],
-	        indexes: table.indexes || []
-	      }));
+      const generatedTables = JSON.parse(cleanJson).map((table, index) => ({
+        id: table.id || `tbl_ai_${Date.now()}_${index}`,
+        name: table.name,
+        rlsEnabled: table.rlsEnabled !== false,
+        rlsAuthOnly: table.rlsAuthOnly !== false,
+        columns: (table.columns || []).map((col, colIndex) => ({
+          id: col.id || `col_ai_${Date.now()}_${index}_${colIndex}`,
+          name: col.name,
+          type: ['text', 'numeric', 'boolean', 'uuid', 'timestamp'].includes(col.type) ? col.type : 'text'
+        })),
+        relationships: table.relationships || [],
+        indexes: table.indexes || []
+      }));
 
       const existingNames = new Set((schema.appConfig?.dbTables || []).map(t => t.name));
       const newTables = generatedTables.filter(t => !existingNames.has(t.name));
@@ -1979,9 +1979,9 @@ useEffect(() => {
       const updatedTables = [...(schema.appConfig?.dbTables || []), ...newTables];
       handleGlobalChange('appConfig', 'dbTables', updatedTables);
 
-	      setBackendWizardStep(2);
-	      setActiveTab('data');
-	      alert(`✓ AI created ${newTables.length} new table(s): ${newTables.map(t => t.name).join(', ')}\n\nStep 2 is ready: review the schema, indexes, and relationships, then click "Execute SQL".`);
+      setBackendWizardStep(2);
+      setActiveTab('data');
+      alert(`✓ AI created ${newTables.length} new table(s): ${newTables.map(t => t.name).join(', ')}\n\nStep 2 is ready: review the schema, indexes, and relationships, then click "Execute SQL".`);
     } catch (err) {
       console.error('AI Backend Gen Error:', err);
       alert('AI failed to generate backend. Try again or create tables manually.');
@@ -2026,7 +2026,7 @@ useEffect(() => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: `Analyze this app architecture. Provide exactly 3 bullet points of proactive, highly technical advice for a Flutter/Supabase developer. Suggest specific database indexing, state management improvements, or missing API error handling based on this schema: \n\n${schemaString}`,
-          code: '', 
+          code: '',
           language: 'json'
         })
       });
@@ -2053,16 +2053,16 @@ useEffect(() => {
     if (!chatInput.trim()) return;
 
     const userMessage = chatInput;
-    setChatInput(''); 
+    setChatInput('');
 
     let ragContext = null;
-try {
-  const ragRes = await fetch(`/api/memory-bank?query=${encodeURIComponent(userMessage)}&limit=3`);
-  const ragData = await ragRes.json();
-  if (ragData.patterns?.length > 0) {
-    ragContext = ragData.patterns;
-  }
-} catch (e) { /* non-fatal, continue without RAG */ }
+    try {
+      const ragRes = await fetch(`/api/memory-bank?query=${encodeURIComponent(userMessage)}&limit=3`);
+      const ragData = await ragRes.json();
+      if (ragData.patterns?.length > 0) {
+        ragContext = ragData.patterns;
+      }
+    } catch (e) { /* non-fatal, continue without RAG */ }
 
     const newHistory = [...aiChatHistory, { role: 'user', text: userMessage }];
     setAiChatHistory(newHistory);
@@ -2511,8 +2511,8 @@ try {
               {selectedNode.type === 'ListView' ? (
                 <div className="bg-gradient-to-b from-emerald-500/10 to-transparent p-5 rounded-2xl border border-emerald-500/20 shadow-inner">
                   <h4 className="text-[10px] font-bold text-emerald-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Database size={14} /> Live API Query</h4>
-	                  <div className="flex flex-col gap-2 mb-4">
-	                    <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Live API Source</label>
+                  <div className="flex flex-col gap-2 mb-4">
+                    <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Live API Source</label>
                     <select
                       value={props.apiEndpointId || ''}
                       onChange={(e) => handlePropChange('apiEndpointId', e.target.value)}
@@ -2525,33 +2525,33 @@ try {
                     </select>
                     {(schema.apiEndpoints || []).length === 0 && (
                       <div className="text-[9px] text-emerald-500/70 italic mt-1">No API endpoints saved yet. Go to the API tab in the left sidebar to add one.</div>
-	                    )}
-	                  </div>
-	                  <div className="border-t border-white/5 pt-4 mt-4">
-	                    <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Supabase Table Binding</label>
-	                    <select
-	                      value={props.supabaseTable || ''}
-	                      onChange={(e) => e.target.value && handleBindSelectedNodeToTable(e.target.value)}
-	                      className="w-full mt-2 border border-white/10 p-2.5 rounded-lg text-xs bg-[#0E0F11] text-gray-200 outline-none focus:border-emerald-500 transition-colors cursor-pointer"
-	                    >
-	                      <option value="">Choose table...</option>
-	                      {(schema.appConfig?.dbTables || []).map(table => <option key={table.id} value={table.name}>{table.name}</option>)}
-	                    </select>
-	                    {props.supabaseTable && (
-	                      <div className="grid grid-cols-2 gap-2 mt-3">
-	                        <select value={props.displayColumn || ''} onChange={(e) => handlePropChange('displayColumn', e.target.value)} className="bg-[#0E0F11] border border-white/10 rounded-lg p-2 text-[10px] text-gray-300 outline-none">
-	                          <option value="">Title column</option>
-	                          {(getTableByName(props.supabaseTable)?.columns || []).map(col => <option key={col.id} value={col.name}>{col.name}</option>)}
-	                        </select>
-	                        <select value={props.subtitleColumn || ''} onChange={(e) => handlePropChange('subtitleColumn', e.target.value)} className="bg-[#0E0F11] border border-white/10 rounded-lg p-2 text-[10px] text-gray-300 outline-none">
-	                          <option value="">Subtitle column</option>
-	                          {(getTableByName(props.supabaseTable)?.columns || []).map(col => <option key={col.id} value={col.name}>{col.name}</option>)}
-	                        </select>
-	                      </div>
-	                    )}
-	                  </div>
-	                  <p className="text-[9px] text-gray-500 mb-4 leading-relaxed mt-[-8px]">If provided, this ListView will automatically fetch and loop through the JSON array response.</p>
-	                </div>
+                    )}
+                  </div>
+                  <div className="border-t border-white/5 pt-4 mt-4">
+                    <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Supabase Table Binding</label>
+                    <select
+                      value={props.supabaseTable || ''}
+                      onChange={(e) => e.target.value && handleBindSelectedNodeToTable(e.target.value)}
+                      className="w-full mt-2 border border-white/10 p-2.5 rounded-lg text-xs bg-[#0E0F11] text-gray-200 outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                    >
+                      <option value="">Choose table...</option>
+                      {(schema.appConfig?.dbTables || []).map(table => <option key={table.id} value={table.name}>{table.name}</option>)}
+                    </select>
+                    {props.supabaseTable && (
+                      <div className="grid grid-cols-2 gap-2 mt-3">
+                        <select value={props.displayColumn || ''} onChange={(e) => handlePropChange('displayColumn', e.target.value)} className="bg-[#0E0F11] border border-white/10 rounded-lg p-2 text-[10px] text-gray-300 outline-none">
+                          <option value="">Title column</option>
+                          {(getTableByName(props.supabaseTable)?.columns || []).map(col => <option key={col.id} value={col.name}>{col.name}</option>)}
+                        </select>
+                        <select value={props.subtitleColumn || ''} onChange={(e) => handlePropChange('subtitleColumn', e.target.value)} className="bg-[#0E0F11] border border-white/10 rounded-lg p-2 text-[10px] text-gray-300 outline-none">
+                          <option value="">Subtitle column</option>
+                          {(getTableByName(props.supabaseTable)?.columns || []).map(col => <option key={col.id} value={col.name}>{col.name}</option>)}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[9px] text-gray-500 mb-4 leading-relaxed mt-[-8px]">If provided, this ListView will automatically fetch and loop through the JSON array response.</p>
+                </div>
               ) : (selectedNode.type === 'Text' || selectedNode.type === 'Button' || selectedNode.type === 'TextInput' || selectedNode.type === 'Image') ? (
                 <div className="bg-gradient-to-b from-indigo-500/10 to-transparent p-5 rounded-2xl border border-indigo-500/20 shadow-inner">
                   <h4 className="text-[10px] font-bold text-indigo-400 mb-4 flex items-center gap-2 uppercase tracking-widest"><LucideIcons.Variable size={14} /> State Binding</h4>
@@ -2571,24 +2571,24 @@ try {
                       </select>
                     ) : (
                       <div className="text-[10px] text-gray-500 text-center py-4 border border-dashed border-white/10 rounded-lg">State binding is off. Content is static.</div>
-	                    )}
-	                  </div>
-	                  <div className="border-t border-white/5 pt-4">
-	                    <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Bind to Supabase Table</label>
-	                    <select
-	                      value={props.boundTable || props.supabaseTable || ''}
-	                      onChange={(e) => e.target.value && handleBindSelectedNodeToTable(e.target.value)}
-	                      className="w-full mt-2 border border-white/10 p-2.5 rounded-lg text-xs bg-[#0E0F11] text-gray-200 outline-none focus:border-indigo-500 transition-colors cursor-pointer"
-	                    >
-	                      <option value="">Choose table...</option>
-	                      {(schema.appConfig?.dbTables || []).map(table => <option key={table.id} value={table.name}>{table.name}</option>)}
-	                    </select>
-	                    {(props.boundColumn || props.displayColumn) && (
-	                      <div className="text-[9px] text-indigo-300 mt-2">Column: {props.boundColumn || props.displayColumn}</div>
-	                    )}
-	                  </div>
-	                </div>
-	              ) : (
+                    )}
+                  </div>
+                  <div className="border-t border-white/5 pt-4">
+                    <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Bind to Supabase Table</label>
+                    <select
+                      value={props.boundTable || props.supabaseTable || ''}
+                      onChange={(e) => e.target.value && handleBindSelectedNodeToTable(e.target.value)}
+                      className="w-full mt-2 border border-white/10 p-2.5 rounded-lg text-xs bg-[#0E0F11] text-gray-200 outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+                    >
+                      <option value="">Choose table...</option>
+                      {(schema.appConfig?.dbTables || []).map(table => <option key={table.id} value={table.name}>{table.name}</option>)}
+                    </select>
+                    {(props.boundColumn || props.displayColumn) && (
+                      <div className="text-[9px] text-indigo-300 mt-2">Column: {props.boundColumn || props.displayColumn}</div>
+                    )}
+                  </div>
+                </div>
+              ) : (
                 <div className="text-center text-[10px] text-gray-600 py-8 border border-dashed border-white/10 rounded-2xl bg-[#1A1B1E]">
                   This element type does not support backend queries or state binding.
                 </div>
@@ -2657,7 +2657,7 @@ try {
               onClick={(e) => {
                 e.stopPropagation();
                 handleDropToNode({ dataTransfer: { getData: (k) => k === 'action' ? 'new' : 'Container' } }, node.id);
-                setIsCommandOpen(true); 
+                setIsCommandOpen(true);
               }}
               className="opacity-0 group-hover:opacity-100 p-1 bg-white/10 rounded hover:bg-blue-500 transition-all"
               title="Add Child"
@@ -2724,22 +2724,22 @@ try {
               </div>
 
               <div className="flex-1 flex flex-col p-6 bg-[#050505]">
-	                <div className="flex justify-between items-center mb-2 px-1">
-	                  <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">schema.sql</span>
-	                  <div className="flex gap-2">
-	                    <button onClick={handleExecuteSupabaseSQL} disabled={isExecutingSql} className="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
-	                      <LucideIcons.DatabaseZap size={14} /> {isExecutingSql ? 'Running...' : 'Execute SQL'}
-	                    </button>
-	                    <button onClick={() => {
-	                      import('../../utils/sqlGenerator').then(mod => {
-	                        navigator.clipboard.writeText(mod.generateSupabaseSQL(schema.appConfig.dbTables));
-	                        alert("SQL Copied to Clipboard!");
-	                      });
-	                    }} className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-	                      <LucideIcons.Copy size={14} /> Copy
-	                    </button>
-	                  </div>
-	                </div>
+                <div className="flex justify-between items-center mb-2 px-1">
+                  <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">schema.sql</span>
+                  <div className="flex gap-2">
+                    <button onClick={handleExecuteSupabaseSQL} disabled={isExecutingSql} className="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
+                      <LucideIcons.DatabaseZap size={14} /> {isExecutingSql ? 'Running...' : 'Execute SQL'}
+                    </button>
+                    <button onClick={() => {
+                      import('../../utils/sqlGenerator').then(mod => {
+                        navigator.clipboard.writeText(mod.generateSupabaseSQL(schema.appConfig.dbTables));
+                        alert("SQL Copied to Clipboard!");
+                      });
+                    }} className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                      <LucideIcons.Copy size={14} /> Copy
+                    </button>
+                  </div>
+                </div>
 
                 <div className="flex-1 border border-white/10 rounded-xl bg-[#1A1B1E] overflow-auto custom-scrollbar p-4 relative">
                   <pre className="text-xs font-mono text-emerald-400 leading-relaxed">
@@ -2747,20 +2747,20 @@ try {
                   </pre>
                 </div>
 
-	                {sqlExecutionResult && (
-	                  <div className={`mt-4 rounded-xl border p-3 text-xs ${sqlExecutionResult.state === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' : sqlExecutionResult.state === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-300' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-	                    {sqlExecutionResult.message}
-	                  </div>
-	                )}
+                {sqlExecutionResult && (
+                  <div className={`mt-4 rounded-xl border p-3 text-xs ${sqlExecutionResult.state === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' : sqlExecutionResult.state === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-300' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                    {sqlExecutionResult.message}
+                  </div>
+                )}
 
-	                <div className="mt-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 flex gap-4 items-center">
+                <div className="mt-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 flex gap-4 items-center">
                   <div className="w-10 h-10 rounded-full bg-indigo-600/20 flex items-center justify-center shrink-0">
                     <LucideIcons.Info size={20} className="text-indigo-400" />
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-white mb-1">How to Sync</h4>
-	                    <p className="text-xs text-gray-400 leading-relaxed">Use Execute SQL when a Supabase Management API token is configured, or copy the SQL and run it in your <a href="https://supabase.com/dashboard/project/_/sql" target="_blank" className="text-indigo-400 hover:underline">Supabase SQL Editor</a>.</p>
-	                  </div>
+                    <p className="text-xs text-gray-400 leading-relaxed">Use Execute SQL when a Supabase Management API token is configured, or copy the SQL and run it in your <a href="https://supabase.com/dashboard/project/_/sql" target="_blank" className="text-indigo-400 hover:underline">Supabase SQL Editor</a>.</p>
+                  </div>
                 </div>
               </div>
 
@@ -2974,7 +2974,7 @@ try {
             setBuildLogs={setBuildLogs}
             onClose={() => setShowDashboard(false)}
             onSetSchema={setSchema}
-            onTriggerBuild={handleDeploy} 
+            onTriggerBuild={handleDeploy}
           />
         )}
 
@@ -3530,7 +3530,7 @@ try {
                         <div className="h-24 bg-gray-500/10 flex items-center justify-center border-b border-white/5 px-6 py-2"><div className="w-full h-full bg-[#1A1B1E] rounded flex flex-col overflow-hidden"><div className="h-8 bg-white/5"></div><div className="flex-1 p-1"><div className="w-8 h-1 bg-white/20 rounded mb-1"></div><div className="w-full h-2 bg-white/10 rounded"></div></div></div></div>
                         <div className="p-4"><h4 className="text-[11px] font-bold text-gray-200">Product Card</h4><p className="text-[9px] text-gray-500 mt-1">E-Commerce Item layout</p></div>
                       </div>
-                      
+
                       <div draggable onDragStart={(e) => { e.dataTransfer.setData("action", "template"); e.dataTransfer.setData("templateKey", "storyList"); }} className="group p-0 bg-[#0E0F11] border border-white/5 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing hover:border-pink-500/50 transition-all">
                         <div className="h-20 bg-[#1A1B1E] flex items-center justify-center border-b border-white/5 gap-3 overflow-hidden px-4">
                           <div className="w-10 h-10 rounded-full border-2 border-pink-500/80 border-dashed opacity-70 group-hover:opacity-100 transition-opacity"></div>
@@ -3690,7 +3690,7 @@ try {
                       </div>
                     </div>
 
-	                    <div className={`${backendWizardStep === 1 ? 'flex' : 'hidden'} bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex-col gap-5`}>
+                    <div className={`${backendWizardStep === 1 ? 'flex' : 'hidden'} bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex-col gap-5`}>
                       <div className="flex items-center gap-3 border-b border-white/5 pb-4">
                         <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                           <LucideIcons.Cloud size={16} className="text-emerald-400" />
@@ -3712,28 +3712,28 @@ try {
                             <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Project URL</label>
                             <input type="text" value={schema.supabaseConfig?.url || ''} onChange={(e) => handleGlobalChange('supabaseConfig', 'url', e.target.value)} placeholder="https://your-project.supabase.co" className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
                           </div>
-	                          <div className="flex flex-col gap-1.5">
-	                            <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Anon Public Key</label>
-	                            <input type="password" value={schema.supabaseConfig?.anonKey || ''} onChange={(e) => handleGlobalChange('supabaseConfig', 'anonKey', e.target.value)} placeholder="eyJhbGciOiJIUzI1NiIsIn..." className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
-	                          </div>
-	                          <div className="grid grid-cols-2 gap-3">
-	                            <div className="flex flex-col gap-1.5">
-	                              <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Project Ref</label>
-	                              <input type="text" value={schema.supabaseConfig?.projectRef || deriveSupabaseProjectRef(schema.supabaseConfig?.url)} onChange={(e) => handleGlobalChange('supabaseConfig', 'projectRef', e.target.value)} placeholder="abcdefghijklmno" className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
-	                            </div>
-	                            <div className="flex flex-col gap-1.5">
-	                              <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Management Token</label>
-	                              <input type="password" value={supabaseManagementToken} onChange={(e) => setSupabaseManagementToken(e.target.value)} placeholder="sbp_... for auto SQL" className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
-	                            </div>
-	                          </div>
-	                          <div className="flex gap-2">
-	                            <button onClick={handleValidateSupabaseConnection} disabled={isTestingSupabase} className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-500 disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
-	                              <LucideIcons.PlugZap size={13} /> {isTestingSupabase ? 'Checking...' : 'Connect to Supabase'}
-	                            </button>
-	                            <button onClick={() => setBackendWizardStep(2)} className="px-4 py-2.5 rounded-xl bg-white/5 text-gray-300 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all">Next</button>
-	                          </div>
-	                          <p className="text-[9px] text-gray-500 leading-relaxed">Anon key powers the generated app. Management token is optional, session-only, and required only when AppForge executes CREATE TABLE SQL automatically.</p>
-	                        </div>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Anon Public Key</label>
+                            <input type="password" value={schema.supabaseConfig?.anonKey || ''} onChange={(e) => handleGlobalChange('supabaseConfig', 'anonKey', e.target.value)} placeholder="eyJhbGciOiJIUzI1NiIsIn..." className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="flex flex-col gap-1.5">
+                              <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Project Ref</label>
+                              <input type="text" value={schema.supabaseConfig?.projectRef || deriveSupabaseProjectRef(schema.supabaseConfig?.url)} onChange={(e) => handleGlobalChange('supabaseConfig', 'projectRef', e.target.value)} placeholder="abcdefghijklmno" className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                              <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Management Token</label>
+                              <input type="password" value={supabaseManagementToken} onChange={(e) => setSupabaseManagementToken(e.target.value)} placeholder="sbp_... for auto SQL" className="w-full border border-white/10 p-2.5 rounded-lg text-xs bg-[#1A1B1E] text-gray-200 outline-none focus:border-emerald-500/50 transition-colors shadow-inner" />
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={handleValidateSupabaseConnection} disabled={isTestingSupabase} className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-500 disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
+                              <LucideIcons.PlugZap size={13} /> {isTestingSupabase ? 'Checking...' : 'Connect to Supabase'}
+                            </button>
+                            <button onClick={() => setBackendWizardStep(2)} className="px-4 py-2.5 rounded-xl bg-white/5 text-gray-300 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all">Next</button>
+                          </div>
+                          <p className="text-[9px] text-gray-500 leading-relaxed">Anon key powers the generated app. Management token is optional, session-only, and required only when AppForge executes CREATE TABLE SQL automatically.</p>
+                        </div>
                       ) : (
                         <div className="flex flex-col gap-4 animate-in fade-in duration-200">
                           <div className="flex flex-col gap-1.5">
@@ -3756,43 +3756,43 @@ try {
                           </div>
                         </div>
                       )}
-	                    </div>
+                    </div>
 
-		                    <div className={`${backendWizardStep === 3 ? 'flex' : 'hidden'} bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex-col gap-4`}>
-	                      <div className="flex justify-between items-start border-b border-white/5 pb-4 gap-3">
-	                        <div className="flex items-center gap-3">
-	                          <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center border border-pink-500/20 shrink-0">
-	                            <LucideIcons.MousePointerClick size={16} className="text-pink-400" />
-	                          </div>
-	                          <div>
-	                            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest">3. Binding Wizard</h3>
-	                            <p className="text-[9px] text-gray-500 mt-0.5">Click any ListView, TextInput, Text, Image, or Button, then choose its table.</p>
-	                          </div>
-	                        </div>
-	                        <button onClick={() => { setBindingGuideActive(true); setBackendWizardStep(3); setRightTab('inspector'); setIsRightPanelOpen(true); }} className="bg-pink-500/10 text-pink-400 hover:bg-pink-600 hover:text-white border border-pink-500/20 text-[9px] font-bold px-3 py-1.5 rounded-lg transition-all">Start</button>
-	                      </div>
+                    <div className={`${backendWizardStep === 3 ? 'flex' : 'hidden'} bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex-col gap-4`}>
+                      <div className="flex justify-between items-start border-b border-white/5 pb-4 gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center border border-pink-500/20 shrink-0">
+                            <LucideIcons.MousePointerClick size={16} className="text-pink-400" />
+                          </div>
+                          <div>
+                            <h3 className="text-xs font-bold text-gray-200 uppercase tracking-widest">3. Binding Wizard</h3>
+                            <p className="text-[9px] text-gray-500 mt-0.5">Click any ListView, TextInput, Text, Image, or Button, then choose its table.</p>
+                          </div>
+                        </div>
+                        <button onClick={() => { setBindingGuideActive(true); setBackendWizardStep(3); setRightTab('inspector'); setIsRightPanelOpen(true); }} className="bg-pink-500/10 text-pink-400 hover:bg-pink-600 hover:text-white border border-pink-500/20 text-[9px] font-bold px-3 py-1.5 rounded-lg transition-all">Start</button>
+                      </div>
 
-	                      <div className={`rounded-xl border p-4 ${bindingGuideActive ? 'border-pink-500/40 bg-pink-500/10' : 'border-white/5 bg-[#161b22]'}`}>
-	                        <div className="text-[10px] font-bold text-gray-300 mb-2">
-	                          {selectedNode ? `Selected: ${selectedNode.type}` : 'No element selected'}
-	                        </div>
-	                        <p className="text-[9px] text-gray-500 leading-relaxed mb-3">
-	                          {selectedNode
-	                            ? 'Choose a table below to write binding props into this element. ListViews fetch rows; Buttons create insert actions; TextInputs attach state variables.'
-	                            : 'Click a list or form element on the canvas. The inspector will stay open and show table binding controls.'}
-	                        </p>
-	                        <div className="grid grid-cols-2 gap-2">
-	                          {(schema.appConfig?.dbTables || []).map(table => (
-	                            <button key={table.id} disabled={!selectedNode} onClick={() => handleBindSelectedNodeToTable(table.name)} className="text-left rounded-xl border border-white/5 bg-[#0E0F11] p-3 hover:border-pink-500/40 disabled:opacity-40 transition-all">
-	                              <div className="text-[10px] font-bold text-pink-300 font-mono">{table.name}</div>
-	                              <div className="text-[8px] text-gray-500 mt-1">{table.columns?.length || 0} columns</div>
-	                            </button>
-	                          ))}
-	                        </div>
-	                      </div>
-	                    </div>
+                      <div className={`rounded-xl border p-4 ${bindingGuideActive ? 'border-pink-500/40 bg-pink-500/10' : 'border-white/5 bg-[#161b22]'}`}>
+                        <div className="text-[10px] font-bold text-gray-300 mb-2">
+                          {selectedNode ? `Selected: ${selectedNode.type}` : 'No element selected'}
+                        </div>
+                        <p className="text-[9px] text-gray-500 leading-relaxed mb-3">
+                          {selectedNode
+                            ? 'Choose a table below to write binding props into this element. ListViews fetch rows; Buttons create insert actions; TextInputs attach state variables.'
+                            : 'Click a list or form element on the canvas. The inspector will stay open and show table binding controls.'}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {(schema.appConfig?.dbTables || []).map(table => (
+                            <button key={table.id} disabled={!selectedNode} onClick={() => handleBindSelectedNodeToTable(table.name)} className="text-left rounded-xl border border-white/5 bg-[#0E0F11] p-3 hover:border-pink-500/40 disabled:opacity-40 transition-all">
+                              <div className="text-[10px] font-bold text-pink-300 font-mono">{table.name}</div>
+                              <div className="text-[8px] text-gray-500 mt-1">{table.columns?.length || 0} columns</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
 
-		                    <div className={`${backendWizardStep === 2 ? 'flex' : 'hidden'} bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex-col gap-4`}>
+                    <div className={`${backendWizardStep === 2 ? 'flex' : 'hidden'} bg-[#0E0F11] border border-white/5 p-5 rounded-2xl shadow-sm flex-col gap-4`}>
                       <div className="flex flex-col gap-4 border-b border-white/5 pb-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shrink-0">
@@ -3805,13 +3805,13 @@ try {
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-	                          <button onClick={() => setShowSqlModal(true)} className="flex-1 justify-center bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Code2 size={12} /> SQL</button>
+                          <button onClick={() => setShowSqlModal(true)} className="flex-1 justify-center bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1"><LucideIcons.Code2 size={12} /> SQL</button>
 
-	                          <button onClick={handleExecuteSupabaseSQL} disabled={isExecutingSql} className="flex-1 justify-center bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1 disabled:opacity-50"><LucideIcons.DatabaseZap size={12} /> {isExecutingSql ? 'Running...' : 'Execute SQL'}</button>
+                          <button onClick={handleExecuteSupabaseSQL} disabled={isExecutingSql} className="flex-1 justify-center bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1 disabled:opacity-50"><LucideIcons.DatabaseZap size={12} /> {isExecutingSql ? 'Running...' : 'Execute SQL'}</button>
 
-	                          <button onClick={handleDeploy} disabled={isBuilding} className="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-xl hover:bg-blue-500 transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] disabled:opacity-50 flex items-center gap-1.5 ml-1">
-	                            {isBuilding ? 'Building...' : <><LucideIcons.Rocket size={12} fill="white" /> Deploy</>}
-	                          </button>
+                          <button onClick={handleDeploy} disabled={isBuilding} className="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-xl hover:bg-blue-500 transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] disabled:opacity-50 flex items-center gap-1.5 ml-1">
+                            {isBuilding ? 'Building...' : <><LucideIcons.Rocket size={12} fill="white" /> Deploy</>}
+                          </button>
 
                           <button onClick={handleAiGenerateBackend} disabled={isGeneratingBackend} className="flex-1 justify-center bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white border border-purple-500/30 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all flex items-center gap-1 disabled:opacity-50">
                             <LucideIcons.Bot size={12} /> {isGeneratingBackend ? 'Wait...' : 'AI Gen'}
@@ -3821,13 +3821,13 @@ try {
                             const tables = schema.appConfig.dbTables || [];
                             handleGlobalChange('appConfig', 'dbTables', [...tables, { id: `tbl_${Date.now()}`, name: 'new_table', columns: [], rlsEnabled: true, rlsAuthOnly: true }]);
                           }} className="flex-1 justify-center bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-500/20 text-[9px] font-bold px-2 py-1.5 rounded-lg transition-all">+ Table</button>
-	                        </div>
-	                        {sqlExecutionResult && (
-	                          <div className={`rounded-xl border px-3 py-2 text-[10px] ${sqlExecutionResult.state === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : sqlExecutionResult.state === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-300' : 'border-white/10 bg-[#161b22] text-gray-400'}`}>
-	                            {sqlExecutionResult.message}
-	                          </div>
-	                        )}
-	                      </div>
+                        </div>
+                        {sqlExecutionResult && (
+                          <div className={`rounded-xl border px-3 py-2 text-[10px] ${sqlExecutionResult.state === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : sqlExecutionResult.state === 'error' ? 'border-red-500/30 bg-red-500/10 text-red-300' : 'border-white/10 bg-[#161b22] text-gray-400'}`}>
+                            {sqlExecutionResult.message}
+                          </div>
+                        )}
+                      </div>
 
                       <div className="space-y-4">
                         {(schema.appConfig.dbTables || []).map((table, tIdx) => (
@@ -3872,48 +3872,48 @@ try {
                                   </label>
                                 )}
                               </div>
-	                            </div>
+                            </div>
 
-	                            <div className="bg-cyan-500/5 px-3 py-3 border-b border-white/5 space-y-3">
-	                              <div className="flex items-center justify-between">
-	                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><LucideIcons.GitBranch size={12} className="text-cyan-400" /> Relationships</span>
-	                                <button onClick={() => {
-	                                  const newTables = [...schema.appConfig.dbTables];
-	                                  if (!newTables[tIdx].relationships) newTables[tIdx].relationships = [];
-	                                  newTables[tIdx].relationships.push({ column: 'user_id', referencesTable: 'users', referencesColumn: 'id', onDelete: 'cascade' });
-	                                  handleGlobalChange('appConfig', 'dbTables', newTables);
-	                                }} className="text-[9px] text-cyan-400 font-bold">+ FK</button>
-	                              </div>
-	                              {(table.relationships || []).map((rel, rIdx) => (
-	                                <div key={`${table.id}_rel_${rIdx}`} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-1.5">
-	                                  <input value={rel.column || ''} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships[rIdx].column = e.target.value.toLowerCase().replace(/\s+/g, '_'); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="user_id" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
-	                                  <input value={rel.referencesTable || ''} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships[rIdx].referencesTable = e.target.value.toLowerCase().replace(/\s+/g, '_'); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="users" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
-	                                  <input value={rel.referencesColumn || 'id'} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships[rIdx].referencesColumn = e.target.value.toLowerCase().replace(/\s+/g, '_'); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="id" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
-	                                  <button onClick={() => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships.splice(rIdx, 1); handleGlobalChange('appConfig', 'dbTables', newTables); }} className="text-gray-600 hover:text-red-500 px-1"><LucideIcons.X size={12} /></button>
-	                                </div>
-	                              ))}
-	                            </div>
+                            <div className="bg-cyan-500/5 px-3 py-3 border-b border-white/5 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><LucideIcons.GitBranch size={12} className="text-cyan-400" /> Relationships</span>
+                                <button onClick={() => {
+                                  const newTables = [...schema.appConfig.dbTables];
+                                  if (!newTables[tIdx].relationships) newTables[tIdx].relationships = [];
+                                  newTables[tIdx].relationships.push({ column: 'user_id', referencesTable: 'users', referencesColumn: 'id', onDelete: 'cascade' });
+                                  handleGlobalChange('appConfig', 'dbTables', newTables);
+                                }} className="text-[9px] text-cyan-400 font-bold">+ FK</button>
+                              </div>
+                              {(table.relationships || []).map((rel, rIdx) => (
+                                <div key={`${table.id}_rel_${rIdx}`} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-1.5">
+                                  <input value={rel.column || ''} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships[rIdx].column = e.target.value.toLowerCase().replace(/\s+/g, '_'); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="user_id" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
+                                  <input value={rel.referencesTable || ''} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships[rIdx].referencesTable = e.target.value.toLowerCase().replace(/\s+/g, '_'); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="users" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
+                                  <input value={rel.referencesColumn || 'id'} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships[rIdx].referencesColumn = e.target.value.toLowerCase().replace(/\s+/g, '_'); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="id" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
+                                  <button onClick={() => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].relationships.splice(rIdx, 1); handleGlobalChange('appConfig', 'dbTables', newTables); }} className="text-gray-600 hover:text-red-500 px-1"><LucideIcons.X size={12} /></button>
+                                </div>
+                              ))}
+                            </div>
 
-	                            <div className="bg-amber-500/5 px-3 py-3 border-b border-white/5 space-y-3">
-	                              <div className="flex items-center justify-between">
-	                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><LucideIcons.Gauge size={12} className="text-amber-400" /> Indexes</span>
-	                                <button onClick={() => {
-	                                  const newTables = [...schema.appConfig.dbTables];
-	                                  if (!newTables[tIdx].indexes) newTables[tIdx].indexes = [];
-	                                  newTables[tIdx].indexes.push({ columns: ['created_at'], unique: false });
-	                                  handleGlobalChange('appConfig', 'dbTables', newTables);
-	                                }} className="text-[9px] text-amber-400 font-bold">+ Index</button>
-	                              </div>
-	                              {(table.indexes || []).map((idxDef, iIdx) => (
-	                                <div key={`${table.id}_idx_${iIdx}`} className="grid grid-cols-[1fr_auto_auto] gap-1.5 items-center">
-	                                  <input value={(idxDef.columns || []).join(', ')} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].indexes[iIdx].columns = e.target.value.split(',').map(v => v.trim().toLowerCase().replace(/\s+/g, '_')).filter(Boolean); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="user_id, created_at" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
-	                                  <label className="flex items-center gap-1 text-[9px] text-gray-500"><input type="checkbox" checked={!!idxDef.unique} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].indexes[iIdx].unique = e.target.checked; handleGlobalChange('appConfig', 'dbTables', newTables); }} className="accent-amber-500" /> Unique</label>
-	                                  <button onClick={() => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].indexes.splice(iIdx, 1); handleGlobalChange('appConfig', 'dbTables', newTables); }} className="text-gray-600 hover:text-red-500 px-1"><LucideIcons.X size={12} /></button>
-	                                </div>
-	                              ))}
-	                            </div>
+                            <div className="bg-amber-500/5 px-3 py-3 border-b border-white/5 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><LucideIcons.Gauge size={12} className="text-amber-400" /> Indexes</span>
+                                <button onClick={() => {
+                                  const newTables = [...schema.appConfig.dbTables];
+                                  if (!newTables[tIdx].indexes) newTables[tIdx].indexes = [];
+                                  newTables[tIdx].indexes.push({ columns: ['created_at'], unique: false });
+                                  handleGlobalChange('appConfig', 'dbTables', newTables);
+                                }} className="text-[9px] text-amber-400 font-bold">+ Index</button>
+                              </div>
+                              {(table.indexes || []).map((idxDef, iIdx) => (
+                                <div key={`${table.id}_idx_${iIdx}`} className="grid grid-cols-[1fr_auto_auto] gap-1.5 items-center">
+                                  <input value={(idxDef.columns || []).join(', ')} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].indexes[iIdx].columns = e.target.value.split(',').map(v => v.trim().toLowerCase().replace(/\s+/g, '_')).filter(Boolean); handleGlobalChange('appConfig', 'dbTables', newTables); }} placeholder="user_id, created_at" className="bg-[#0E0F11] border border-white/5 rounded-lg p-2 text-[9px] text-gray-300 outline-none font-mono" />
+                                  <label className="flex items-center gap-1 text-[9px] text-gray-500"><input type="checkbox" checked={!!idxDef.unique} onChange={(e) => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].indexes[iIdx].unique = e.target.checked; handleGlobalChange('appConfig', 'dbTables', newTables); }} className="accent-amber-500" /> Unique</label>
+                                  <button onClick={() => { const newTables = [...schema.appConfig.dbTables]; newTables[tIdx].indexes.splice(iIdx, 1); handleGlobalChange('appConfig', 'dbTables', newTables); }} className="text-gray-600 hover:text-red-500 px-1"><LucideIcons.X size={12} /></button>
+                                </div>
+                              ))}
+                            </div>
 
-	                            <div className="p-3 space-y-2">
+                            <div className="p-3 space-y-2">
                               <div className="text-[9px] text-gray-600 font-mono mb-2">id (UUID) & created_at (TIMESTAMP) auto-generated</div>
                               {table.columns.map((col, cIdx) => (
                                 <div key={col.id} className="flex items-center gap-1.5">
@@ -4064,9 +4064,9 @@ try {
           </div>
 
           {/* CANVAS AREA WITH STORYBOARD CONTROLS */}
-	          <div
-	            className="flex-1 min-w-[600px] relative overflow-hidden flex flex-col items-center cursor-crosshair shadow-inner"
-	            style={{ backgroundColor: schema.theme?.background || '#050505' }}
+          <div
+            className="flex-1 min-w-[600px] relative overflow-hidden flex flex-col items-center cursor-crosshair shadow-inner"
+            style={{ backgroundColor: schema.theme?.background || '#050505' }}
             onWheel={handleWheel} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
             onContextMenu={(e) => { if (viewMode === 'storyboard') e.preventDefault(); }}
             onClick={() => { if (viewMode === 'single') { setSelectedId(null); setRightTab('inspector'); setIsRightPanelOpen(true); } }}
@@ -4100,22 +4100,22 @@ try {
             {viewMode === 'single' ? (
               <div className="flex-1 w-full flex justify-center pb-20 overflow-y-auto hide-scrollbar">
                 <ErrorBoundary>
-	                  <Canvas key={currentPageId} schema={schema} rootNode={activePage?.root} selectedId={selectedId} onSelect={(id) => {
-	                    setSelectedId(id);
-	                    setIsRightPanelOpen(true);
-	                    setRightTab(currentTab => (bindingGuideActive || currentTab !== 'ai' && currentTab !== 'code') ? 'inspector' : currentTab);
-	                    if (bindingGuideActive) {
-	                      setInspectorTab('backend');
-	                      setBackendWizardStep(3);
-	                    }
-	                  }}
+                  <Canvas key={currentPageId} schema={schema} rootNode={activePage?.root} selectedId={selectedId} onSelect={(id) => {
+                    setSelectedId(id);
+                    setIsRightPanelOpen(true);
+                    setRightTab(currentTab => (bindingGuideActive || currentTab !== 'ai' && currentTab !== 'code') ? 'inspector' : currentTab);
+                    if (bindingGuideActive) {
+                      setInspectorTab('backend');
+                      setBackendWizardStep(3);
+                    }
+                  }}
                     onDropToNode={handleDropToNode} onResize={handleResize} onDragNodeStart={handleDragNodeStart} previewMode={previewMode} showGrid={showGrid} />
                 </ErrorBoundary>
               </div>
             ) : (
               <div className="absolute inset-0 pt-24 overflow-hidden pointer-events-none">
                 <div className="w-full h-full transform-gpu origin-center transition-transform duration-75 ease-out flex gap-32 items-start p-32 pointer-events-auto" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, cursor: isPanning ? 'grabbing' : 'grab' }}>
-                  
+
                   {/* SVG CONNECTIONS */}
                   <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ overflow: 'visible' }}>
                     <defs>
@@ -4140,7 +4140,7 @@ try {
                       </div>
                       <div onClick={() => setCurrentPageId(page.id)} className={`transition-all duration-300 rounded-[44px] bg-black ${currentPageId === page.id ? 'ring-4 ring-purple-500 ring-offset-8 ring-offset-[#050505] shadow-[0_0_50px_rgba(168,85,247,0.3)]' : 'hover:ring-2 hover:ring-white/20 hover:ring-offset-8 hover:ring-offset-[#050505] opacity-80 hover:opacity-100'}`}>
                         <ErrorBoundary>
-	                          <Canvas schema={schema} rootNode={page.root} selectedId={selectedId} onSelect={(id) => { setSelectedId(id); setCurrentPageId(page.id); setRightTab('inspector'); setIsRightPanelOpen(true); if (bindingGuideActive) { setInspectorTab('backend'); setBackendWizardStep(3); } }} onDropToNode={handleDropToNode} onResize={handleResize} onDragNodeStart={handleDragNodeStart} previewMode="iphone" showGrid={false} />
+                          <Canvas schema={schema} rootNode={page.root} selectedId={selectedId} onSelect={(id) => { setSelectedId(id); setCurrentPageId(page.id); setRightTab('inspector'); setIsRightPanelOpen(true); if (bindingGuideActive) { setInspectorTab('backend'); setBackendWizardStep(3); } }} onDropToNode={handleDropToNode} onResize={handleResize} onDragNodeStart={handleDragNodeStart} previewMode="iphone" showGrid={false} />
                         </ErrorBoundary>
                       </div>
                     </div>
