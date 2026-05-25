@@ -341,9 +341,14 @@ function Home() {
   const [isGeneratingTheme, setIsGeneratingTheme] = useState(false);
   const [isGeneratingBackend, setIsGeneratingBackend] = useState(false);
 
-  const [aiChatHistory, setAiChatHistory] = useState([
-    { role: 'ai', text: "Hi! I'm your AppForge AI Engineer. Select an element or tell me what you'd like to build!" }
-  ]);
+  const [aiChatHistory, setAiChatHistory] = useState(() => {
+  // FIX: restore chat history from sessionStorage on mount (clears on tab close)
+  try {
+    const saved = sessionStorage.getItem('af_chat_history');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return [{ role: 'ai', text: "Hi! I'm your AppForge AI Engineer. Select an element or tell me what you'd like to build!" }];
+});
   const [chatInput, setChatInput] = useState('');
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [isEditingElement, setIsEditingElement] = useState(false);
@@ -433,22 +438,24 @@ function Home() {
   };
 
   useEffect(() => {
-    const injectKey = searchParams.get('inject');
-    if (injectKey && TEMPLATES[injectKey]) {
-      const sourceObj = TEMPLATES[injectKey];
-      const clonedNode = regenerateIds(JSON.parse(JSON.stringify(sourceObj)));
-      const newSchema = JSON.parse(JSON.stringify(schema));
-      const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
+  const injectKey = searchParams.get('inject');
+  if (!injectKey || !TEMPLATES[injectKey]) return;
+  if (hasInjected.current) return; // FIX: guard against double fire
+  hasInjected.current = true;
 
-      if (pIndex !== -1) {
-        if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
-        newSchema.pages[pIndex].root.children.push(clonedNode);
-        commitHistory(newSchema);
-        setSelectedId(clonedNode.id);
-        router.replace('/builder', undefined, { shallow: true });
-      }
-    }
-  }, [searchParams]);
+  const sourceObj = TEMPLATES[injectKey];
+  const clonedNode = regenerateIds(structuredClone(sourceObj));
+  const newSchema = structuredClone(schema);
+  const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
+
+  if (pIndex !== -1) {
+    if (!newSchema.pages[pIndex].root.children) newSchema.pages[pIndex].root.children = [];
+    newSchema.pages[pIndex].root.children.push(clonedNode);
+    commitHistory(newSchema);
+    setSelectedId(clonedNode.id);
+    router.replace('/builder', undefined, { shallow: true });
+  }
+}, [searchParams]);
 
   useEffect(() => {
     polyfill({
@@ -548,29 +555,31 @@ function Home() {
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    if (!user || !dbProjectId) return;
-    const autoSaveTimer = setTimeout(() => {
-      handleSaveProject();
-    }, 3000);
-    return () => clearTimeout(autoSaveTimer); 
-  }, [schema]);
+  if (isFirstRender.current) {
+    isFirstRender.current = false;
+    return;
+  }
+  if (!user || !dbProjectId) return; // FIX: never auto-save without a project row to update
+  const autoSaveTimer = setTimeout(() => {
+    handleSaveProject();
+  }, 3000);
+  return () => clearTimeout(autoSaveTimer);
+}, [schemaStructureKey]); 
 
   useEffect(() => {
-    if (isAuthLoading) return;
-    const urlParams = new URLSearchParams(window.location.search);
-    const injectKey = urlParams.get('inject');
-    if (!injectKey) return;
-    window.history.replaceState(null, '', window.location.pathname);
-    if (TEMPLATES[injectKey]) {
-      setPendingInjection(injectKey); 
-      setInjectionTarget('current'); 
-      setInjectionNewPageName('');
-    }
-  }, [isAuthLoading]);
+  if (isAuthLoading) return;
+  if (hasInjected.current) return; // FIX: prevent double injection
+  const urlParams = new URLSearchParams(window.location.search);
+  const injectKey = urlParams.get('inject');
+  if (!injectKey) return;
+  hasInjected.current = true; // FIX: mark as handled
+  window.history.replaceState(null, '', window.location.pathname);
+  if (TEMPLATES[injectKey]) {
+    setPendingInjection(injectKey);
+    setInjectionTarget('current');
+    setInjectionNewPageName('');
+  }
+}, [isAuthLoading]);
 
   const handleExecuteInjection = () => {
     if (!pendingInjection) return;
@@ -584,7 +593,7 @@ function Home() {
     }
 
     let targetPageId = currentPageId;
-    let newSchema = JSON.parse(JSON.stringify(schema));
+    let newSchema = structuredClone(schema);
 
     if (injectionTarget === 'new') {
       if (!injectionNewPageName.trim()) return alert("Please enter a name for the new page.");
@@ -632,6 +641,15 @@ function Home() {
     setSchema(newSchema);
   };
 
+  // FIX: keep chat history across page refreshes (session-scoped)
+useEffect(() => {
+  try {
+    // Cap at 40 messages to avoid sessionStorage quota issues
+    const trimmed = aiChatHistory.slice(-40);
+    sessionStorage.setItem('af_chat_history', JSON.stringify(trimmed));
+  } catch {}
+}, [aiChatHistory]);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -674,7 +692,7 @@ function Home() {
 
       const data = await res.json();
       if (data.success && data.json_tree) {
-        const newSchema = JSON.parse(JSON.stringify(schema));
+        const newSchema = structuredClone(schema);
         const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
 
         const applyDefaultsToTree = (node) => {
@@ -758,8 +776,14 @@ function Home() {
   const selectAsset = (url) => { handlePropChange('url', url); setShowAssetModal(false); };
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+   const handleKeyDown = (e) => {
+  // FIX: also block when focus is inside a contentEditable region (e.g. rich text, modal divs)
+  if (
+    e.target.tagName === 'INPUT' ||
+    e.target.tagName === 'TEXTAREA' ||
+    e.target.tagName === 'SELECT' ||
+    e.target.isContentEditable
+  ) return;
       const ctrlOrCmd = e.ctrlKey || e.metaKey;
 
       if (ctrlOrCmd && e.key.toLowerCase() === 'k') { e.preventDefault(); setIsCommandOpen(prev => !prev); }
@@ -781,7 +805,7 @@ function Home() {
         if (e.key === 'ArrowLeft') dx = -step;
         if (e.key === 'ArrowRight') dx = step;
 
-        const newSchema = JSON.parse(JSON.stringify(schema));
+        const newSchema = structuredClone(schema);
         const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
 
         const findN = (tree, id) => {
@@ -815,13 +839,13 @@ function Home() {
 
   const handleDuplicate = () => {
     if (!selectedId || selectedId.includes('root')) return;
-    const newSchema = JSON.parse(JSON.stringify(schema));
+    const newSchema = structuredClone(schema);
     let clonedNode = null;
     const findAndClone = (parent) => {
       if (!parent.children) return false;
       const index = parent.children.findIndex(c => c.id === selectedId);
       if (index !== -1) {
-        clonedNode = regenerateIds(JSON.parse(JSON.stringify(parent.children[index])));
+        clonedNode = regenerateIds(structuredClone(parent.children[index]));
         parent.children.splice(index + 1, 0, clonedNode); return true;
       }
       for (let child of parent.children) { if (findAndClone(child)) return true; }
@@ -834,7 +858,7 @@ function Home() {
 
   const handleDelete = () => {
     if (!selectedId || selectedId.includes('root')) return;
-    const newSchema = JSON.parse(JSON.stringify(schema));
+    const newSchema = structuredClone(schema);
     const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
     const deleteNodeRecursive = (tree, id) => {
       if (tree.children) { tree.children = tree.children.filter(c => c.id !== id); tree.children.forEach(c => deleteNodeRecursive(c, id)); }
@@ -849,7 +873,7 @@ function Home() {
     if (schema.pages.length <= 1) return alert("You must have at least one screen in your app.");
     if (!confirm("Are you sure you want to delete this screen? This action cannot be undone.")) return;
 
-    const newSchema = JSON.parse(JSON.stringify(schema));
+    const newSchema = structuredClone(schema);
     newSchema.pages = newSchema.pages.filter(p => p.id !== pageIdToDelete);
     if (newSchema.app?.initialPage === pageIdToDelete) {
       newSchema.app.initialPage = newSchema.pages[0].id;
@@ -870,7 +894,7 @@ function Home() {
   const handleCreatePage = () => {
     if (!newPageName.trim()) return alert("Please enter a page name.");
     const newPageId = `page_${Date.now()}`;
-    const newSchema = JSON.parse(JSON.stringify(schema));
+    const newSchema = structuredClone(schema);
 
     let rootProps = { padding: "16px", margin: "0px", backgroundColor: "transparent", backgroundType: "solid", mainAxisAlignment: "start", crossAxisAlignment: "stretch" };
     let rootChildren = [];
@@ -946,10 +970,10 @@ function Home() {
     const name = prompt("Name your Reusable Component:", `${nodeToSave.type} Custom`);
     if (!name) return;
 
-    const newSchema = JSON.parse(JSON.stringify(schema));
+    const newSchema = structuredClone(schema);
     if (!newSchema.components) newSchema.components = [];
 
-    const cleanNode = JSON.parse(JSON.stringify(nodeToSave));
+    const cleanNode = structuredClone(nodeToSave);
     newSchema.components.push({ id: `comp_${Date.now()}`, name, node: cleanNode });
 
     commitHistory(newSchema);
@@ -997,7 +1021,7 @@ function Home() {
 
   const handlePropChange = (propKey, newValue) => {
     if (!selectedId) return;
-    const newSchema = JSON.parse(JSON.stringify(schema));
+    const newSchema = structuredClone(schema);
     const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
     const node = findNode(newSchema.pages[pIndex].root, selectedId);
     if (node) node.props[propKey] = newValue;
@@ -1005,7 +1029,7 @@ function Home() {
   };
 
   const handleResize = (id, newWidth, newHeight) => {
-    const newSchema = JSON.parse(JSON.stringify(schema));
+    const newSchema = structuredClone(schema);
     const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
     const node = findNode(newSchema.pages[pIndex].root, id);
     if (node) { node.props.width = newWidth; node.props.height = newHeight; }
@@ -1130,7 +1154,7 @@ function Home() {
     const action = e.dataTransfer.getData("action");
     if (!action) return;
 
-    const newSchema = JSON.parse(JSON.stringify(schema));
+    const newSchema = structuredClone(schema);
     const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
     const targetRoot = newSchema.pages[pIndex].root;
 
@@ -1323,7 +1347,7 @@ function Home() {
       }
 
       if (sourceObj) {
-        const clonedNode = regenerateIds(JSON.parse(JSON.stringify(sourceObj)));
+        const clonedNode = regenerateIds(structuredClone(sourceObj));
         const success = insertNodeIntoTree(targetRoot, parentId, clonedNode);
         if (!success) targetRoot.children.push(clonedNode);
         commitHistory(newSchema);
@@ -1353,7 +1377,7 @@ function Home() {
 
   const handleMove = (direction) => {
     if (!selectedId) return;
-    const newSchema = JSON.parse(JSON.stringify(schema));
+    const newSchema = structuredClone(schema);
     const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
     const moveNode = (parent) => {
       if (!parent.children) return false;
@@ -1371,10 +1395,27 @@ function Home() {
   };
 
   const handleSaveProject = async () => {
-    if (!user) return alert("Must be logged in to save.");
-    setIsSaved(true);
-    const projectData = { user_id: user.id, name: "AppForge Project", schema: schema };
-    if (dbProjectId) await supabase.from('projects').update(projectData).eq('id', dbProjectId);
+  if (!user) return alert("Must be logged in to save.");
+  setIsSaved(true);
+
+  // FIX: never persist credentials inside the schema blob
+  const safeSchema = {
+    ...schema,
+    supabaseConfig: {
+      url: schema.supabaseConfig?.url || '',
+      projectRef: schema.supabaseConfig?.projectRef || '',
+      anonKey: '', // stripped — stored separately or re-entered each session
+    },
+    firebaseConfig: {
+      projectId: schema.firebaseConfig?.projectId || '',
+      appId: schema.firebaseConfig?.appId || '',
+      apiKey: '',           // stripped
+      messagingSenderId: '',// stripped
+    },
+  };
+
+  const projectData = { user_id: user.id, name: schema.app?.name || "AppForge Project", schema: safeSchema };
+  if (dbProjectId) await supabase.from('projects').update(projectData).eq('id', dbProjectId);
     else { const { data } = await supabase.from('projects').insert([projectData]).select(); if (data && data[0]) setDbProjectId(data[0].id); }
     setTimeout(() => setIsSaved(false), 2000);
   };
@@ -1384,8 +1425,21 @@ function Home() {
   const handleLogout = async () => { await supabase.auth.signOut(); setSchema(dummySchema); setHistory([dummySchema]); setHistoryIndex(0); setDbProjectId(null); };
 
   const handleCheckout = async () => {
-    if (!user) return alert("Please log in to upgrade your workspace.");
-    if (!dbProjectId) return alert("Please save your project first.");
+  if (!user) return alert("Please log in to upgrade your workspace.");
+
+  // FIX: auto-save if no project row exists yet, then proceed
+  let projectId = dbProjectId;
+  if (!projectId) {
+    try {
+      const projectData = { user_id: user.id, name: "AppForge Project", schema };
+      const { data } = await supabase.from('projects').insert([projectData]).select();
+      if (!data?.[0]) return alert("Could not save your project. Please try again.");
+      projectId = data[0].id;
+      setDbProjectId(projectId);
+    } catch {
+      return alert("Could not save your project. Please try again.");
+    }
+  }
 
     setIsBuilding(true);
     try {
@@ -1393,9 +1447,9 @@ function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projectId: dbProjectId,
-          userId: user.id
-        })
+        projectId,        // FIX: use the resolved local var, not the potentially-null state
+        userId: user.id
+      })
       });
 
       if (!response.ok) throw new Error("Failed to initialize checkout");
@@ -1528,7 +1582,7 @@ function Home() {
 
       console.log("🤖 AI Co-Pilot Thought Process:", aiResponse.thought_process);
 
-      const newSchema = JSON.parse(JSON.stringify(schema));
+      const newSchema = structuredClone(schema);
       const targetNode = findNode(newSchema.pages[pIndex].root, selectedId);
 
       if (targetNode && aiResponse.updated_props) {
@@ -1546,28 +1600,31 @@ function Home() {
     }
   };
 
-  const handleExport = async () => {
-    if (!user) return alert("Please log in to export code.");
+ const handleExport = async () => {
+  if (!user) return alert("Please log in to export code.");
 
-    setIsExporting(true);
-    try {
-      const { data: profileData } = await supabase
-        .from('profiles') 
-        .select('is_premium')
-        .eq('id', user.id)
-        .single();
+  setIsExporting(true);
+  try {
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('is_premium')
+      .eq('id', user.id)
+      .single();
 
-      if (!profileData?.is_premium) {
-        setIsExporting(false);
-        handleCheckout(); 
-        return;
-      }
+    if (!profileData?.is_premium) {
+      setIsExporting(false);
+      handleCheckout();
+      return;
+    }
 
-      const response = await fetch('/api/export', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dartCode: code, appName: "AppForge Project" })
-      });
+    // FIX: generate code inside the handler, not from render scope
+    const dartCode = generateFlutterCode(schema);
+
+    const response = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dartCode, appName: schema.app?.name || "AppForge Project" })
+    });
 
       if (!response.ok) throw new Error("Export failed");
 
@@ -1709,7 +1766,7 @@ function Home() {
     const table = getTableByName(tableName);
     if (!table) return alert('Choose a valid table to bind.');
 
-    const newSchema = JSON.parse(JSON.stringify(schema));
+    const newSchema = structuredClone(schema);
     const pIndex = newSchema.pages.findIndex(p => p.id === currentPageId);
     const targetNode = findNode(newSchema.pages[pIndex]?.root, selectedId);
     if (!targetNode) return;
@@ -2040,13 +2097,13 @@ try {
 
       setAiChatHistory(prev => [...prev, { role: 'ai', text: aiResponse.chat_reply }]);
 
-      const newSchema = JSON.parse(JSON.stringify(schema));
+      const newSchema = structuredClone(schema);
       const targetRoot = newSchema.pages[pIndex].root;
 
       if (aiResponse.action === 'add_template' && aiResponse.template_key) {
         const sourceObj = TEMPLATES[aiResponse.template_key];
         if (sourceObj) {
-          const clonedNode = regenerateIds(JSON.parse(JSON.stringify(sourceObj)));
+          const clonedNode = regenerateIds(structuredClone(sourceObj));
           if (!targetRoot.children) targetRoot.children = [];
           targetRoot.children.push(clonedNode);
           commitHistory(newSchema);
@@ -4030,7 +4087,7 @@ try {
             {viewMode === 'single' ? (
               <div className="flex-1 w-full flex justify-center pb-20 overflow-y-auto hide-scrollbar">
                 <ErrorBoundary>
-	                  <Canvas schema={schema} rootNode={activePage?.root} selectedId={selectedId} onSelect={(id) => {
+	                  <Canvas key={currentPageId} schema={schema} rootNode={activePage?.root} selectedId={selectedId} onSelect={(id) => {
 	                    setSelectedId(id);
 	                    setIsRightPanelOpen(true);
 	                    setRightTab(currentTab => (bindingGuideActive || currentTab !== 'ai' && currentTab !== 'code') ? 'inspector' : currentTab);
